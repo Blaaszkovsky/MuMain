@@ -7,6 +7,7 @@
 #include "Core/Globals/_crypt.h"
 #include "Core/Utilities/Log/MuLogger.h"
 #include "Data/DataHandler/ItemData/ItemBmdImport.h"
+#include "Data/DataHandler/ItemData/ItemDataSaver.h"
 #include "Data/DataHandler/ItemData/ItemDataHandler.h"
 #include "Data/DataHandler/ItemData/ItemJsonStorage.h"
 #include "Data/GameData/ItemData/ItemAttributeConversion.h"
@@ -278,6 +279,40 @@ TEST_CASE("Bmd import recovers long names and repairs the fields they overwrote 
     REQUIRE_FALSE(result.repairs.empty());
     CHECK(result.repairs.front().fromLocale == "pt");
 }
+
+TEST_CASE("Season 6 item BMD keeps one-byte weapon damage [data][items]")
+{
+    TemporaryClientFolder folder;
+    LegacyItemFile english;
+    english.SetName(BladeType, "Blade");
+    english.Item(BladeType).DamageMin = 255;
+    english.Item(BladeType).DamageMax = 255;
+    english.Write(folder.LegacyItemFilePath(L"Eng"));
+    ClientDataScope client(folder.Directory());
+
+    const ItemBmdImportResult result = ImportItemBmdFiles();
+    REQUIRE_FALSE(HasErrors(result.issues));
+    const ItemDefinition* blade = FindItem(result.items, BladeType);
+    REQUIRE(blade != nullptr);
+    CHECK(blade->damageMin == 255);
+    CHECK(blade->damageMax == 255);
+}
+
+#ifdef _EDITOR
+TEST_CASE("BMD export rejects extended weapon damage instead of truncating [data][items][editor]")
+{
+    TemporaryClientFolder folder;
+    std::vector<ITEM_ATTRIBUTE> items(MAX_ITEM);
+    items[BladeType].DamageMin = 256;
+    items[BladeType].DamageMax = 500;
+    const std::filesystem::path output = folder.Directory() / "item.bmd";
+    std::string error;
+
+    CHECK_FALSE(ItemDataSaver::Save(output.c_str(), items.data(), &error));
+    CHECK(error.find("255") != std::string::npos);
+    CHECK_FALSE(std::filesystem::exists(output));
+}
+#endif
 
 TEST_CASE("Bmd import reads Portuguese and Spanish names as Windows-1252 [data][items]")
 {

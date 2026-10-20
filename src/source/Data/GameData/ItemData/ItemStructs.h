@@ -24,7 +24,7 @@
 typedef struct
 {
     char Name[30];
-    ITEM_ATTRIBUTE_FIELDS
+    ITEM_ATTRIBUTE_FILE_FIELDS
 } ITEM_ATTRIBUTE_FILE_LEGACY;
 
 // Current file format structure with MAX_ITEM_NAME byte name
@@ -32,7 +32,7 @@ typedef struct
 typedef struct
 {
     char Name[MAX_ITEM_NAME];
-    ITEM_ATTRIBUTE_FIELDS
+    ITEM_ATTRIBUTE_FILE_FIELDS
 } ITEM_ATTRIBUTE_FILE;
 
 // Runtime structure with wide-character name

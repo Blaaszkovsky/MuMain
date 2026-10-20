@@ -6,15 +6,15 @@
 // holds the localized display label for this field.
 // This is the SINGLE SOURCE OF TRUTH for field definitions.
 
-#define ITEM_FIELDS_SIMPLE(X) \
+#define ITEM_FIELDS_BEFORE_DAMAGE(X) \
     X(TwoHand, Bool, 1, 70.0f, TwoHand) \
     X(Level, Word, 1, 60.0f, Level) \
     X(m_byItemSlot, Byte, 1, 60.0f, Slot) \
     X(m_wSkillIndex, Word, 1, 60.0f, Skill) \
     X(Width, Byte, 1, 60.0f, Width) \
-    X(Height, Byte, 1, 60.0f, Height) \
-    X(DamageMin, Byte, 1, 70.0f, MinDamage) \
-    X(DamageMax, Byte, 1, 70.0f, MaxDamage) \
+    X(Height, Byte, 1, 60.0f, Height)
+
+#define ITEM_FIELDS_AFTER_DAMAGE(X) \
     X(SuccessfulBlocking, Byte, 1, 70.0f, BlockRate) \
     X(Defense, Byte, 1, 70.0f, Defense) \
     X(MagicDefense, Byte, 1, 80.0f, MagicDefense) \
@@ -32,6 +32,20 @@
     X(Value, Byte, 1, 70.0f, SellValue) \
     X(iZen, Int, 1, 80.0f, BuyPrice) \
     X(AttType, Byte, 1, 80.0f, AttackType)
+
+// Runtime and JSON may carry extended weapon damage; the original BMD records
+// retain their one-byte fields and must keep their exact binary layout.
+#define ITEM_FIELDS_SIMPLE(X) \
+    ITEM_FIELDS_BEFORE_DAMAGE(X) \
+    X(DamageMin, Word, 1, 70.0f, MinDamage) \
+    X(DamageMax, Word, 1, 70.0f, MaxDamage) \
+    ITEM_FIELDS_AFTER_DAMAGE(X)
+
+#define ITEM_FILE_FIELDS_SIMPLE(X) \
+    ITEM_FIELDS_BEFORE_DAMAGE(X) \
+    X(DamageMin, Byte, 1, 70.0f, MinDamage) \
+    X(DamageMax, Byte, 1, 70.0f, MaxDamage) \
+    ITEM_FIELDS_AFTER_DAMAGE(X)
 
 // Array fields defined with index notation for metadata
 // Format: X(FieldNameWithIndex, BaseFieldName, Index, TypeEnum, DefaultColumnWidth, I18nMetadataName)
@@ -66,6 +80,11 @@
 // Macro to generate all non-array fields for struct definition
 #define ITEM_ATTRIBUTE_FIELDS \
     ITEM_FIELDS_SIMPLE(DECLARE_FIELD) \
+    BYTE RequireClass[MAX_CLASS]; \
+    BYTE Resistance[MAX_RESISTANCE + 1];
+
+#define ITEM_ATTRIBUTE_FILE_FIELDS \
+    ITEM_FILE_FIELDS_SIMPLE(DECLARE_FIELD) \
     BYTE RequireClass[MAX_CLASS]; \
     BYTE Resistance[MAX_RESISTANCE + 1];
 

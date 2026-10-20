@@ -2,6 +2,8 @@
 
 #include "Data/GameData/ItemData/ItemDataValidation.h"
 #include "Data/GameData/ItemData/ItemJsonFormat.h"
+#include "Data/GameData/ItemData/ItemAttributeConversion.h"
+#include "Data/GameData/ItemData/ItemStructs.h"
 
 #include <algorithm>
 #include <string>
@@ -84,6 +86,35 @@ TEST_CASE("Item JSON keeps every value through write and read [data][items]")
     CHECK(read.classRequirements == kris.classRequirements);
     CHECK(read.resistances == kris.resistances);
     CHECK(read.buyPrice == kris.buyPrice);
+}
+
+TEST_CASE("Extended weapon damage survives JSON and runtime conversion [data][items]")
+{
+    ItemDefinition sword = MakeKris();
+    sword.damageMin = 256;
+    sword.damageMax = 500;
+
+    const ReadResult result = Read(WriteItemGroupJson(0, std::vector<ItemDefinition>{sword}));
+    REQUIRE(result.issues.empty());
+    REQUIRE(result.items.size() == 1);
+    CHECK(result.items.front().damageMin == 256);
+    CHECK(result.items.front().damageMax == 500);
+
+    ITEM_ATTRIBUTE runtime{};
+    ToItemAttribute(result.items.front(), runtime);
+    CHECK(runtime.DamageMin == 256);
+    CHECK(runtime.DamageMax == 500);
+    CHECK(ToItemDefinition(runtime, 0).damageMax == 500);
+
+    CHECK(sizeof(ITEM_ATTRIBUTE_FILE::DamageMin) == 1);
+    CHECK(sizeof(ITEM_ATTRIBUTE_FILE_LEGACY::DamageMax) == 1);
+}
+
+TEST_CASE("Weapon damage beyond the runtime word range is rejected [data][items]")
+{
+    const ReadResult result = Read(GroupFile(0,
+        R"({"number": 0, "name": "Kris", "damageMin": 65536})"));
+    CHECK(HasIssue(result.issues, ItemDataIssueSeverity::Error, "damageMin"));
 }
 
 TEST_CASE("Item JSON leaves out default values [data][items]")

@@ -65,6 +65,18 @@ static std::string GetItemNameUtf8(int index, const ITEM_ATTRIBUTE& item)
 
 bool ItemDataSaver::Save(const wchar_t* fileName, const ITEM_ATTRIBUTE* items, std::string* outChangeLog)
 {
+    for (int i = 0; i < MAX_ITEM; ++i)
+    {
+        if (items[i].DamageMin > 255 || items[i].DamageMax > 255)
+        {
+            if (outChangeLog != nullptr)
+            {
+                *outChangeLog = "Item.bmd cannot encode damage above 255; save item JSON instead.";
+            }
+            return false;
+        }
+    }
+
     // Create standard save config with item-specific parameters
     auto config = CreateStandardSaveConfig<ITEM_ATTRIBUTE, ITEM_ATTRIBUTE_FILE>(
         fileName, MAX_ITEM, items, ToFileRecord, FromFileRecord, CompareItems, GetItemNameUtf8, ItemFileChecksumKey,

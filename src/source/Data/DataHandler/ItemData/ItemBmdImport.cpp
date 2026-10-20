@@ -26,6 +26,7 @@ struct FieldLayout
     size_t fileOffset = 0;
     size_t attributeOffset = 0;
     size_t size = 0;
+    size_t attributeSize = 0;
 };
 
 template <typename TFileFormat> std::vector<FieldLayout> BuildFieldLayouts()
@@ -33,19 +34,20 @@ template <typename TFileFormat> std::vector<FieldLayout> BuildFieldLayouts()
     std::vector<FieldLayout> fields;
 #define ADD_ITEM_FIELD(name, type, arraySize, width, i18nName)                                                         \
     fields.push_back(                                                                                                  \
-        {#name, offsetof(TFileFormat, name), offsetof(ITEM_ATTRIBUTE, name), sizeof(ITEM_ATTRIBUTE::name)});
-    ITEM_FIELDS_SIMPLE(ADD_ITEM_FIELD)
+        {#name, offsetof(TFileFormat, name), offsetof(ITEM_ATTRIBUTE, name), sizeof(TFileFormat::name),           \
+         sizeof(ITEM_ATTRIBUTE::name)});
+    ITEM_FILE_FIELDS_SIMPLE(ADD_ITEM_FIELD)
 #undef ADD_ITEM_FIELD
 
     for (size_t i = 0; i < MAX_CLASS; ++i)
     {
         fields.push_back({"RequireClass[" + std::to_string(i) + "]", offsetof(TFileFormat, RequireClass) + i,
-                          offsetof(ITEM_ATTRIBUTE, RequireClass) + i, 1});
+                          offsetof(ITEM_ATTRIBUTE, RequireClass) + i, 1, 1});
     }
     for (size_t i = 0; i < MAX_RESISTANCE + 1; ++i)
     {
         fields.push_back({"Resistance[" + std::to_string(i) + "]", offsetof(TFileFormat, Resistance) + i,
-                          offsetof(ITEM_ATTRIBUTE, Resistance) + i, 1});
+                          offsetof(ITEM_ATTRIBUTE, Resistance) + i, 1, 1});
     }
     return fields;
 }
@@ -245,6 +247,7 @@ void CopyField(const LanguageRecord* source, const FieldLayout& sourceField, con
     const BYTE* sourceBytes = source != nullptr
                                   ? source->bytes + sourceField.fileOffset
                                   : reinterpret_cast<const BYTE*>(&GetDefaultAttribute()) + targetField.attributeOffset;
+    std::memset(targetBytes, 0, targetField.attributeSize);
     std::memcpy(targetBytes, sourceBytes, targetField.size);
 }
 

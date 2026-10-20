@@ -16,6 +16,14 @@ extern ITEM_ATTRIBUTE* ItemAttribute;
 
 bool ItemDataExportS6E3::SaveLegacy(wchar_t* fileName)
 {
+    for (int i = 0; i < MAX_ITEM; ++i)
+    {
+        if (ItemAttribute[i].DamageMin > 255 || ItemAttribute[i].DamageMax > 255)
+        {
+            return false;
+        }
+    }
+
     const int Size = sizeof(ITEM_ATTRIBUTE_FILE_LEGACY);
 
     FILE* fp = _wfopen(fileName, L"wb");
