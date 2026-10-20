@@ -25,6 +25,18 @@ It is **debug-only**:
 
 ## 2. Opening it
 
+For an isolated local BMD rendering check, an editor build accepts
+`MU_BMD_PROBE_CASE=object`, `monster`, or `item`. Place the three converted
+models and their textures under `Data/BmdProbe/Object113/`, `Monster/`, and
+`Item/` respectively, preserving the model filenames. The fixture replaces
+the login rendering with one model and cycles through its actions every four
+seconds. `legacy-object`, `legacy-monster`, and `legacy-item` render existing
+client assets for comparison. Unset the variable to restore normal rendering.
+The fixture skips the login network connection, so no server is needed.
+Use a disposable runtime copy: this fixture shares the editor's scratch model
+slot, so do not use the asset browser at the same time. It verifies rendering
+and animation; it does not verify equipment, combat, spawning, or map support.
+
 Two ways:
 
 - **Press F12** in-game.

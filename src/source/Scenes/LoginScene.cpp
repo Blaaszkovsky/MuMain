@@ -33,6 +33,9 @@
 #include "UI/Scaling/UITransform.h"
 #include "LoginSceneOverlay.h"
 #include "Render/Text/CUIRenderText.h"
+#ifdef _EDITOR
+#include "Core/BmdRuntimeProbe.h"
+#endif
 
 // External declarations
 extern int DeleteGuildIndex;
@@ -249,6 +252,16 @@ void MoveCamera()
     MoveCharacterCamera(Position, g_loginCamera.currentPosition, g_loginCamera.currentAngle);
 }
 
+static void InitializeLoginConnection()
+{
+    CurrentProtocolState = REQUEST_JOIN_SERVER;
+#ifdef _EDITOR
+    if (MuEditor::BmdRuntimeProbe::IsEnabled())
+        return;
+#endif
+    CreateSocket(szServerIpAddress, g_ServerPort);
+}
+
 void CreateLogInScene()
 {
     EnableMainRender = true;
@@ -260,8 +273,7 @@ void CreateLogInScene()
 
     CSceneUICoordinator::Instance().CreateLoginScene();
 
-    CurrentProtocolState = REQUEST_JOIN_SERVER;
-    CreateSocket(szServerIpAddress, g_ServerPort);
+    InitializeLoginConnection();
 
     GuildInputEnable = false;
     TabInputEnable = false;

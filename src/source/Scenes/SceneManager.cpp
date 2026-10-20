@@ -19,6 +19,9 @@
 #include "Core/Utilities/PlatformInfo.h"
 #include "Core/Text/Utf8.h"
 #include "Render/Text/CUIRenderText.h"
+#ifdef _EDITOR
+#include "Core/BmdRuntimeProbe.h"
+#endif
 
 //=============================================================================
 // Frame Timing State Implementation
@@ -607,6 +610,10 @@ static void SetWorldClearColor()
  */
 static bool RenderCurrentScene(HDC hDC)
 {
+#ifdef _EDITOR
+    if (SceneFlag == LOG_IN_SCENE && MuEditor::BmdRuntimeProbe::Render())
+        return true;
+#endif
     bool Success = false;
 
     if (SceneFlag == LOG_IN_SCENE)
@@ -746,9 +753,18 @@ static void UpdateDiagnostics()
 /**
  * @brief Checks and handles server connection loss.
  */
+static bool SkipServerConnectionCheck()
+{
+#ifdef _EDITOR
+    if (MuEditor::BmdRuntimeProbe::IsEnabled())
+        return true;
+#endif
+    return SocketClient != nullptr && SocketClient->IsConnected();
+}
+
 static void CheckServerConnection()
 {
-    if (SocketClient != nullptr && SocketClient->IsConnected())
+    if (SkipServerConnectionCheck())
     {
         return;
     }
