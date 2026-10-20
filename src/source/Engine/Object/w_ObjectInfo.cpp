@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Engine/Object/w_ObjectInfo.h"
+#include "Render/Models/WorldModelSlots.h"
 
 void CInterpolateContainer::GetCurrentValue(vec3_t& v3Out, float fCurrentRate, VEC_INTERPOLATES& vecInterpolates)
 {
@@ -121,7 +122,7 @@ void OBJECT::Initialize()
     PKKey = 0;
     Weapon = 0;
 
-    Type = 0;
+    Render::Models::AssignObjectModel(*this, 0, Render::Models::ModelDomain::Global);
     SubType = 0;
     m_iAnimation = 0;
     HiddenMesh = 0;

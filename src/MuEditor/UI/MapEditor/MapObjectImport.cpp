@@ -5,6 +5,7 @@
 #include "MapObjectImport.h"
 
 #include "Data/DataHandler/LoadData.h"      // gLoadData (AccessModel / OpenTexture)
+#include "Render/Models/WorldModelSlots.h"
 #include "Render/Models/ZzzBMD.h"           // BMD / Models[] / Texture_t
 #include "Core/Globals/_enum.h"             // MODEL_WORLD_OBJECT / MAX_WORLD_OBJECTS
 #include "Render/Sprites/GlobalBitmap.h"    // GL_REPEAT / GL_LINEAR
@@ -50,9 +51,9 @@ namespace
     int FindFreeSlot(int currentWorld)
     {
         const std::wstring folder = ObjectFolder(currentWorld);
-        for (int i = 0; i < MAX_WORLD_OBJECTS; ++i)
+        for (int i = 0; i < Render::Models::WorldTypeCount(currentWorld - 1); ++i)
         {
-            if (Models[MODEL_WORLD_OBJECT + i].Meshs != nullptr)
+            if (Models[Render::Models::WorldSlot(i)].Meshs != nullptr)
                 continue;
             std::error_code ec;
             if (fs::exists(folder + L"\\" + ObjectBmdStem(i) + L".bmd", ec))
@@ -96,10 +97,8 @@ namespace
 
 int LoadForPreview(int sourceWorld, const std::wstring& bmdFile)
 {
-    // Models[] is over-allocated past MAX_MODELS, so this index is always valid
-    // memory and sits outside the world-object range (0..159), so it never shows
-    // up as a placeable model on the current map.
-    const int scratch = MAX_MODELS;
+    // Reserved independently from world placements and global model IDs.
+    const int scratch = Render::Models::EditorPreviewSlot;
     const std::wstring srcDir = ObjectFolder(sourceWorld) + L"\\";
     const std::wstring srcSub = L"Object" + std::to_wstring(sourceWorld) + L"\\";
     const std::wstring stem   = fs::path(bmdFile).stem().wstring();
@@ -143,13 +142,14 @@ int UseModelOnCurrentMap(int currentWorld, int sourceWorld, const std::wstring& 
 
     // Load the model live from the source folder into the free slot, then its
     // textures (from the same folder). This makes it immediately placeable.
-    gLoadData.AccessModel(slot, srcDir.c_str(), stem.c_str(), -1);
-    if (Models[slot].Meshs == nullptr)
+    const int modelSlot = Render::Models::WorldSlot(slot);
+    gLoadData.AccessModel(modelSlot, srcDir.c_str(), stem.c_str(), -1);
+    if (Models[modelSlot].Meshs == nullptr)
     {
         g_MuEditorConsoleUI.LogEditor("[MapEditor] Object import failed: could not load the .bmd");
         return -1;
     }
-    gLoadData.OpenTexture(slot, srcSub.c_str(), GL_REPEAT, GL_LINEAR, false);
+    gLoadData.OpenTexture(modelSlot, srcSub.c_str(), GL_REPEAT, GL_LINEAR, false);
 
     // Copy the model + its textures into the current map's Object folder so the
     // placement survives a reload (the map re-loads Object{slot+1}.bmd from here).
@@ -159,9 +159,9 @@ int UseModelOnCurrentMap(int currentWorld, int sourceWorld, const std::wstring& 
 
     CopyIfPresent(srcDir + bmdFile, dstDir + ObjectBmdStem(slot) + L".bmd", /*overwrite*/ true);
 
-    for (int k = 0; k < Models[slot].NumMeshs; ++k)
+    for (int k = 0; k < Models[modelSlot].NumMeshs; ++k)
     {
-        const char* fn = Models[slot].Textures[k].FileName;
+        const char* fn = Models[modelSlot].Textures[k].FileName;
         if (fn == nullptr || fn[0] == '\0')
             continue;
         const std::wstring real = RealTextureFile(NarrowToWide(fn));

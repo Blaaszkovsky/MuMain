@@ -2,6 +2,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Render/Models/WorldModelSlots.h"
 #include "Guild/GuildTypes.h"
 #include "Core/Input/KeyState.h"
 #include "Core/Platform/Imm.h"
@@ -4038,7 +4039,7 @@ void BackSelectModel()
     {
         if (SelectModel - i < 0)
             break;
-        if (Models[SelectModel - i].NumMeshs > 0)
+        if (Models[Render::Models::PlacementSlot(gMapManager.WorldActive, SelectModel - i)].NumMeshs > 0)
         {
             SelectModel -= i;
             break;
@@ -4046,11 +4047,20 @@ void BackSelectModel()
     }
 }
 
+namespace
+{
+void GetEditorModelName(wchar_t* text)
+{
+    const BMD& model = Models[Render::Models::PlacementSlot(gMapManager.WorldActive, SelectModel)];
+    CMultiLanguage::ConvertFromUtf8(text, model.Name, sizeof model.Name);
+}
+}
+
 void ForwardSelectModel()
 {
     for (int i = 1; i < 20; i++)
     {
-        if (Models[SelectModel + i].NumMeshs > 0)
+        if (Models[Render::Models::PlacementSlot(gMapManager.WorldActive, SelectModel + i)].NumMeshs > 0)
         {
             SelectModel += i;
             break;
@@ -4100,7 +4110,7 @@ void RenderDebugWindow()
     if (EditFlag == EDIT_OBJECT)
     {
         g_pRenderText->RenderText(REFERENCE_WIDTH - 100, 0, L"Garbage");
-        CMultiLanguage::ConvertFromUtf8(Text, Models[SelectModel].Name, sizeof Models[SelectModel].Name);
+        GetEditorModelName(Text);
         g_pRenderText->RenderText(0, 0, Text);
     }
     if (EditFlag == EDIT_MONSTER)

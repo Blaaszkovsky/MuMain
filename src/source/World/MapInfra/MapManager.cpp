@@ -9,6 +9,7 @@
 #include "UI/Core/WindowSystem.h"
 #include "GameLogic/Items/PersonalShopTitleImp.h"
 #include "Render/Models/ZzzBMD.h"
+#include "Render/Models/WorldModelSlots.h"
 #include "Engine/Object/ZzzCharacter.h"
 #include "Render/Effects/ZzzEffect.h"
 #include "Render/Terrain/ZzzLodTerrain.h"
@@ -31,6 +32,24 @@ CMapManager::CMapManager() // OK
 
 CMapManager::~CMapManager() // OK
 {
+}
+
+namespace
+{
+void LoadGenericWorldModels(int world, int assetWorld)
+{
+    wchar_t directory[32];
+    mu_swprintf(directory, L"Data\\Object%d\\", assetWorld);
+    Render::Models::ForEachWorldModel(world, [&](int type, int slot)
+    {
+        gLoadData.AccessModel(slot, directory, L"Object", type + 1);
+    });
+    mu_swprintf(directory, L"Object%d\\", assetWorld);
+    Render::Models::ForEachWorldModel(world, [&](int, int slot)
+    {
+        gLoadData.OpenTexture(slot, directory);
+    });
+}
 }
 
 void CMapManager::Load() // OK
@@ -1098,7 +1117,6 @@ void CMapManager::Load() // OK
     }
     else
     {
-        wchar_t DirName[32];
         int iMapWorld = this->WorldActive + 1;
 
         if (this->InBloodCastle() == true)
@@ -1118,15 +1136,7 @@ void CMapManager::Load() // OK
             iMapWorld = WD_45CURSEDTEMPLE_LV1 + 2;
         }
 
-        mu_swprintf(DirName, L"Data\\Object%d\\", iMapWorld);
-        for (i = MODEL_WORLD_OBJECT; i < MAX_WORLD_OBJECTS; i++)
-            gLoadData.AccessModel(i, DirName, L"Object", i + 1);
-
-        mu_swprintf(DirName, L"Object%d\\", iMapWorld);
-        for (i = MODEL_WORLD_OBJECT; i < MAX_WORLD_OBJECTS; i++)
-        {
-            gLoadData.OpenTexture(i, DirName);
-        }
+        LoadGenericWorldModels(this->WorldActive, iMapWorld);
 
         if (this->WorldActive == WD_1DUNGEON)
         {
@@ -1515,14 +1525,6 @@ void CMapManager::DeleteObjects()
     // still hold it.
     Core::WorldClearing::Notify();
 #endif
-    if (Models != nullptr)
-    {
-        for (int i = MODEL_WORLD_OBJECT; i < MAX_WORLD_OBJECTS; i++)
-        {
-            Models[i].Release();
-        }
-    }
-
     for (int i = 0; i < 16; i++)
     {
         for (int j = 0; j < 16; j++)
@@ -1544,6 +1546,9 @@ void CMapManager::DeleteObjects()
             ob->Tail = NULL;
         }
     }
+
+    // World placements have been destroyed; this never releases MODEL_LOGO.
+    Render::Models::ReleaseWorldModels(Models);
 
     for (int i = BITMAP_MAPTILE; i <= BITMAP_RAIN_CIRCLE; i++)
     {

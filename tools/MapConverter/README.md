@@ -126,3 +126,6 @@ needed before material and OBJv1 lighting behavior can be implemented.
 The [Object161 API follow-up](FEREA_MODEL_API.md) specifies the required model
 ownership and lookup changes, affected load/render/pick/unload paths and CPU
 acceptance cases; it does not claim a runtime fix.
+The subsequent [model namespace fix](FEREA_MODEL_IMPLEMENTATION.md) implements
+Object161 lookup across load/render/pick/unload/editor with CPU regression
+coverage. Full compilation and rendering remain separate gates.

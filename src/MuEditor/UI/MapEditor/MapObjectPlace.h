@@ -1,4 +1,5 @@
 #pragma once
+#include "Render/Models/ModelDomain.h"
 
 #ifdef _EDITOR
 
@@ -57,6 +58,7 @@ namespace Editor::ObjectPlace
     struct SavedObject
     {
         int   type;
+        Render::Models::ModelDomain modelDomain = Render::Models::ModelDomain::Global;
         float pos[3];
         float angle[3];
         float scale;

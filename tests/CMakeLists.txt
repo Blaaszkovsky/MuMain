@@ -71,6 +71,7 @@ add_subdirectory(ui)
 add_subdirectory(editor)
 
 add_subdirectory(render)
+add_subdirectory(world-models)
 
 add_subdirectory(network)
 

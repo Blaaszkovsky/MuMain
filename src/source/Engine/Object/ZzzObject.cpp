@@ -4,6 +4,7 @@
 #include "Camera/CameraMove.h"
 #include "Render/Textures/ZzzOpenglUtil.h"
 #include "Render/Models/ZzzBMD.h"
+#include "Render/Models/WorldModelSlots.h"
 #include "Render/Renderer/RenderUtils.h"   // mu::PackABGR
 #ifdef _EDITOR
 #include "UI/MapEditor/ObjectThumbnail.h"
@@ -193,7 +194,7 @@ OBJECT* CollisionDetectObjects(OBJECT* PickObject)
                     {
                         //if(o != PickObject)
                         {
-                            BMD* b = &Models[o->Type];
+                            BMD* b = &Models[Render::Models::ObjectSlot(*o)];
                             b->BodyScale = o->Scale;
                             b->CurrentAction = o->CurrentAction;
                             VectorCopy(o->Position, b->BodyOrigin);
@@ -263,7 +264,7 @@ bool Calc_RenderObject(OBJECT* o, bool Translate, int Select, int ExtraMon)
         return false;
     }
 
-    BMD* b = &Models[o->Type];
+    BMD* b = &Models[Render::Models::ObjectSlot(*o)];
     b->BodyHeight = 0.f;
     b->ContrastEnable = o->ContrastEnable;
     BodyLight(o, b);
@@ -395,7 +396,7 @@ bool Calc_ObjectAnimation(OBJECT* o, bool Translate, int Select)
 
     if (o->Alpha < 0.01f) return false;
 
-    BMD* b = &Models[o->Type];
+    BMD* b = &Models[Render::Models::ObjectSlot(*o)];
     b->BodyHeight = 0.f;
     b->ContrastEnable = o->ContrastEnable;
     BodyLight(o, b);
@@ -442,7 +443,7 @@ static void RenderLostTowerFireBlock(BMD* b, OBJECT* o, int streamMesh)
 
 void Draw_RenderObject(OBJECT* o, bool Translate, int Select, int ExtraMon)
 {
-    BMD* b = &Models[o->Type];
+    BMD* b = &Models[Render::Models::ObjectSlot(*o)];
     bool View = true;
 
     if ((EditFlag != EDIT_NONE) || (EditFlag == EDIT_NONE && o->HiddenMesh != -2))
@@ -503,7 +504,7 @@ void Draw_RenderObject(OBJECT* o, bool Translate, int Select, int ExtraMon)
             if (View == true)
             {
                 Vector(1.f, 1.f, 1.f, b->BodyLight);
-                for (int i = 0; i < Models[o->Type].NumMeshs; i++)
+                for (int i = 0; i < Models[Render::Models::ObjectSlot(*o)].NumMeshs; i++)
                     b->RenderMesh(i, RENDER_BRIGHT | RENDER_CHROME5, Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU * 8.f, o->BlendMeshTexCoordV * 2.f, BITMAP_CHROME2);
             }
 
@@ -1185,7 +1186,7 @@ void Draw_RenderObject(OBJECT* o, bool Translate, int Select, int ExtraMon)
                                         {
                                             Vector(0.5f, 0.5f, 0.8f, b->BodyLight);
                                             b->BeginRender(o->Alpha);
-                                            for (int i = 0; i < Models[o->Type].NumMeshs; i++)
+                                            for (int i = 0; i < Models[Render::Models::ObjectSlot(*o)].NumMeshs; i++)
                                             {
                                                 b->RenderMesh(i, RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV);
                                                 b->RenderMesh(i, RENDER_CHROME | RENDER_BRIGHT, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, BITMAP_CHROME);
@@ -2640,7 +2641,7 @@ void Draw_RenderObject(OBJECT* o, bool Translate, int Select, int ExtraMon)
                     b->RenderBody(RENDER_TEXTURE | RENDER_BRIGHT, o->Alpha, -2, 1.f, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh);
 
                     vec3_t p1, p2;
-                    BMD* b = &Models[o->Type];
+                    BMD* b = &Models[Render::Models::ObjectSlot(*o)];
 
                     Vector(1.0f, 1.0f, 1.0f, o->Light);
                     Vector(0.0f, 1.5f, 0.0f, p1);
@@ -2712,7 +2713,7 @@ void RenderCharacter_AfterImage(CHARACTER* pCha, PART_t* pPart, bool Translate, 
     VectorCopy(pObj->Position, vPos);
     VectorCopy(pObj->StartPosition, vStartPos);
     VectorSubtract(vPos, vStartPos, vPos);
-    float fDis = fAni1 / Models[pObj->Type].Actions[pObj->CurrentAction].NumAnimationKeys;
+    float fDis = fAni1 / Models[Render::Models::ObjectSlot(*pObj)].Actions[pObj->CurrentAction].NumAnimationKeys;
 
     if (fAni1 > 0.0f)
     {
@@ -2730,7 +2731,7 @@ void RenderCharacter_AfterImage(CHARACTER* pCha, PART_t* pPart, bool Translate, 
     VectorSubtract(vPos, vStartPos, vPos);
     if (fAni2 > 0.0f)
     {
-        fDis = fAni2 / Models[pObj->Type].Actions[pObj->CurrentAction].NumAnimationKeys;
+        fDis = fAni2 / Models[Render::Models::ObjectSlot(*pObj)].Actions[pObj->CurrentAction].NumAnimationKeys;
         pObj->Alpha = 0.5f;
         pObj->AnimationFrame = fAni2;
         VectorScale(vPos, fDis, vPos);
@@ -2749,7 +2750,7 @@ void RenderCharacter_AfterImage(CHARACTER* pCha, PART_t* pPart, bool Translate, 
 
 void RenderObjectVisual(OBJECT* o)
 {
-    BMD* b = &Models[o->Type];
+    BMD* b = &Models[Render::Models::ObjectSlot(*o)];
     vec3_t p, Position;
     vec3_t Light;
     float Luminosity = (float)(rand() % 30 + 70) * 0.01f;
@@ -3525,7 +3526,7 @@ void RenderObject_AfterCharacter(OBJECT* o, bool Translate, int Select, int Extr
 
 void Draw_RenderObject_AfterCharacter(OBJECT* o, bool Translate, int Select, int ExtraMon)
 {
-    BMD* b = &Models[o->Type];
+    BMD* b = &Models[Render::Models::ObjectSlot(*o)];
 
     if ((EditFlag != EDIT_NONE) || (EditFlag == EDIT_NONE && o->HiddenMesh != -2))
     {
@@ -3753,7 +3754,7 @@ void MoveObject(OBJECT* o)
     }
     Alpha(o);
     if (o->Alpha < 0.01f) return;
-    BMD* b = &Models[o->Type];
+    BMD* b = &Models[Render::Models::ObjectSlot(*o)];
     b->CurrentAction = o->CurrentAction;
 
     float fSpeed = o->Velocity;
@@ -3914,7 +3915,7 @@ void MoveObject(OBJECT* o)
         case 22:
         case 23:
         case 24:
-            Models[o->Type].StreamMesh = 1;
+            Models[Render::Models::ObjectSlot(*o)].StreamMesh = 1;
             o->BlendMeshTexCoordV = -(float)((int)WorldTime % 1000) * 0.001f;
             break;
         case 41:
@@ -4017,11 +4018,11 @@ void MoveObject(OBJECT* o)
             o->BlendMeshTexCoordV = (int)WorldTime % 2000 * 0.0005f;
             break;
         case 42:
-            Models[o->Type].StreamMesh = 0;
+            Models[Render::Models::ObjectSlot(*o)].StreamMesh = 0;
             o->BlendMeshTexCoordU = -(float)((int)WorldTime % 500) * 0.002f;
             break;
         case 43:
-            Models[o->Type].StreamMesh = 0;
+            Models[Render::Models::ObjectSlot(*o)].StreamMesh = 0;
             o->BlendMeshTexCoordU = (float)((int)WorldTime % 500) * 0.002f;
             break;
         }
@@ -4511,7 +4512,13 @@ void CreateOperate(OBJECT* Owner)
     }
 }
 
-OBJECT* CreateObject(int Type, vec3_t Position, vec3_t Angle, float Scale)
+OBJECT* CreateWorldObject(int Type, vec3_t Position, vec3_t Angle, float Scale)
+{
+    return CreateObject(Type, Position, Angle, Scale,
+                        Render::Models::PlacementDomain(gMapManager.WorldActive, Type));
+}
+
+OBJECT* CreateObject(int Type, vec3_t Position, vec3_t Angle, float Scale, Render::Models::ModelDomain domain)
 {
     int i = (int)(Position[0] / (16 * TERRAIN_SCALE));
     int j = (int)(Position[1] / (16 * TERRAIN_SCALE));
@@ -4546,7 +4553,7 @@ OBJECT* CreateObject(int Type, vec3_t Position, vec3_t Angle, float Scale)
 
     o->m_bCollisionCheck = false;
 
-    o->Type = Type;
+    Render::Models::AssignObjectModel(*o, Type, domain);
     o->Scale = Scale;
     o->Alpha = 1.f;
     o->AlphaTarget = 1.f;
@@ -5002,7 +5009,7 @@ int OpenObjects(wchar_t* FileName)
         float Scale = 0.f;
         memcpy(&Scale, Data + DataPtr, sizeof(Scale));
         DataPtr += sizeof(Scale);
-        CreateObject(Type, Position, Angle, Scale);
+        CreateWorldObject(Type, Position, Angle, Scale);
     }
     delete[] Data;
 
@@ -5054,7 +5061,7 @@ int OpenObjectsEnc(wchar_t* FileName)
         float Scale = 0.f;
         memcpy(&Scale, Data + DataPtr, sizeof(Scale));
         DataPtr += sizeof(Scale);
-        CreateObject(Type, Position, Angle, Scale);
+        CreateWorldObject(Type, Position, Angle, Scale);
     }
     delete[] Data;
 
@@ -7468,7 +7475,7 @@ void RenderObjectOutline(OBJECT* pObj, std::uint32_t color)
 {
     if (pObj == nullptr || pObj->Type < 0)
         return;
-    BMD* b = &Models[pObj->Type];
+    BMD* b = &Models[Render::Models::ObjectSlot(*pObj)];
     if (b->NumMeshs <= 0 || b->Meshs == nullptr)
         return;
 
@@ -7542,7 +7549,7 @@ void RenderPlacementPreview()
 {
     if (!g_MapEditorPlacementPreviewActive || g_MapEditorPlacementPreviewType < 0)
         return;
-    BMD* b = &Models[g_MapEditorPlacementPreviewType];
+    BMD* b = &Models[Render::Models::PlacementSlot(gMapManager.WorldActive, g_MapEditorPlacementPreviewType)];
     if (b->NumMeshs <= 0 || b->Meshs == nullptr)
         return;
 

@@ -3,6 +3,8 @@
 #ifdef _EDITOR
 
 #include "ObjectThumbnail.h"
+#include "Render/Models/WorldModelSlots.h"
+#include "World/MapInfra/MapManager.h"
 
 #include "Render/Models/ZzzBMD.h"        // BMD / Models[] / BoneTransform / RENDER_TEXTURE / OBB_t
 #include "Render/Renderer/MuRenderer.h"  // mu::GetRenderer()
@@ -91,7 +93,7 @@ void CObjectThumbnail::ProcessPendingRequests()
 
     for (const int type : m_pendingTypes)
     {
-        const unsigned int tex = RenderNow(type);
+        const unsigned int tex = RenderNow(Render::Models::PlacementSlot(gMapManager.WorldActive, type));
         if (tex != 0)
         {
             m_cache[type] = tex;

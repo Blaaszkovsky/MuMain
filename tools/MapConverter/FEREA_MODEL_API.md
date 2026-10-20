@@ -1,5 +1,8 @@
 # Ferea Object161: required model API change
 
+Historical investigation. The subsequent [model namespace implementation](FEREA_MODEL_IMPLEMENTATION.md)
+supersedes the no-runtime-fix outcome below; its full build/render limits remain explicit.
+
 Investigation date: 2026-10-20. Source baseline:
 `3b797b8373bdc3e9df52eb38ebe1030e02829a33`.
 

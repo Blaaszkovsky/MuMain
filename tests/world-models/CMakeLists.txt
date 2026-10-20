@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.24)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    project(WorldModelTests LANGUAGES CXX)
+    enable_testing()
+endif()
+
+add_executable(world_model_tests test_world_models.cpp)
+target_compile_features(world_model_tests PRIVATE cxx_std_17)
+target_include_directories(world_model_tests PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../../src/source")
+add_test(NAME world_model_tests COMMAND world_model_tests)

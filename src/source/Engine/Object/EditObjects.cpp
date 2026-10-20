@@ -91,7 +91,7 @@ void EditObjects()
             bool Success = RenderTerrainTile(SelectXF, SelectYF, (int)SelectXF, (int)SelectYF, 1.f, 1, true);
             if (Success)
             {
-                OBJECT* o = CreateObject(SelectModel, CollisionPosition, PickObjectAngle);
+                OBJECT* o = CreateWorldObject(SelectModel, CollisionPosition, PickObjectAngle);
                 int Scale = (int)TERRAIN_SCALE;
                 o->Position[0] = (float)((int)o->Position[0] / Scale + 0.5f) * Scale;
                 o->Position[1] = (float)((int)o->Position[1] / Scale + 0.5f) * Scale;
@@ -104,7 +104,7 @@ void EditObjects()
             {
                 if (MouseX < 100 && MouseY < 100)
                 {
-                    PickObject = CreateObject(SelectModel, MouseTarget, PickObjectAngle);
+                    PickObject = CreateWorldObject(SelectModel, MouseTarget, PickObjectAngle);
                 }
                 else
                 {
@@ -156,7 +156,7 @@ void EditObjects()
             else
             {
                 VectorCopy(PickObject->Angle, PickObjectAngle);
-                CreateObject(PickObject->Type, PickObject->Position, PickObject->Angle, PickObject->Scale);
+                CreateObject(PickObject->Type, PickObject->Position, PickObject->Angle, PickObject->Scale, PickObject->ModelDomain);
                 if (EnableRandomObject)
                 {
                     vec3_t Position, Angle;
@@ -168,7 +168,7 @@ void EditObjects()
                         Position[1] += (float)(rand() % 2000 - 1000);
                         Position[2] = RequestTerrainHeight(Position[0], Position[1]);
                         Angle[2] = (float)(rand() % 360);
-                        CreateObject(PickObject->Type, Position, Angle, PickObject->Scale + (float)(rand() % 16 - 8) * 0.01f);
+                        CreateObject(PickObject->Type, Position, Angle, PickObject->Scale + (float)(rand() % 16 - 8) * 0.01f, PickObject->ModelDomain);
                     }
                 }
                 DeleteObject(PickObject, &ObjectBlock[PickObject->Block]);

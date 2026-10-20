@@ -3,6 +3,7 @@
 #pragma once
 
 #include <vector>
+#include "Render/Models/ModelDomain.h"
 #include "Core/Math/ZzzMathLib.h"
 #include "GameLogic/Buffs/w_Buff.h"
 
@@ -158,6 +159,7 @@ public:
 
 public:
     int			  Type;
+    Render::Models::ModelDomain ModelDomain = Render::Models::ModelDomain::Global;
     int           SubType;
     int			  m_iAnimation;
     int           HiddenMesh;
