@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.24)
+project(TerrainHeightTests LANGUAGES CXX)
+set(MU_FEREA_HEIGHT_FILE "" CACHE FILEPATH "External Ferea TerrainHeight.OZB; never copied into Git")
+set(MU_LEGACY_HEIGHT_FILE "${CMAKE_CURRENT_LIST_DIR}/../../src/bin/Data/World1/TerrainHeight.OZB"
+    CACHE FILEPATH "Revision-matched Lorencia TerrainHeight.OZB")
+if(NOT EXISTS "${MU_FEREA_HEIGHT_FILE}" OR NOT EXISTS "${MU_LEGACY_HEIGHT_FILE}")
+    message(FATAL_ERROR "Both Ferea and legacy height inputs are required; set MU_FEREA_HEIGHT_FILE/MU_LEGACY_HEIGHT_FILE")
+endif()
+add_executable(terrain_height_tests test_terrain_height.cpp)
+target_compile_features(terrain_height_tests PRIVATE cxx_std_17)
+target_include_directories(terrain_height_tests PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../../src/source")
+enable_testing()
+add_test(NAME terrain_height_tests COMMAND terrain_height_tests "${MU_FEREA_HEIGHT_FILE}" "${MU_LEGACY_HEIGHT_FILE}")

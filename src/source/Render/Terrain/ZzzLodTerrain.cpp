@@ -15,6 +15,7 @@
 #include "Render/Textures/ZzzOpenglUtil.h"
 #include "Render/Models/ZzzBMD.h"
 #include "ZzzLodTerrain.h"
+#include "TerrainHeightSamples.h"
 #include "Engine/Pathing/ZzzPath.h"
 #include "Render/Textures/ZzzTexture.h"
 #include "Engine/Object/ZzzInfomation.h"
@@ -88,7 +89,7 @@ float           g_fSpecialHeight = 1200.f;
 FrustrumMap_t	g_FrustrumMap;
 #endif //DYNAMIC_FRUSTRUM
 
-const float g_fMinHeight = -500.f;
+const float g_fMinHeight = Render::Terrain::Height::PackedHeightOffset;
 const float g_fMaxHeight = 1000.f;
 
 extern  short   g_shCameraLevel;
@@ -628,7 +629,8 @@ unsigned char OZBPrefix[4] = { 0x42, 0x4D, 0x38, 0x04 };
 
 bool IsTerrainHeightExtMap(int iWorld)
 {
-    return (iWorld == WD_42CHANGEUP3RD_2ND || gMapManager.IsPKField() || iWorld == WD_66DOPPLEGANGER2);
+    const bool existingPackedMap = iWorld == WD_42CHANGEUP3RD_2ND || gMapManager.IsPKField() || iWorld == WD_66DOPPLEGANGER2;
+    return Render::Terrain::Height::UsesPackedHeight(iWorld, existingPackedMap);
 }
 
 bool OpenTerrainHeight(wchar_t* filename)
@@ -727,7 +729,7 @@ bool OpenTerrainHeight(wchar_t* filename)
         const float factor = (gMapManager.WorldActive == WD_55LOGINSCENE) ? 3.0f : 1.5f;
         for (int j = 0; j < 256; j++)
         {
-            *dst = (float)(*src) * factor;
+            *dst = Render::Terrain::Height::DecodeLegacySample(*src, factor);
             src++;
             dst++;
         }
@@ -847,15 +849,7 @@ bool OpenTerrainHeightNew(const wchar_t* strFilename)
     {
         BYTE* pbysrc = &pbyData[dwCurPos + i * 3];
 
-        DWORD dwHeight = 0;
-        BYTE* pbyHeight = (BYTE*)&dwHeight;
-
-        pbyHeight[0] = pbysrc[2];
-        pbyHeight[1] = pbysrc[1];
-        pbyHeight[2] = pbysrc[0];
-
-        BackTerrainHeight[i] = (float)dwHeight;
-        BackTerrainHeight[i] += g_fMinHeight;
+        BackTerrainHeight[i] = Render::Terrain::Height::DecodePackedSample(pbysrc, g_fMinHeight);
     }
 
     delete[] pbyData;
