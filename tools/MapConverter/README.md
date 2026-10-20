@@ -123,3 +123,6 @@ acceptance false until those boundaries are independently resolved and tested.
 See the [three-blocker investigation](FEREA_BLOCKERS.md) for confirmed source
 findings, the remaining model-routing work and the exact reference evidence
 needed before material and OBJv1 lighting behavior can be implemented.
+The [Object161 API follow-up](FEREA_MODEL_API.md) specifies the required model
+ownership and lookup changes, affected load/render/pick/unload paths and CPU
+acceptance cases; it does not claim a runtime fix.
