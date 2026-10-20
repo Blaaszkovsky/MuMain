@@ -97,3 +97,25 @@ height is explicitly blocked and no replacement height file is written.
 The manifest gives counts and the minimal loader proposal: select the existing
 extended-height reader for logical map112 with its minus500 offset. The command
 returns1 when a height is blocked even if the light file converted successfully.
+
+## Ferea diagnostic preview
+
+`preview_ferea.py` creates an isolated PNG data atlas and JSON with every source
+object type, transform and both lighting bytes intact. It requires Pillow and
+the reviewed conversion manifest. It verifies the three converted map files,
+reconstructs the raw OBJv1 from its sidecar and compares the light pixels again.
+Only World113 is read; it never installs assets or launches the game.
+
+```powershell
+python tools/MapConverter/preview_ferea.py --world <source-World113> --converted <converted-World113> --manifest <conversion-manifest.json> --light <converted-TerrainLight.OZJ> --output <fresh-external-preview-directory>
+```
+
+This is a **data preview**, with terrain heights, raw slot colors, vertex alpha,
+collision, object markers and the light map. It does not render meshes,
+animations or S16 shaders and does not establish a playable map. The JSON audit
+evaluates the current generic tile binding with the four-corner LOD1 alpha rule;
+it reports absent files without substituting textures. Object160 is retained
+and flagged as a collision with the global model namespace. Both OBJv1 lighting
+bytes remain explicit data with unknown runtime semantics; no guessed flag
+mapping or object remap is applied. The resulting manifest marks game-render
+acceptance false until those boundaries are independently resolved and tested.
