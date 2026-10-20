@@ -1,0 +1,7 @@
+{
+  "formatVersion": 1,
+  "additiveMeshes": [
+    { "mesh": 1, "texture": "DarkangelSwordB.jpg" },
+    { "mesh": 2, "texture": "gra2.JPG" }
+  ]
+}

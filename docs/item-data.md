@@ -253,6 +253,33 @@ and server share.
 | `itemEffect` | What the model does before it is drawn (sprites and particles on its bones, a pulsing glow mesh, ...), see below. Optional. |
 | `cloth` | `true` for capes that are worn as cloth: when one is put on or taken off, the character's cloth is deleted, so the next cape builds its own. Optional. The flag does not make a cape cloth; which capes are drawn as cloth, and how, is still decided in code. |
 
+An imported model can declare additive texture masks in an optional adjacent
+`<model>.bmd.materials.json` file. This also works for model previews and monsters
+loaded through the texture loader; it does not depend on an item number:
+
+```json
+{
+  "formatVersion": 1,
+  "additiveMeshes": [
+    { "mesh": 1, "texture": "DarkangelSwordB.jpg" },
+    { "mesh": 2, "texture": "gra2.JPG" }
+  ]
+}
+```
+
+The mesh index is zero-based and the texture name must exactly match that mesh
+in the BMD. This selects the existing bright/additive mesh pass (black contributes
+no colour, lighting and depth writes are disabled). It does not infer materials
+from black pixels, rename textures, or add animated effects. Other texture-script
+flags remain intact. Missing files leave the original materials unchanged;
+invalid or mismatched files are logged and ignored as a whole. Files are limited
+to 16 KiB and the model's mesh count. An inherited `renderStyle` that draws only
+selected meshes can bypass these flags: use the plain style (`"renderStyle": ""`)
+for the initial imported-model test. `noneBlendMeshes` can separately exclude
+effect meshes from item chrome/shine passes.
+Reload the model to clear a previously applied sidecar; reloading only its
+textures retains the material flags already assigned to that model.
+
 `inventory` and `ground` hold these values; a missing value has the
 default, which is the look of items without values of their own:
 

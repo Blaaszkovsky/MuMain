@@ -7,6 +7,7 @@
 #include "Render/Sprites/GlobalBitmap.h"
 
 #include "Render/Models/ZzzBMD.h"
+#include "Render/Models/ModelMaterialLoader.h"
 #include "Render/Textures/ZzzTexture.h"
 #include "Core/Text/Utf8.h"
 #ifdef _EDITOR
@@ -237,6 +238,7 @@ void CLoadData::OpenModelTextures(int Model, std::span<const std::wstring> SubFo
     }
 
     BMD* pModel = &Models[Model];
+    Render::Models::ApplyMaterialFile(*pModel, GetModelFile(Model));
     for (int i = 0; i < pModel->NumMeshs; i++)
     {
         const char* fileName = pModel->Textures[i].FileName;

@@ -63,6 +63,14 @@ mu_add_test(
 )
 
 mu_add_test(
+    NAME model_material_tests
+    SOURCES
+        test_model_materials.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/Render/Models/ModelMaterials.cpp
+)
+target_include_directories(model_material_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/ThirdParty)
+
+mu_add_test(
     NAME aura_joint_lifecycle_tests
     SOURCES
         test_aura_joint_lifecycle.cpp

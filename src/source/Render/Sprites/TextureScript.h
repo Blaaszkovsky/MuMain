@@ -1,11 +1,12 @@
 #pragma once
+#include <cstdint>
 
 //////////////////////////////////////////////////////////////////////////
 //  DEFINE.
 //////////////////////////////////////////////////////////////////////////
-const   BYTE    SHADOW_NONE = 0;
-const   BYTE    SHADOW_RENDER_COLOR = 1;
-const   BYTE    SHADOW_RENDER_TEXTURE = 2;
+const std::uint8_t SHADOW_NONE = 0;
+const std::uint8_t SHADOW_RENDER_COLOR = 1;
+const std::uint8_t SHADOW_RENDER_TEXTURE = 2;
 
 //////////////////////////////////////////////////////////////////////////
 //  CLASS.
@@ -17,7 +18,7 @@ protected:
     bool    m_bHiddenMesh;      //
     bool    m_bStreamMesh;      //
     bool    m_bNoneBlendMesh;   //
-    BYTE    m_byShadowMesh;
+    std::uint8_t m_byShadowMesh;
 
 public:
     TextureScript(void) : m_bBright(false), m_bHiddenMesh(false), m_bStreamMesh(false), m_bNoneBlendMesh(false), m_byShadowMesh(0) {};
@@ -35,7 +36,8 @@ public:
     inline  bool getBright(void) { return m_bBright; }
     inline  bool getStreamMesh(void) { return m_bStreamMesh; }
     inline  bool getNoneBlendMesh(void) { return m_bNoneBlendMesh; }
-    inline  BYTE getShadowMesh(void) { return m_byShadowMesh; }
+    inline std::uint8_t getShadowMesh(void) { return m_byShadowMesh; }
+    void setBright(bool bright) { m_bBright = bright; }
 
     void    setScript(const TextureScript& rhs);
 };
