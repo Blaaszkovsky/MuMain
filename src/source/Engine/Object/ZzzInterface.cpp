@@ -4039,7 +4039,7 @@ void BackSelectModel()
     {
         if (SelectModel - i < 0)
             break;
-        if (Models[Render::Models::PlacementSlot(gMapManager.WorldActive, SelectModel - i)].NumMeshs > 0)
+        if (Models[Render::WorldModels::PlacementSlot(gMapManager.WorldActive, SelectModel - i)].NumMeshs > 0)
         {
             SelectModel -= i;
             break;
@@ -4051,7 +4051,7 @@ namespace
 {
 void GetEditorModelName(wchar_t* text)
 {
-    const BMD& model = Models[Render::Models::PlacementSlot(gMapManager.WorldActive, SelectModel)];
+    const BMD& model = Models[Render::WorldModels::PlacementSlot(gMapManager.WorldActive, SelectModel)];
     CMultiLanguage::ConvertFromUtf8(text, model.Name, sizeof model.Name);
 }
 }
@@ -4060,7 +4060,7 @@ void ForwardSelectModel()
 {
     for (int i = 1; i < 20; i++)
     {
-        if (Models[Render::Models::PlacementSlot(gMapManager.WorldActive, SelectModel + i)].NumMeshs > 0)
+        if (Models[Render::WorldModels::PlacementSlot(gMapManager.WorldActive, SelectModel + i)].NumMeshs > 0)
         {
             SelectModel += i;
             break;

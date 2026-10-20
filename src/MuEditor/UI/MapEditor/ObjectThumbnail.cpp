@@ -93,7 +93,7 @@ void CObjectThumbnail::ProcessPendingRequests()
 
     for (const int type : m_pendingTypes)
     {
-        const unsigned int tex = RenderNow(Render::Models::PlacementSlot(gMapManager.WorldActive, type));
+        const unsigned int tex = RenderNow(Render::WorldModels::PlacementSlot(gMapManager.WorldActive, type));
         if (tex != 0)
         {
             m_cache[type] = tex;

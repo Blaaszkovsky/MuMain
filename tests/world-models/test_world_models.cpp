@@ -10,12 +10,12 @@ using BYTE = unsigned char;
 
 namespace
 {
-using namespace Render::Models;
+using namespace Render::WorldModels;
 
 struct TestObject
 {
     int Type = 0;
-    Render::Models::ModelDomain ModelDomain = Render::Models::ModelDomain::Global;
+    Render::WorldModels::ModelDomain ModelDomain = Render::WorldModels::ModelDomain::Global;
 };
 
 struct TestModel

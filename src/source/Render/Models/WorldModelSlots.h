@@ -3,7 +3,7 @@
 #include "Core/Globals/_enum.h"
 #include "ModelDomain.h"
 
-namespace Render::Models
+namespace Render::WorldModels
 {
 inline constexpr int FereaMap = 112;
 inline constexpr int FereaObjectType = 160;

@@ -159,7 +159,7 @@ public:
 
 public:
     int			  Type;
-    Render::Models::ModelDomain ModelDomain = Render::Models::ModelDomain::Global;
+    Render::WorldModels::ModelDomain ModelDomain = Render::WorldModels::ModelDomain::Global;
     int           SubType;
     int			  m_iAnimation;
     int           HiddenMesh;

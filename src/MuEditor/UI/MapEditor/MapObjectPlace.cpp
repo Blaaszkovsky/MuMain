@@ -27,9 +27,9 @@ std::vector<ModelEntry> EnumerateModels(int /*world*/)
     // named files (Beer01.bmd, Cannon01.bmd, ...) via a hand-coded model mapping.
     // A slot is loaded when its BMD has meshes.
     std::vector<ModelEntry> out;
-    for (int type = 0; type < Render::Models::WorldTypeCount(gMapManager.WorldActive); ++type)
+    for (int type = 0; type < Render::WorldModels::WorldTypeCount(gMapManager.WorldActive); ++type)
     {
-        const BMD& model = Models[Render::Models::WorldSlot(type)];
+        const BMD& model = Models[Render::WorldModels::WorldSlot(type)];
         if (model.NumMeshs <= 0 || model.Meshs == nullptr)
             continue;
 

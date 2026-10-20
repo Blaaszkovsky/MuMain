@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Render::Models
+namespace Render::WorldModels
 {
 enum class ModelDomain
 {

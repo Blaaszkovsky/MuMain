@@ -107,9 +107,9 @@ void OpenModels(int Model, wchar_t* FileName, int i)
 
 void OpenPlayers()
 {
-    ModelsDump = new BMD[Render::Models::ModelStorageCount + 1024];
+    ModelsDump = new BMD[Render::WorldModels::ModelStorageCount + 1024];
     Models = ModelsDump + (rand() % 1024);
-    ZeroMemory(Models, Render::Models::ModelStorageCount * sizeof(BMD));
+    ZeroMemory(Models, Render::WorldModels::ModelStorageCount * sizeof(BMD));
 
     gLoadData.AccessModel(MODEL_PLAYER, L"Data\\Player\\", L"Player");
 

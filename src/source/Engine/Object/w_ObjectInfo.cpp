@@ -122,7 +122,7 @@ void OBJECT::Initialize()
     PKKey = 0;
     Weapon = 0;
 
-    Render::Models::AssignObjectModel(*this, 0, Render::Models::ModelDomain::Global);
+    Render::WorldModels::AssignObjectModel(*this, 0, Render::WorldModels::ModelDomain::Global);
     SubType = 0;
     m_iAnimation = 0;
     HiddenMesh = 0;

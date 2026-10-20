@@ -51,9 +51,9 @@ namespace
     int FindFreeSlot(int currentWorld)
     {
         const std::wstring folder = ObjectFolder(currentWorld);
-        for (int i = 0; i < Render::Models::WorldTypeCount(currentWorld - 1); ++i)
+        for (int i = 0; i < Render::WorldModels::WorldTypeCount(currentWorld - 1); ++i)
         {
-            if (Models[Render::Models::WorldSlot(i)].Meshs != nullptr)
+            if (Models[Render::WorldModels::WorldSlot(i)].Meshs != nullptr)
                 continue;
             std::error_code ec;
             if (fs::exists(folder + L"\\" + ObjectBmdStem(i) + L".bmd", ec))
@@ -98,7 +98,7 @@ namespace
 int LoadForPreview(int sourceWorld, const std::wstring& bmdFile)
 {
     // Reserved independently from world placements and global model IDs.
-    const int scratch = Render::Models::EditorPreviewSlot;
+    const int scratch = Render::WorldModels::EditorPreviewSlot;
     const std::wstring srcDir = ObjectFolder(sourceWorld) + L"\\";
     const std::wstring srcSub = L"Object" + std::to_wstring(sourceWorld) + L"\\";
     const std::wstring stem   = fs::path(bmdFile).stem().wstring();
@@ -142,7 +142,7 @@ int UseModelOnCurrentMap(int currentWorld, int sourceWorld, const std::wstring& 
 
     // Load the model live from the source folder into the free slot, then its
     // textures (from the same folder). This makes it immediately placeable.
-    const int modelSlot = Render::Models::WorldSlot(slot);
+    const int modelSlot = Render::WorldModels::WorldSlot(slot);
     gLoadData.AccessModel(modelSlot, srcDir.c_str(), stem.c_str(), -1);
     if (Models[modelSlot].Meshs == nullptr)
     {

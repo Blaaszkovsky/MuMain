@@ -58,7 +58,7 @@ namespace Editor::ObjectPlace
     struct SavedObject
     {
         int   type;
-        Render::Models::ModelDomain modelDomain = Render::Models::ModelDomain::Global;
+        Render::WorldModels::ModelDomain modelDomain = Render::WorldModels::ModelDomain::Global;
         float pos[3];
         float angle[3];
         float scale;

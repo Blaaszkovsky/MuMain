@@ -40,12 +40,12 @@ void LoadGenericWorldModels(int world, int assetWorld)
 {
     wchar_t directory[32];
     mu_swprintf(directory, L"Data\\Object%d\\", assetWorld);
-    Render::Models::ForEachWorldModel(world, [&](int type, int slot)
+    Render::WorldModels::ForEachWorldModel(world, [&](int type, int slot)
     {
         gLoadData.AccessModel(slot, directory, L"Object", type + 1);
     });
     mu_swprintf(directory, L"Object%d\\", assetWorld);
-    Render::Models::ForEachWorldModel(world, [&](int, int slot)
+    Render::WorldModels::ForEachWorldModel(world, [&](int, int slot)
     {
         gLoadData.OpenTexture(slot, directory);
     });
@@ -1548,7 +1548,7 @@ void CMapManager::DeleteObjects()
     }
 
     // World placements have been destroyed; this never releases MODEL_LOGO.
-    Render::Models::ReleaseWorldModels(Models);
+    Render::WorldModels::ReleaseWorldModels(Models);
 
     for (int i = BITMAP_MAPTILE; i <= BITMAP_RAIN_CIRCLE; i++)
     {
