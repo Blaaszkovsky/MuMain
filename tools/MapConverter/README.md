@@ -119,3 +119,7 @@ and flagged as a collision with the global model namespace. Both OBJv1 lighting
 bytes remain explicit data with unknown runtime semantics; no guessed flag
 mapping or object remap is applied. The resulting manifest marks game-render
 acceptance false until those boundaries are independently resolved and tested.
+
+See the [three-blocker investigation](FEREA_BLOCKERS.md) for confirmed source
+findings, the remaining model-routing work and the exact reference evidence
+needed before material and OBJv1 lighting behavior can be implemented.
