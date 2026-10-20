@@ -1690,6 +1690,11 @@ bool CMapManager::InBattleCastle(int iMap)
 
 const wchar_t* CMapManager::GetMapName(int iMap)
 {
+    if (iMap == 112)
+    {
+        return L"Ferea";
+    }
+
     if (iMap == WD_34CRYWOLF_1ST)
     {
         return(I18N::Game::CrywolfFortress);

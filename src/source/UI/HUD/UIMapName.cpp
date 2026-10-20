@@ -152,13 +152,17 @@ void CUIMapName::ShowMapName()
 
     if (m_nOldWorld != gMapManager.WorldActive)
     {
-        wchar_t szImgPath[128];
-        ::wcscpy(szImgPath, m_mapImgPath[gMapManager.WorldActive].data());
-
         DeleteBitmap(BITMAP_INTERFACE_EX + 45);
-        LoadBitmap(szImgPath, BITMAP_INTERFACE_EX + 45);
-
         m_nOldWorld = gMapManager.WorldActive;
+
+        const auto image = m_mapImgPath.find(gMapManager.WorldActive);
+        if (image == m_mapImgPath.end() || image->second.empty())
+        {
+            m_eState = HIDE;
+            return;
+        }
+
+        LoadBitmap(image->second.c_str(), BITMAP_INTERFACE_EX + 45);
 
 #ifdef ASG_ADD_GENS_SYSTEM
         m_bStrife = ::IsStrifeMap(gMapManager.WorldActive);
