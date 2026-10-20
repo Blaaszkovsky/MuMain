@@ -185,3 +185,26 @@ src/MuEditor/
       Map*.h / .cpp              # per-tab logic: texture/object/attribute/height
                                   # save+load, minimap capture, thumbnails
 ```
+
+## Baski prototype animation test
+
+The private integration test uses monster ID **900**, model slot **217**, and
+`Data/Monster/monster300.bmd`. Set `MU_BASKI_PROTOTYPE=1` before starting the
+client to enable it. Supply the model and its textures only in a private runtime;
+the repository does not distribute them. This ID is a test contract, not a claim
+about the original Season 16 identifier. A matching isolated server definition
+is required; replacing Spider's model does not exercise this prototype.
+
+The prototype uses scale 1.0 and neutral S6 animation speeds rather than Spider's
+scale 0.4 and accelerated walking. These are test values awaiting visual and
+server-timing validation. Actions 0–6 are interpreted as idle1, idle2, walk,
+attack1, attack2, hit reaction and death. Death holds its final frame. Models
+with a different action count or an empty action are rejected by this profile.
+
+The control socket's `nearby`/`state` response includes an `animation` object for
+ID 900 with the current action, frame, moving flag, scale, model version, key
+count and playback speed. Poll these observations during normal movement,
+monster attacks, a nonlethal hit and death; this reads state without forcing
+animations. A seven-action preview alone does not prove these transitions or
+the server definition. Keep the test server and all credentials separate from
+the retained environment.

@@ -3,6 +3,7 @@
 #include "Engine/Object/ZzzInfomation.h"
 #include "Engine/Object/ZzzObject.h"
 #include "Engine/Object/ZzzCharacter.h"
+#include "Engine/Object/BaskiPrototype.h"
 #include "Engine/Object/ZzzInterface.h"
 #include "Render/Terrain/ZzzLodTerrain.h"
 #include "Render/Textures/ZzzTexture.h"
@@ -1305,6 +1306,7 @@ static const wchar_t* GetMonsterModelName(EMonsterModelType Type)
         L"MONSTER_MODEL_CRYPOS",
         L"MONSTER_MODEL_CONDRA",
         L"MONSTER_MODEL_NACONDRA",
+        L"MONSTER_MODEL_BASKI_PROTOTYPE",
     };
     static_assert(sizeof(s_names) / sizeof(s_names[0]) == MONSTER_MODEL_COUNT,
         "GetMonsterModelName table is out of sync with EMonsterModelType");
@@ -1314,12 +1316,33 @@ static const wchar_t* GetMonsterModelName(EMonsterModelType Type)
     return s_names[Type];
 }
 
+namespace
+{
+void SetDefaultMonsterPlayback(BMD& model)
+{
+    model.Actions[MONSTER01_STOP1].PlaySpeed = 0.25f;
+    model.Actions[MONSTER01_STOP2].PlaySpeed = 0.2f;
+    model.Actions[MONSTER01_WALK].PlaySpeed = 0.34f;
+    model.Actions[MONSTER01_ATTACK1].PlaySpeed = 0.33f;
+    model.Actions[MONSTER01_ATTACK2].PlaySpeed = 0.33f;
+    model.Actions[MONSTER01_SHOCK].PlaySpeed = 0.5f;
+    model.Actions[MONSTER01_DIE].PlaySpeed = 0.55f;
+    model.Actions[MONSTER01_DIE].Loop = true;
+}
+} // namespace
+
 void OpenMonsterModel(EMonsterModelType Type)
 {
     g_ConsoleDebug->Write(MCD_RECEIVE, L"OpenMonsterModel(%ls = %d)", GetMonsterModelName(Type), Type);
 
     if (Type < 0 || Type >= MONSTER_MODEL_COUNT)   // guard the Models[] indexing below
         return;
+
+    if (Type == MONSTER_MODEL_BASKI_PROTOTYPE)
+    {
+        Engine::Monsters::LoadBaskiPrototypeModel();
+        return;
+    }
 
     int Index = static_cast<int>(MODEL_MONSTER01) + Type;
 
@@ -1363,14 +1386,7 @@ void OpenMonsterModel(EMonsterModelType Type)
     break;
     }
 
-    b->Actions[MONSTER01_STOP1].PlaySpeed = 0.25f;
-    b->Actions[MONSTER01_STOP2].PlaySpeed = 0.2f;
-    b->Actions[MONSTER01_WALK].PlaySpeed = 0.34f;
-    b->Actions[MONSTER01_ATTACK1].PlaySpeed = 0.33f;
-    b->Actions[MONSTER01_ATTACK2].PlaySpeed = 0.33f;
-    b->Actions[MONSTER01_SHOCK].PlaySpeed = 0.5f;
-    b->Actions[MONSTER01_DIE].PlaySpeed = 0.55f;
-    b->Actions[MONSTER01_DIE].Loop = true;
+    SetDefaultMonsterPlayback(*b);
 
     for (int j = MONSTER01_STOP1; j < MONSTER01_DIE; j++)
     {

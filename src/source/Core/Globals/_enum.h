@@ -4559,6 +4559,7 @@ enum EMonsterModelType : int
     MONSTER_MODEL_CRYPOS = 214,
     MONSTER_MODEL_CONDRA = 215,
     MONSTER_MODEL_NACONDRA = 216,
+    MONSTER_MODEL_BASKI_PROTOTYPE = 217,
     MONSTER_MODEL_COUNT,            // keep last: number of monster models
 };
 
@@ -5112,7 +5113,9 @@ enum EMonsterType : int
     MONSTER_CAPTURED_STONE_STATUE_9 = 667,
     MONSTER_CAPTURED_STONE_STATUE_10 = 668,
 
-    MONSTER_END = 668
+    // Private opt-in test identity; not an original Season 16 identifier.
+    MONSTER_BASKI_PROTOTYPE = 900,
+    MONSTER_END = 901
 };
 
 enum
@@ -5334,4 +5337,5 @@ enum
     MODEL_CRYPOS = MODEL_MONSTER01 + 214,
     MODEL_CONDRA = MODEL_MONSTER01 + 215,
     MODEL_NACONDRA = MODEL_MONSTER01 + 216,
+    MODEL_BASKI_PROTOTYPE = MODEL_MONSTER01 + MONSTER_MODEL_BASKI_PROTOTYPE,
 };

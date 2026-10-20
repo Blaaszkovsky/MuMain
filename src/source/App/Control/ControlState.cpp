@@ -16,6 +16,8 @@
 #include "UI/Inventory/InventoryContents.h"
 #include "GameLogic/Items/InventoryUtils.h"
 #include "Character/CharacterManager.h"
+#include "GameLogic/Monsters/BaskiPrototypeProfile.h"
+#include "Render/Models/ZzzBMD.h"
 #include "GameLogic/Quests/CSQuest.h"
 #include "GameLogic/Quests/DialogStructure.h"
 #include "GameLogic/Items/PersonalShopTitleImp.h"
@@ -39,6 +41,28 @@ extern int g_iCurrentDialogScript;
 namespace
 {
 using nlohmann::json;
+
+json DescribePrototypeAnimation(const CHARACTER& character)
+{
+    const OBJECT& object = character.Object;
+    json animation = {{"monster_id", character.MonsterIndex}, {"model_type", object.Type},
+                      {"action", object.CurrentAction}, {"frame", object.AnimationFrame},
+                      {"prior_action", object.PriorAction}, {"moving", character.Movement != 0},
+                      {"scale", object.Scale}};
+    if (Models == nullptr || object.Type < 0 || object.Type >= MAX_MODELS)
+        return animation;
+    const BMD& model = Models[object.Type];
+    animation["model_version"] = static_cast<int>(model.Version);
+    animation["actions"] = model.NumActions;
+    if (model.Actions != nullptr && object.CurrentAction < model.NumActions)
+    {
+        const auto& action = model.Actions[object.CurrentAction];
+        animation["keys"] = action.NumAnimationKeys;
+        animation["play_speed"] = action.PlaySpeed;
+        animation["hold_last_frame"] = action.Loop;
+    }
+    return animation;
+}
 
 std::string ItemName(const ITEM& item)
 {
@@ -578,6 +602,8 @@ json NearbyArray()
         const double healthPercent = std::round(character.HealthStatus * 250.0f) * 100.0 / 250.0;
         described["hp_percent"] = character.HealthStatus < 0.0f ? json(nullptr) : json(healthPercent);
         described["pixel"] = ObjectPixel(character.Object);
+        if (character.MonsterIndex == GameLogic::Monsters::BaskiPrototypeProfile::MonsterNumber)
+            described["animation"] = DescribePrototypeAnimation(character);
         nearby.push_back(std::move(described));
     }
 

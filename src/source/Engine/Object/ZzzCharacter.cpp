@@ -25,6 +25,7 @@
 #include "Engine/Object/ZzzCharacter.h"
 #include "Engine/Object/AnimationTaskPool.h"
 #include "Engine/Object/PlayerActionState.h"
+#include "Engine/Object/BaskiPrototype.h"
 #include "Render/Terrain/ZzzLodTerrain.h"
 #include "Render/Textures/ZzzTexture.h"
 #include "Engine/AI/ZzzAI.h"
@@ -13167,11 +13168,25 @@ void Setting_Monster(CHARACTER* c, EMonsterType Type, int PositionX, int Positio
     }
 }
 
+namespace
+{
+CHARACTER* CreateConfiguredBaski(int positionX, int positionY, int key)
+{
+    CHARACTER* character = Engine::Monsters::CreateBaskiPrototype(positionX, positionY, key);
+    if (character != nullptr)
+        Setting_Monster(character, MONSTER_BASKI_PROTOTYPE, positionX, positionY);
+    return character;
+}
+} // namespace
+
 CHARACTER* CreateMonster(EMonsterType Type, int PositionX, int PositionY, int Key)
 {
     CHARACTER* c = NULL;
     OBJECT* o;
     int Level;
+
+    if (Type == MONSTER_BASKI_PROTOTYPE)
+        return CreateConfiguredBaski(PositionX, PositionY, Key);
 
     c = g_CursedTemple->CreateCharacters(Type, PositionX, PositionY, Key);
     if (c != NULL)
