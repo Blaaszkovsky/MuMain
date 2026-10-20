@@ -11,8 +11,8 @@ import struct
 import PIL
 from PIL import Image
 
-MAX_DIMENSION = 1024
-MAX_INPUT_BYTES = 64 * 1024 * 1024
+MAX_DIMENSION = 2048
+MAX_INPUT_BYTES = 32 * 1024 * 1024
 CONTAINER_PREFIXES = {'ozp': 4, 'ozt': 4, 'ozj': 24}
 IMAGE_FORMATS = {'ozp': ('PNG',), 'ozt': ('TGA',), 'ozj': ('JPEG', 'TGA'),
                  'png': ('PNG',), 'tga': ('TGA',), 'dds': ('DDS',)}
@@ -58,7 +58,7 @@ def read_image(raw, kind):
         if image.format not in IMAGE_FORMATS[kind]:
             raise ValueError('Image content does not match the declared input format')
         if not (0 < image.width <= MAX_DIMENSION and 0 < image.height <= MAX_DIMENSION):
-            raise ValueError('Image exceeds MuMain 1024x1024 limit; resampling is not allowed')
+            raise ValueError('Image exceeds MuMain 2048x2048 limit; resampling is not allowed')
         if getattr(image, 'n_frames', 1) != 1:
             raise ValueError('Animated or multi-frame images are not supported')
         if image.mode not in ('1', 'L', 'LA', 'P', 'RGB', 'RGBA'):
@@ -84,7 +84,7 @@ def convert(source, output, kind=None):
     with source.open('rb') as stream:
         size = os.fstat(stream.fileno()).st_size
         if size > MAX_INPUT_BYTES:
-            raise ValueError('Input exceeds the offline tool 64 MiB safety limit')
+            raise ValueError('Input exceeds the texture reader 32 MiB safety limit')
         raw = stream.read(size + 1)
     if len(raw) != size:
         raise ValueError('Input size changed during reading')

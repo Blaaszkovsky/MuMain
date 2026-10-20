@@ -4,19 +4,23 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <limits>
+#include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <doctest.h>
 
 #include "Render/Textures/OztFile.h"
+#include "Render/Textures/TextureFile.h"
 
 namespace
 {
 namespace Ozt = Render::Textures::Ozt;
 
 // The largest texture of CGlobalBitmap (MAX_WIDTH, MAX_HEIGHT).
-constexpr int MaxSize = 1024;
+constexpr int MaxSize = 2048;
 
 // The TGA header starts after the 4 bytes in front.
 constexpr std::size_t ImageTypeOffset = 4 + 2;
@@ -176,6 +180,87 @@ TEST_CASE("nothing is copied from an OZT file that is too small [render][ozt_fil
     Ozt::CopyPixels(file, header, texture, 2);
 
     CHECK(texture == std::vector<std::uint8_t>(texture.size(), 0));
+}
+
+TEST_CASE("OZT rejects dimensions above the resource cap even with a larger caller limit [render][ozt_file]")
+{
+    auto file = MakeOzt(1, 1);
+    WriteUInt16(file, WidthOffset, 2049);
+    CHECK(Ozt::ReadHeader(file, 65535, 65535).status == Ozt::Status::InvalidFormat);
+}
+
+TEST_CASE("OZT rejects layouts that cannot be copied as bottom-first raw BGRA [render][ozt_file]")
+{
+    for (const auto [offset, value] : std::vector<std::pair<std::size_t, std::uint8_t>>{
+             {ImageTypeOffset, 10}, {4, 1}, {5, 1}, {21, 0x28}, {21, 0x18}})
+    {
+        auto file = MakeOzt(2, 2);
+        file[offset] = value;
+        CHECK(ReadStatus(file) == Ozt::Status::InvalidFormat);
+    }
+}
+
+TEST_CASE("OZT never writes beyond the supplied output span [render][ozt_file]")
+{
+    const auto file = MakeOzt(2, 2);
+    const auto header = Ozt::ReadHeader(file, MaxSize, MaxSize);
+    std::vector<std::uint8_t> target(16, 0xAA);
+    Ozt::CopyPixels(file, header, std::span<std::uint8_t>(target.data(), 4), 2);
+    CHECK(target == std::vector<std::uint8_t>(16, 0xAA));
+    Ozt::CopyPixels(file, header, target, 1);
+    CHECK(target == std::vector<std::uint8_t>(16, 0xAA));
+    Ozt::CopyPixels(file, header, target, std::numeric_limits<int>::max());
+    CHECK(target == std::vector<std::uint8_t>(16, 0xAA));
+}
+
+TEST_CASE("texture dimensions bound allocation before multiplication [render][ozt_file]")
+{
+    using Render::Textures::IsReadableTextureSize;
+    CHECK(IsReadableTextureSize(2048, 2048));
+    CHECK(IsReadableTextureSize(1590, 400));
+    CHECK_FALSE(IsReadableTextureSize(2049, 1));
+    CHECK_FALSE(IsReadableTextureSize(1, 2049));
+    CHECK_FALSE(IsReadableTextureSize(-1, 1));
+    CHECK_FALSE(IsReadableTextureSize(std::numeric_limits<int>::max(), 1));
+}
+
+TEST_CASE("texture file input is bounded before its buffer allocation [render][ozt_file]")
+{
+    class OversizedBuffer final : public std::stringbuf
+    {
+        pos_type seekoff(off_type, std::ios_base::seekdir, std::ios_base::openmode) override
+        {
+            return static_cast<off_type>(Render::Textures::MaxTextureFileBytes + 1);
+        }
+    } buffer;
+    std::istream oversized(&buffer);
+    std::vector<std::uint8_t> bytes;
+    CHECK_FALSE(Render::Textures::ReadTextureFile(oversized, bytes));
+    CHECK(bytes.capacity() == 0);
+    std::istringstream empty;
+    CHECK_FALSE(Render::Textures::ReadTextureFile(empty, bytes));
+    std::istringstream binary(std::string("a\0b", 3));
+    CHECK(Render::Textures::ReadTextureFile(binary, bytes));
+    CHECK(bytes == std::vector<std::uint8_t>{'a', 0, 'b'});
+}
+
+TEST_CASE("a texture file shorter than its declared stream size is rejected [render][ozt_file]")
+{
+    class TruncatedBuffer final : public std::stringbuf
+    {
+    public:
+        TruncatedBuffer() : std::stringbuf("abc", std::ios::in) {}
+    private:
+        pos_type seekoff(off_type offset, std::ios_base::seekdir direction,
+                         std::ios_base::openmode mode) override
+        {
+            return direction == std::ios::end ? pos_type{8} : std::stringbuf::seekoff(offset, direction, mode);
+        }
+    } buffer;
+    std::istream input(&buffer);
+    std::vector<std::uint8_t> bytes;
+    CHECK_FALSE(Render::Textures::ReadTextureFile(input, bytes));
+    CHECK(bytes.empty());
 }
 
 // Every texture the game ships keeps loading: the size check turns away only

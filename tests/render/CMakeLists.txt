@@ -50,6 +50,7 @@ mu_add_test(
     SOURCES
         test_ozt_file.cpp
         ${CMAKE_SOURCE_DIR}/src/source/Render/Textures/OztFile.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/Render/Textures/TextureFile.cpp
 )
 target_compile_definitions(ozt_file_tests PRIVATE
     MU_TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data"

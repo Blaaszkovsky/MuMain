@@ -1,4 +1,5 @@
 #include "OztFile.h"
+#include "TextureFile.h"
 
 namespace Render::Textures::Ozt
 {
@@ -20,8 +21,36 @@ int ReadUInt16(std::span<const std::uint8_t> file, std::size_t offset)
 
 bool IsReadableFormat(const Header& header, int maxWidth, int maxHeight)
 {
-    return header.bitsPerPixel == ReadableBitsPerPixel && header.width > 0 && header.height > 0 &&
+    return header.bitsPerPixel == ReadableBitsPerPixel && IsReadableTextureSize(header.width, header.height) &&
            header.width <= maxWidth && header.height <= maxHeight;
+}
+
+bool HasReadableLayout(std::span<const std::uint8_t> file)
+{
+    constexpr std::size_t ImageIdOffset = TgaHeaderOffset;
+    constexpr std::size_t ColorMapOffset = TgaHeaderOffset + 1;
+    constexpr std::size_t ImageTypeOffset = TgaHeaderOffset + 2;
+    constexpr std::size_t DescriptorOffset = TgaHeaderOffset + 17;
+    constexpr std::uint8_t UncompressedTrueColor = 2;
+    constexpr std::uint8_t EightAlphaBits = 8;
+    return file[ImageIdOffset] == 0 && file[ColorMapOffset] == 0 &&
+           file[ImageTypeOffset] == UncompressedTrueColor &&
+           (file[DescriptorOffset] == 0 || file[DescriptorOffset] == EightAlphaBits);
+}
+
+bool CanCopyPixels(std::span<const std::uint8_t> file, const Header& header,
+                   std::span<std::uint8_t> texture, int textureWidth)
+{
+    const Header checked = ReadHeader(file, MaxTextureDimension, MaxTextureDimension);
+    if (header.status != Status::Valid || checked.status != Status::Valid ||
+        header.width != checked.width || header.height != checked.height ||
+        header.bitsPerPixel != checked.bitsPerPixel || textureWidth < header.width ||
+        textureWidth > MaxTextureDimension)
+    {
+        return false;
+    }
+    const std::size_t rowBytes = static_cast<std::size_t>(textureWidth) * BytesPerPixel;
+    return texture.size() / rowBytes >= static_cast<std::size_t>(header.height);
 }
 } // namespace
 
@@ -37,7 +66,8 @@ Header ReadHeader(std::span<const std::uint8_t> file, int maxWidth, int maxHeigh
     header.width = ReadUInt16(file, WidthOffset);
     header.height = ReadUInt16(file, HeightOffset);
     header.bitsPerPixel = file[DepthOffset];
-    if (!IsReadableFormat(header, maxWidth, maxHeight))
+    if (file.size() > MaxTextureFileBytes || !IsReadableFormat(header, maxWidth, maxHeight) ||
+        !HasReadableLayout(file))
     {
         header.status = Status::InvalidFormat;
         return header;
@@ -60,7 +90,7 @@ Header ReadHeader(std::span<const std::uint8_t> file, int maxWidth, int maxHeigh
 void CopyPixels(std::span<const std::uint8_t> file, const Header& header, std::span<std::uint8_t> texture,
                 int textureWidth)
 {
-    if (header.status != Status::Valid)
+    if (!CanCopyPixels(file, header, texture, textureWidth))
     {
         return;
     }

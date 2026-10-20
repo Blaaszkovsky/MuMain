@@ -839,8 +839,12 @@ bool CGlobalBitmap::OpenJpegTurbo(GLuint uiBitmapIndex, const std::wstring& file
         return false;
     }
 
-    std::vector<unsigned char> jpegBuf((std::istreambuf_iterator<char>(compressedFile)),
-                                       std::istreambuf_iterator<char>());
+    std::vector<unsigned char> jpegBuf;
+    if (!Render::Textures::ReadTextureFile(compressedFile, jpegBuf))
+    {
+        g_ErrorReport.Write(L"OpenJpegTurbo: unreadable or oversized file %ls\r\n", filename_ozj.c_str());
+        return false;
+    }
     compressedFile.close();
 
     if (jpegBuf.size() <= 24)
@@ -866,7 +870,7 @@ bool CGlobalBitmap::OpenJpegTurbo(GLuint uiBitmapIndex, const std::wstring& file
 
     auto headerResult =
         tjDecompressHeader3(tjHandle.get(), jpegData, jpegSize, &jpegWidth, &jpegHeight, &jpegSubsamp, &jpegColorspace);
-    if (headerResult != 0 || jpegWidth <= 0 || jpegHeight <= 0 || jpegWidth > MAX_WIDTH || jpegHeight > MAX_HEIGHT)
+    if (headerResult != 0 || !Render::Textures::IsReadableTextureSize(jpegWidth, jpegHeight))
     {
         ReportTurboError(L"tjDecompressHeader3");
         return false;
@@ -940,7 +944,12 @@ bool CGlobalBitmap::OpenTga(GLuint uiBitmapIndex, const std::wstring& filename, 
         return false;
     }
 
-    std::vector<unsigned char> pakBuffer((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+    std::vector<unsigned char> pakBuffer;
+    if (!Render::Textures::ReadTextureFile(input, pakBuffer))
+    {
+        g_ErrorReport.Write(L"OpenTga: unreadable or oversized file %ls\r\n", filename_ozt.c_str());
+        return false;
+    }
     input.close();
 
     // A file cut off in its header or its pixels is too small.

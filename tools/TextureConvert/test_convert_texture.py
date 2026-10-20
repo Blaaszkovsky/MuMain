@@ -69,7 +69,7 @@ class TextureConversionTests(unittest.TestCase):
 
     def test_refuses_oversized_image_without_resampling(self):
         source = self.root / 'wide.png'
-        Image.new('RGBA', (1025, 1)).save(source)
+        Image.new('RGBA', (2049, 1)).save(source)
         with self.assertRaises(ValueError):
             convert_texture.convert(source, self.root / 'output')
         self.assertFalse((self.root / 'output').exists())
@@ -116,6 +116,17 @@ class TextureConversionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             convert_texture.convert(source, self.root / 'output')
         self.assertFalse((self.root / 'output').exists())
+
+    def test_2048_dimension_preserves_first_and_last_pixel(self):
+        source = self.root / 'boundary.png'
+        image = Image.new('RGBA', (2048, 1))
+        image.putpixel((0, 0), (1, 2, 3, 4))
+        image.putpixel((2047, 0), (5, 6, 7, 8))
+        image.save(source)
+        convert_texture.convert(source, self.root / 'output')
+        raw = (self.root / 'output/boundary.OZT').read_bytes()
+        self.assertEqual(raw[22:26], bytes([3, 2, 1, 4]))
+        self.assertEqual(raw[-4:], bytes([7, 6, 5, 8]))
 
 
 if __name__ == '__main__':

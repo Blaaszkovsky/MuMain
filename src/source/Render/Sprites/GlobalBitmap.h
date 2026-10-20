@@ -12,6 +12,7 @@
 #include <setjmp.h>
 #include <cstdint>
 #include "Core/Time/Timer.h"
+#include "Render/Textures/TextureFile.h"
 
 struct SDL_GPUTexture;
 struct SDL_GPUSampler;
@@ -99,8 +100,8 @@ class CGlobalBitmap
 {
     enum
     {
-        MAX_WIDTH = 1024,
-        MAX_HEIGHT = 1024,
+        MAX_WIDTH = Render::Textures::MaxTextureDimension,
+        MAX_HEIGHT = Render::Textures::MaxTextureDimension,
     };
 
     using BitmapPtr = std::unique_ptr<BITMAP_t>;

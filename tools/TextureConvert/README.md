@@ -25,8 +25,16 @@ image conversion tool.
 
 DDS accepts a single DXT1/DXT3/DXT5 or tightly packed 24/32-bit RGB surface; mipmaps,
 cube/volume maps, extra/truncated surfaces and other compression are refused.
-Images over MuMain's 1024x1024 texture limit, animated images, and higher precision
+Images over MuMain's 2048x2048 texture limit, animated images, and higher precision
 PNG are refused rather than resized, flattened, or quantized.
+
+The matching client reader caps file input at 32 MiB before allocation and each
+image at 2048x2048 (at most 16 MiB RGBA). The tool uses the same limits. Older
+clients with a 1024x1024 cap still reject larger outputs; deploy a matching client
+only after its loader and actual GPU upload have been verified. RLE TGA is
+normalized offline; the runtime reader accepts only raw bottom-first 32-bit TGA
+without an image ID or palette. This is a per-image bound, not an aggregate asset
+memory budget.
 
 The output filename is the source stem plus `.OZT`. The manifest records source,
 output and decoded RGBA hashes, dimensions, Pillow version, and the required
