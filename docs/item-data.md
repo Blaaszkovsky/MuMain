@@ -428,6 +428,11 @@ The problems are:
 | `renderStyle` names a style that does not exist; the model is drawn plainly. | warning |
 | `itemEffect` names an item effect that does not exist; the model is drawn without it. | warning |
 
+A model file can be in the formats of the Season 6 client (BMD versions
+10 and 12) or in the encrypted format of later seasons' models (version
+14); files of other versions cannot be opened. The version is the fourth
+byte of the file, after `BMD`.
+
 The model names textures as `.jpg`/`.tga`; the game reads the encrypted
 copies with the same name, `.OZJ`/`.OZT`. Meshes whose texture name starts
 with `hid` are not drawn, so their texture is not loaded.
@@ -541,3 +546,24 @@ Names that are not valid UTF-8 are read as Windows-1252, the encoding of
 the Portuguese and Spanish files; the original client showed their
 accented letters as `�`. The byte pair `A1 AF` (a right quote on Korean
 systems) becomes an apostrophe (*Gaion's Order*).
+
+### Model files from later clients
+
+The client opens model BMD versions 10, 12 and 14 directly. A version 14 model
+can be installed at the same configured model path as an older model; no offline
+conversion is required. The version is the fourth file byte and is not a season
+number. This support concerns model geometry and animation only. Texture files
+must still be installed at the paths expected by the model, and item definitions
+must refer to the intended model.
+
+Malformed or incompatible models fail to load with an `Invalid or incompatible
+BMD model` message. Limits are 64 MiB per file, 50 meshes, 200 bones, 15,000
+vertices/normals per mesh and 1,024 actions. A model needs at least one action,
+and every action needs at least one animation key.
+Corrupt indices, missing texture-name terminators, non-finite values, invalid
+flags, bone cycles, truncated data and unexpected trailing data are rejected.
+Both known MARS key-mask variants are supported; if they produce different
+structurally valid models, loading is rejected as ambiguous. Keep a backup and
+check each imported model's appearance and animations in game before deployment.
+
+Third-party software attribution is in [BMD notices](bmd-third-party-notices.md).

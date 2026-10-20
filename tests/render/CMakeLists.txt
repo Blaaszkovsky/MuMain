@@ -32,6 +32,17 @@ mu_add_test(
     LINK_LIBS SDL3::SDL3
 )
 
+mu_add_test(
+    NAME bmd_modulus_cipher_tests
+    SOURCES
+        test_bmd_modulus_cipher.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/Render/Models/BmdModelFile.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/Render/Models/BmdModulusCipher.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/Render/Models/LegacyMarsDecryption.cpp
+    LINK_LIBS
+        MuCryptopp
+)
+
 # The OZT reader of CGlobalBitmap::OpenTga, without the renderer. It also reads
 # the OZT files shipped in src/bin/Data.
 mu_add_test(
@@ -194,3 +205,13 @@ if(MU_ENABLE_SHADER_COMPILATION
             -P "${CMAKE_SOURCE_DIR}/cmake/ValidateDxilReflection.cmake"
     )
 endif()
+
+mu_add_test(
+    NAME bmd_model_file_tests
+    SOURCES
+        test_bmd_model_file.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/Render/Models/BmdModelFile.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/Render/Models/BmdModulusCipher.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/Render/Models/LegacyMarsDecryption.cpp
+    LINK_LIBS MuCryptopp
+)

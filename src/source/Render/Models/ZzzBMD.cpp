@@ -8,6 +8,7 @@
 #include <cassert>
 #include <set>
 #include <utility>
+#include <vector>
 #include "Render/Textures/ZzzOpenglUtil.h"
 
 #include "Engine/Object/ZzzInfomation.h"
@@ -18,6 +19,7 @@
 #include "Render/Textures/ZzzTexture.h"
 #include "Engine/AI/ZzzAI.h"
 #include "SMD.h"
+#include "BmdModelFile.h"
 #include "Render/Effects/ZzzEffect.h"
 #include "Core/Utilities/Log/ErrorReport.h"
 #include "Camera/CameraState.h"
@@ -3157,7 +3159,6 @@ private:
     size_t ptr;
 };
 
-
 bool BMD::Open2(const wchar_t* DirName, const wchar_t* ModelFileName, bool bReAlloc)
 {
     if (m_bCompletedAlloc)
@@ -3182,82 +3183,33 @@ bool BMD::Open2(const wchar_t* DirName, const wchar_t* ModelFileName, bool bReAl
     int dataSize = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
+    if (dataSize < 4 || static_cast<std::size_t>(dataSize) > Render::Models::BmdModelFile::MaxFileBytes)
+    {
+        fclose(fp);
+        return false;
+    }
     std::unique_ptr<unsigned char[]> fileData(new(std::nothrow) unsigned char[dataSize]);
     if (!fileData)
     {
         fclose(fp);
-        m_bCompletedAlloc = false;
         return false;
     }
-
-    fread(fileData.get(), 1, dataSize, fp);
+    const auto bytesRead = fread(fileData.get(), 1, static_cast<std::size_t>(dataSize), fp);
     fclose(fp);
-
-    // *** Check the "BMD" header ***
-    if (!(fileData[0] == 'B' && fileData[1] == 'M' && fileData[2] == 'D'))
+    std::vector<std::uint8_t> body;
+    if (bytesRead != static_cast<std::size_t>(dataSize) ||
+        !Render::Models::BmdModelFile::Decode({fileData.get(), static_cast<std::size_t>(dataSize)}, body))
     {
-        wprintf(L"[Open2] ERROR: Invalid file header (expected 'BMD') in file %.64s\n", ModelPath);
+        wprintf(L"[Open2] ERROR: Invalid or incompatible BMD model: %ls\n", ModelPath);
         m_bCompletedAlloc = false;
         return false;
     }
-
-    int ptr = 3;
-    Version = fileData[ptr++];
-    
-
-    std::unique_ptr<unsigned char[]> decryptedData;
-    if (Version == 0xC)
-    {
-        //// wprintf(L"[Open2] Version: %d\n", Version);
-        // The on-disk size field is 32-bit; `long` is 8 bytes on LP64 (Linux
-        // x64), which would read past the field and produce a garbage size.
-        std::int32_t encSize = 0;
-        std::memcpy(&encSize, &fileData[ptr], sizeof(encSize));
-        ptr += sizeof(std::int32_t);
-        unsigned char* encData = &fileData[ptr];
-        //// wprintf(L"[Open2] Encrypted Size: %ld\n", encSize);
-
-        long decSize = MapFileDecrypt(nullptr, encData, encSize);
-        //// wprintf(L"[Open2] Decrypted Size: %ld\n", decSize);
-
-        decryptedData.reset(new(std::nothrow) unsigned char[decSize]);
-        if (!decryptedData)
-        {
-            m_bCompletedAlloc = false;
-            return false;
-        }
-
-        MapFileDecrypt(decryptedData.get(), encData, encSize);
-        ptr = 0;
-    }
-    else if (Version == 0xE)
-    {
-        wprintf(L"[Open2] Version: %d\n, not yet supported. File: %.64s\n", Version, ModelPath);
-        // FIXME FOR NEW MAPS 
-        // DECRYPT KEY: webzen#@!01webzen#@!01webzen#@!0
-    }
-    else if (Version == 0xA)
-    {
-        // wprintf(L"[Open2] Version: %d\n", Version);
-        ptr = 4;
-    }
-    else
-    {
-        wprintf(L"[Open2] Unknown BMD version: %d\n in %.64s\n", static_cast<int>(Version), ModelPath);
-        m_bCompletedAlloc = false;
-        return false;
-    }
-
-
-    unsigned char* data = decryptedData ? decryptedData.get() : fileData.get();
+    Version = fileData[3];
+    unsigned char* data = body.data();
+    int ptr = 0;
 
     memcpy(Name, data + ptr, 32); ptr += 32;
-
-    const char* ext = strrchr(Name, '.');
-    if (!ext || (_stricmp(ext, ".smd") != 0))
-    {
-        // wprintf(L"[Open2] WARNING: Invalid file extension: %.64hs in %.64s\n", Name, ModelPath);
-    }
+    Name[sizeof(Name) - 1] = '\0';
 
     NumMeshs = *(short*)(data + ptr); ptr += sizeof(short);
     NumBones = *(short*)(data + ptr); ptr += sizeof(short);
