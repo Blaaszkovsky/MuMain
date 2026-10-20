@@ -38,3 +38,9 @@ Its copyright and license remain in the downloaded `License.txt`; redistribute
 that notice with helper binaries. See
 [Crypto++ license](https://github.com/weidai11/cryptopp/blob/CRYPTOPP_8_9_0/License.txt).
 No game assets or third-party executable/library binaries are included here.
+
+The optional terrain-image converter calls a user-supplied libjpeg-turbo 3
+shared library through its public API. See the
+[libjpeg-turbo 3.0.0 API](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.0.0/turbojpeg.h)
+and [license](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.0.0/LICENSE.md).
+No JPEG implementation source or binary is copied into this tool.

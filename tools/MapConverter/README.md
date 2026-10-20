@@ -59,3 +59,41 @@ with matching camera, time/light conditions and object placement. Compare shadow
 lighting, texture layers and alpha, height, clipping and collision paths. For OBJ
 v1 compare both observed flag groups; sidecar preservation alone is not visual
 equivalence. See [third-party notices](THIRD_PARTY_NOTICES.md) for source provenance.
+
+## Terrain height and light (one world at a time)
+
+```powershell
+python tools/MapConverter/convert_terrain_images.py --world <Data/World113> --output <fresh-external-directory> --turbojpeg <trusted-TurboJPEG-3-library>
+python tools/MapConverter/tests/check_lossless_jpeg.py --library <trusted-TurboJPEG-3-library>
+```
+
+The optional image tool accepts only the exact prefixed 256x256 uncompressed
+24-bit BMP layout used by Ferea. It reads two named files; it never scans a
+corpus. Supply an existing trusted libjpeg-turbo 3 DLL/shared library with the
+same architecture as Python. The tool does not download, install or build one.
+MuMain's checked-in Windows dependency is libjpeg-turbo 3.0.0. Old libraries
+without lossless support are not suitable. Keep the codec's upstream license
+when distributing it; no codec binary is included in this repository.
+
+`TerrainLight.OZB` becomes `TerrainLight.OZJ`, containing predictive **lossless
+JPEG** (SOF3, RGB, 8-bit, predictor1, point transform0). This is different from
+quality100 DCT JPEG. Channel order and bottom-up rows are preserved. Before
+writing, every channel is compared through `tjInitDecompress`,
+`tjDecompressHeader3` and `tjDecompress2(TJPF_RGB,TJFLAG_BOTTOMUP)`, matching
+MuMain's existing `OpenJpegBuffer` call path. The manifest retains the BMP header
+and verifies exact source OZB reconstruction from the decoded pixels. This
+proves pixel compatibility; lighting appearance still needs the visual gate.
+
+The encoder has a fixed1MiB output allocation with reallocation disabled, input
+is exactly196666 bytes, decoded storage is196608 bytes, and dimensions are
+checked before native decoding. Native scratch allocation is additionally
+bounded by the fixed256x256 lossless image; no unbounded dimension is accepted.
+
+Extended heights use a packed24-bit integer minus500. The existing ordinary
+height loader represents only `byte * 1.5`. Conversion is written only if
+**every height is exactly representable**; a synthetic representable map is
+covered by roundtrip tests. Ferea has53000 unrepresentable samples, so its
+height is explicitly blocked and no replacement height file is written.
+The manifest gives counts and the minimal loader proposal: select the existing
+extended-height reader for logical map112 with its minus500 offset. The command
+returns1 when a height is blocked even if the light file converted successfully.
