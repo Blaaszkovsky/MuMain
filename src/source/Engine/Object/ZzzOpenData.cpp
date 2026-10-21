@@ -5,6 +5,7 @@
 #include "Engine/Object/ZzzObject.h"
 #include "Engine/Object/ZzzCharacter.h"
 #include "Engine/Object/BaskiPrototype.h"
+#include "Engine/Object/FereaMonsters.h"
 #include "Engine/Object/ZzzInterface.h"
 #include "Render/Terrain/ZzzLodTerrain.h"
 #include "Render/Textures/ZzzTexture.h"
@@ -1308,6 +1309,12 @@ static const wchar_t* GetMonsterModelName(EMonsterModelType Type)
         L"MONSTER_MODEL_CONDRA",
         L"MONSTER_MODEL_NACONDRA",
         L"MONSTER_MODEL_BASKI_PROTOTYPE",
+        L"MONSTER_MODEL_FEREA_KNIGHT",
+        L"MONSTER_MODEL_FEREA_ARCHER",
+        L"MONSTER_MODEL_FEREA_FIGHTER",
+        L"MONSTER_MODEL_FEREA_GENERAL",
+        L"MONSTER_MODEL_LORD_OF_FEREA",
+        L"MONSTER_MODEL_FEREA_CRYSTAL_ORB",
     };
     static_assert(sizeof(s_names) / sizeof(s_names[0]) == MONSTER_MODEL_COUNT,
         "GetMonsterModelName table is out of sync with EMonsterModelType");
@@ -1342,6 +1349,12 @@ void OpenMonsterModel(EMonsterModelType Type)
     if (Type == MONSTER_MODEL_BASKI_PROTOTYPE)
     {
         Engine::Monsters::LoadBaskiPrototypeModel();
+        return;
+    }
+
+    if (Type >= MONSTER_MODEL_FEREA_KNIGHT && Type <= MONSTER_MODEL_FEREA_CRYSTAL_ORB)
+    {
+        Engine::Monsters::LoadFereaMonsterModel(Type);
         return;
     }
 

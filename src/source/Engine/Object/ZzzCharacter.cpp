@@ -26,6 +26,7 @@
 #include "Engine/Object/AnimationTaskPool.h"
 #include "Engine/Object/PlayerActionState.h"
 #include "Engine/Object/BaskiPrototype.h"
+#include "Engine/Object/FereaMonsters.h"
 #include "Render/Terrain/ZzzLodTerrain.h"
 #include "Render/Textures/ZzzTexture.h"
 #include "Engine/AI/ZzzAI.h"
@@ -13177,6 +13178,14 @@ CHARACTER* CreateConfiguredBaski(int positionX, int positionY, int key)
         Setting_Monster(character, MONSTER_BASKI_PROTOTYPE, positionX, positionY);
     return character;
 }
+
+CHARACTER* CreateConfiguredFereaMonster(EMonsterType type, int positionX, int positionY, int key)
+{
+    CHARACTER* character = Engine::Monsters::CreateFereaMonster(type, positionX, positionY, key);
+    if (character != nullptr)
+        Setting_Monster(character, type, positionX, positionY);
+    return character;
+}
 } // namespace
 
 CHARACTER* CreateMonster(EMonsterType Type, int PositionX, int PositionY, int Key)
@@ -13187,6 +13196,8 @@ CHARACTER* CreateMonster(EMonsterType Type, int PositionX, int PositionY, int Ke
 
     if (Type == MONSTER_BASKI_PROTOTYPE)
         return CreateConfiguredBaski(PositionX, PositionY, Key);
+    if (Type >= MONSTER_FEREA_KNIGHT && Type <= MONSTER_FEREA_CRYSTAL_ORB)
+        return CreateConfiguredFereaMonster(Type, PositionX, PositionY, Key);
 
     c = g_CursedTemple->CreateCharacters(Type, PositionX, PositionY, Key);
     if (c != NULL)
