@@ -33,6 +33,11 @@ public:
         m_RmlView.GetModel().mapName = std::move(text);
         m_RmlView.MarkDirty("map_name");
     }
+    void SetWarning(bool visible)
+    {
+        m_RmlView.GetModel().strife = visible;
+        m_RmlView.MarkDirty("strife");
+    }
 };
 
 class MapNameFixture : public UI::Tests::RmlLayoutFixture
@@ -193,14 +198,17 @@ TEST_CASE("map-name text wraps between shared ornaments across themes and scales
         for (Rml::Vector2i viewport : {Rml::Vector2i(800, 600), {1280, 720}, {1920, 1080},
                                      {2560, 1440}, {3440, 1440}, {3840, 2160}})
         for (const char* name : {"Ferea", "The Extremely Long Forgotten Refinery Tower", "Żółć Привет", "冰風谷"})
+        for (bool warning : {false, true})
         {
             CAPTURE(theme);
             CAPTURE(percent);
             CAPTURE(viewport.x);
             CAPTURE(viewport.y);
             CAPTURE(name);
+            CAPTURE(warning);
             fixture.Configure(viewport, percent);
             banner.SetText(name);
+            banner.SetWarning(warning);
             fixture.Refresh();
             auto* document = banner.Document();
             auto* frame = document->GetElementById("banner");
@@ -214,6 +222,15 @@ TEST_CASE("map-name text wraps between shared ornaments across themes and scales
             Rml::Vector2f position, size;
             REQUIRE(UI::RmlBridge::DrawnBox(*frame, Rml::BoxArea::Border, position, size));
             CHECK(position.x + size.x / 2.f == doctest::Approx(viewport.x / 2.f).epsilon(0.002));
+            if (warning)
+            {
+                Rml::Vector2f warningPosition, warningSize;
+                REQUIRE(UI::RmlBridge::DrawnBox(*document->GetElementById("strife"),
+                    Rml::BoxArea::Border, warningPosition, warningSize));
+                CHECK(warningPosition.y + warningSize.y <= position.y + PixelTolerance);
+                CHECK(warningPosition.x + warningSize.x / 2.f ==
+                      doctest::Approx(viewport.x / 2.f).epsilon(0.002));
+            }
             fixture.context->ProcessMouseMove(static_cast<int>(position.x + size.x / 2.f),
                                              static_cast<int>(position.y + size.y / 2.f), 0);
             CHECK_FALSE(UI::RmlBridge::IsPointerOver(frame));

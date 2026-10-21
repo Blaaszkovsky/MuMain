@@ -10,8 +10,8 @@
 
 body { pointer-events: none; }
 #banner { top: 45.8333%; width: 264dp; max-width: 90%; pointer-events: none; }
-#ornament_top { width: 100%; height: 49.1765dp; decorator: image(map-name-top); }
-#ornament_bottom { width: 100%; height: 46.5882dp; decorator: image(map-name-bottom); }
+#ornament_top { display: block; width: 100%; height: 49.1765dp; decorator: image(map-name-top); }
+#ornament_bottom { display: block; width: 100%; height: 46.5882dp; decorator: image(map-name-bottom); }
 #name {
     margin: 0 4%; min-height: 54.3529dp;
     display: flex; align-items: center; justify-content: center;
