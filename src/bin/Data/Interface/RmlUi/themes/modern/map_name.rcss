@@ -1,4 +1,6 @@
 /* Keep the entry HUD centered at its original 220/480 viewport-height anchor.
+   Normalize the 1024x768 OZG stage to the 480-high dp root at 0.625:
+   a 204px ornament and a 262px text field have separate widths.
    Shared ornaments retain their proportions; the open middle grows for wrapped names.
    The private MapName_I2 atlas is prepared offline from the reference OZD. */
 @spritesheet map-name-decoration
@@ -9,15 +11,15 @@
 }
 
 body { pointer-events: none; }
-#banner { top: 45.8333%; width: 264dp; max-width: 90%; pointer-events: none; }
-#ornament_top { display: block; width: 100%; height: 49.1765dp; decorator: image(map-name-top); }
-#ornament_bottom { display: block; width: 100%; height: 46.5882dp; decorator: image(map-name-bottom); }
+#banner { top: 45.8333%; width: 163.75dp; max-width: 90%; pointer-events: none; }
+#ornament_top { display: block; width: 127.5dp; max-width: 100%; margin: 0 auto; height: 23.75dp; decorator: image(map-name-top); }
+#ornament_bottom { display: block; width: 127.5dp; max-width: 100%; margin: 0 auto; height: 22.5dp; decorator: image(map-name-bottom); }
 #name {
-    margin: 0 4%; min-height: 54.3529dp;
+    min-height: 26.25dp;
     display: flex; align-items: center; justify-content: center;
-    font-family: token(font-title); font-size: 24dp; line-height: 1.1;
-    color: #fffc00; font-effect: shadow(1dp 1dp #000000);
+    font-family: token(font-title); font-size: 15dp; line-height: 1.1;
+    color: #fffc00; font-effect: shadow(0.625dp 0.625dp #000000);
     text-align: center;
 }
 #name_text { max-width: 100%; word-break: break-word; }
-#strife { position: absolute; top: -28dp; width: 166dp; height: 28dp; }
+#strife { position: absolute; top: -14dp; width: 83dp; height: 14dp; }
