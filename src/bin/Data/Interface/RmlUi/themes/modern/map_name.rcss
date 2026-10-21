@@ -17,8 +17,8 @@ body { pointer-events: none; }
 #name {
     min-height: 26.25dp;
     display: flex; align-items: center; justify-content: center;
-    font-family: token(font-title); font-size: 15dp; line-height: 1.1;
-    color: #fffc00; font-effect: shadow(0.625dp 0.625dp #000000);
+    font-family: token(font-title); font-size: 15dp; font-weight: bold; line-height: 1.1;
+    color: #b8b6aa; font-effect: shadow(0.625dp 0.625dp #000000);
     text-align: center;
 }
 #name_text { max-width: 100%; word-break: break-word; }
