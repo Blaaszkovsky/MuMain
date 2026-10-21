@@ -18,3 +18,8 @@ mu_add_test(
     LINK_LIBS
         MuClient
 )
+
+mu_add_test(
+    NAME ferea_monster_profile_tests
+    SOURCES test_ferea_monster_profile.cpp
+)

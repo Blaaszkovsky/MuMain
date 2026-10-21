@@ -6394,6 +6394,7 @@ void MoveCharacterPosition(CHARACTER* c)
     {
         o->Position[2] += (-absf(sinf(o->Timer)) * 70.f + 70.f) * FPS_ANIMATION_FACTOR;
     }
+    Engine::Monsters::UpdateFereaMonsterHeight(o);
     o->Timer += 0.15f * FPS_ANIMATION_FACTOR;
 }
 
@@ -6469,6 +6470,7 @@ void MoveCharacterClient(CHARACTER* cc)
         MoveMonsterClient(cc, co);
         MoveCharacter(cc, co);
         MoveCharacterVisual(cc, co);
+        Engine::Monsters::MoveFereaMonsterVisual(cc);
 
         battleCastle::MoveBattleCastleMonster(cc, co);
     }

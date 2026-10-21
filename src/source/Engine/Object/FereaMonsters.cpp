@@ -1,39 +1,27 @@
 #include "stdafx.h"
 #include "Engine/Object/FereaMonsters.h"
+#include "Engine/Object/FereaMonsterProfile.h"
 
 #include "Core/Utilities/Log/MuLogger.h"
 #include "Data/DataHandler/LoadData.h"
 #include "Engine/Object/ZzzCharacter.h"
 #include "Render/Models/ZzzBMD.h"
+#include "Render/Effects/ZzzEffect.h"
+#include "Render/Terrain/ZzzLodTerrain.h"
+#include "Render/Textures/ZzzOpenglUtil.h"
 
-#include <array>
+#include <cmath>
 #include <span>
 #include <vector>
 
 namespace
 {
-struct FereaMonsterProfile
-{
-    EMonsterType monster;
-    EMonsterModelType model;
-    const wchar_t* fileStem;
-    const wchar_t* displayName;
-    int actionCount;
-};
-
-// The model files are independently identified by their embedded model and texture names.
-constexpr std::array Profiles{
-    FereaMonsterProfile{MONSTER_FEREA_KNIGHT, MONSTER_MODEL_FEREA_KNIGHT, L"Monster286", L"Ferea Knight", 7},
-    FereaMonsterProfile{MONSTER_FEREA_ARCHER, MONSTER_MODEL_FEREA_ARCHER, L"Monster287", L"Ferea Archer", 7},
-    FereaMonsterProfile{MONSTER_FEREA_FIGHTER, MONSTER_MODEL_FEREA_FIGHTER, L"Monster288", L"Ferea Fighter", 7},
-    FereaMonsterProfile{MONSTER_FEREA_GENERAL, MONSTER_MODEL_FEREA_GENERAL, L"Monster289", L"Ferea General", 7},
-    FereaMonsterProfile{MONSTER_LORD_OF_FEREA, MONSTER_MODEL_LORD_OF_FEREA, L"Monster290", L"Lord of Ferea", 12},
-    FereaMonsterProfile{MONSTER_FEREA_CRYSTAL_ORB, MONSTER_MODEL_FEREA_CRYSTAL_ORB, L"Monster291", L"Ferea Crystal Orb", 7},
-};
+using Engine::Monsters::FereaMonsterProfile;
+using Engine::Monsters::FereaProfiles;
 
 const FereaMonsterProfile* FindProfile(EMonsterModelType model)
 {
-    for (const auto& profile : Profiles)
+    for (const auto& profile : FereaProfiles)
         if (profile.model == model)
             return &profile;
     return nullptr;
@@ -41,7 +29,7 @@ const FereaMonsterProfile* FindProfile(EMonsterModelType model)
 
 const FereaMonsterProfile* FindProfile(EMonsterType monster)
 {
-    for (const auto& profile : Profiles)
+    for (const auto& profile : FereaProfiles)
         if (profile.monster == monster)
             return &profile;
     return nullptr;
@@ -49,16 +37,9 @@ const FereaMonsterProfile* FindProfile(EMonsterType monster)
 
 bool ConfigurePlayback(BMD& model, const FereaMonsterProfile& profile)
 {
-    if (model.NumActions != profile.actionCount)
+    if (model.Actions == nullptr || model.NumActions <= 0)
         return false;
-    for (int action = 0; action < model.NumActions; ++action)
-    {
-        if (model.Actions[action].NumAnimationKeys <= 0)
-            return false;
-        model.Actions[action].PlaySpeed = 0.3f;
-        model.Actions[action].Loop = action == MONSTER01_DIE && profile.actionCount == 7;
-    }
-    return true;
+    return Engine::Monsters::ConfigureFereaActions(std::span(model.Actions, model.NumActions), profile);
 }
 } // namespace
 
@@ -105,9 +86,47 @@ CHARACTER* CreateFereaMonster(EMonsterType monsterType, int positionX, int posit
     if (character == nullptr)
         return nullptr;
     wcscpy_s(character->ID, profile->displayName);
-    character->Object.Scale = 1.0f;
+    character->Object.Scale = profile->scale;
+    UpdateFereaMonsterHeight(&character->Object);
     character->Weapon[0].Type = -1;
     character->Weapon[1].Type = -1;
     return character;
+}
+
+void UpdateFereaMonsterHeight(OBJECT* object)
+{
+    if (object->Type != MODEL_FEREA_CRYSTAL_ORB)
+        return;
+    object->Position[2] = RequestTerrainHeight(object->Position[0], object->Position[1]) + FereaOrbHeight;
+}
+
+void MoveFereaMonsterVisual(CHARACTER* character)
+{
+    OBJECT* object = &character->Object;
+    if (object->Type != MODEL_FEREA_CRYSTAL_ORB || !object->Live || !object->Visible)
+        return;
+
+    constexpr float PulseTimeScaleMs = 400.0f;
+    constexpr float GlowScale = 2.5f;
+    constexpr float PulseScale = 0.25f;
+    constexpr float HitGlowScale = 3.5f;
+    constexpr vec3_t HitLight = {1.0f, 0.3f, 0.1f};
+    constexpr vec3_t LivingLight = {0.35f, 0.65f, 1.0f};
+    vec3_t light;
+    // Native Orb hit/death clips duplicate its idle clip. These colours expose
+    // the existing combat actions without guessing a boss phase or buff state.
+    if (object->CurrentAction == MONSTER01_SHOCK)
+    {
+        VectorCopy(HitLight, light);
+    }
+    else
+    {
+        VectorCopy(LivingLight, light);
+    }
+    for (float& channel : light)
+        channel *= object->Alpha;
+    const float scale = object->CurrentAction == MONSTER01_SHOCK
+        ? HitGlowScale : GlowScale + PulseScale * static_cast<float>(std::sin(WorldTime / PulseTimeScaleMs));
+    CreateSprite(BITMAP_LIGHT, object->Position, scale, light, object);
 }
 } // namespace Engine::Monsters
