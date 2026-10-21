@@ -19,5 +19,5 @@ body { pointer-events: none; }
     color: #fffc00; font-effect: shadow(1dp 1dp #000000);
     text-align: center;
 }
-#name_text { max-width: 100%; word-break: break-all; }
+#name_text { max-width: 100%; word-break: break-word; }
 #strife { position: absolute; top: -28dp; width: 166dp; height: 28dp; }

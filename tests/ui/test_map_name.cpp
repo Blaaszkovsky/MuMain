@@ -197,7 +197,8 @@ TEST_CASE("map-name text wraps between shared ornaments across themes and scales
         for (int percent : {75, 100, 125, 150})
         for (Rml::Vector2i viewport : {Rml::Vector2i(800, 600), {1280, 720}, {1920, 1080},
                                      {2560, 1440}, {3440, 1440}, {3840, 2160}})
-        for (const char* name : {"Ferea", "The Extremely Long Forgotten Refinery Tower", "Żółć Привет", "冰風谷"})
+        for (const char* name : {"Ferea", "The Extremely Long Forgotten Refinery Tower", "Żółć Привет", "冰風谷",
+                                 "AnExceptionallyLongUnbrokenMapNameForWrapping"})
         for (bool warning : {false, true})
         {
             CAPTURE(theme);
