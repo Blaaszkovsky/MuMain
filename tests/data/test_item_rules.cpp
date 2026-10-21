@@ -4,9 +4,11 @@
 
 #include "Core/Utilities/Log/MuLogger.h"
 #include "Data/DataHandler/ItemData/ItemJsonStorage.h"
+#include "Data/GameData/ItemData/ItemAttributeConversion.h"
 #include "Data/GameData/ItemData/ItemDatabase.h"
 #include "Data/GameData/ItemData/ItemType.h"
 #include "Engine/Object/ZzzCharacter.h"
+#include "Engine/Object/ZzzInfomation.h"
 #include "GameLogic/Items/EquipmentRestrictions.h"
 #include "GameLogic/Items/ItemCategories.h"
 #include "GameLogic/Items/ShopRestrictions.h"
@@ -14,6 +16,7 @@
 #include "World/MapInfra/MapManager.h"
 
 #include <filesystem>
+#include <vector>
 
 extern CHARACTER* Hero;
 
@@ -57,19 +60,29 @@ ITEM Broken(ITEM item)
 class ShippedItemsScope
 {
 public:
-    ShippedItemsScope() : m_previousHero(Hero)
+    ShippedItemsScope()
+        : m_previousHero(Hero), m_attributes(MAX_ITEM), m_previousAttributes(ItemAttribute),
+          m_previousCharacterAttributes(CharacterAttribute)
     {
         mu::log::Init();
         const ItemDataLoadResult result =
             LoadItemDataDirectory(std::filesystem::path(MU_TEST_DATA_DIR) / "Items");
         REQUIRE_FALSE(HasErrors(result.issues));
         g_ItemDatabase.Build(result.items);
+        for (const ItemDefinition& definition : result.items)
+        {
+            ToItemAttribute(definition, m_attributes[MakeItemType(definition.group, definition.number)]);
+        }
+        ItemAttribute = m_attributes.data();
         Hero = &m_character;
+        CharacterAttribute = &m_characterAttributes;
     }
 
     ~ShippedItemsScope()
     {
         Hero = m_previousHero;
+        ItemAttribute = m_previousAttributes;
+        CharacterAttribute = m_previousCharacterAttributes;
     }
 
     void SetGameMaster(bool isGameMaster)
@@ -77,9 +90,19 @@ public:
         Hero->CtlCode = isGameMaster ? CTLCODE_20OPERATOR : 0;
     }
 
+    void SetCharacter(CLASS_TYPE characterClass, WORD level)
+    {
+        Hero->Class = characterClass;
+        CharacterAttribute->Level = level;
+    }
+
 private:
     CHARACTER m_character{};
     CHARACTER* m_previousHero;
+    std::vector<ITEM_ATTRIBUTE> m_attributes;
+    ITEM_ATTRIBUTE* m_previousAttributes;
+    CHARACTER_ATTRIBUTE m_characterAttributes{};
+    CHARACTER_ATTRIBUTE* m_previousCharacterAttributes;
 };
 
 bool TradeBan(int itemType, const ItemState& state = {})
@@ -274,6 +297,173 @@ TEST_CASE("Item categories come from the item data [data][items][rules]")
     // Model ids outside the item range are no items.
     CHECK_FALSE(IsRideableMountModel(-1));
     CHECK_FALSE(IsRideableMountModel(MODEL_ITEM + MAX_ITEM));
+}
+
+TEST_CASE("Wings of Unity keep level 400 through every upgrade [data][items][rules]")
+{
+    ShippedItemsScope items;
+    constexpr int UnityType = MakeItemType(12, 245);
+    constexpr int MaximumUpgradeLevel = 15;
+    constexpr int RequiredLevel = 400;
+    const ItemDefinition* definition = g_ItemDatabase.Find(UnityType);
+    REQUIRE(definition != nullptr);
+    CHECK(definition->names.GetNeutral() == "Wings of Unity");
+    CHECK(definition->slot == ItemSlot::Wings);
+    CHECK(definition->wingTier == WingTier::Third);
+    CHECK(definition->width == 4);
+    CHECK(definition->height == 3);
+    CHECK(definition->defense == 60);
+    CHECK(definition->durability == 220);
+    for (const BYTE requirement : definition->classRequirements)
+    {
+        CHECK(requirement == 1);
+    }
+
+    for (int level = 0; level <= MaximumUpgradeLevel; ++level)
+    {
+        INFO("upgrade level " << level);
+        ITEM wings = MakeItem(UnityType, {level, false, false, definition->durability});
+        SetItemAttributes(&wings);
+        CHECK(wings.RequireLevel == RequiredLevel);
+        CHECK(IsWingItem(&wings));
+        CHECK(IsThirdTierWing(&wings));
+        const ITEM noHelper = MakeItem(-1);
+        CHECK(HasFlightEquipment(&noHelper, &wings));
+    }
+}
+
+TEST_CASE("Wings of Unity reject level 399 and allow every class at 400 [data][items][rules]")
+{
+    ShippedItemsScope items;
+    constexpr int UnityType = MakeItemType(12, 245);
+    constexpr int MaximumUpgradeLevel = 15;
+    const CLASS_TYPE classes[] = {CLASS_WIZARD, CLASS_KNIGHT, CLASS_ELF, CLASS_DARK,
+                                  CLASS_DARK_LORD, CLASS_SUMMONER, CLASS_RAGEFIGHTER};
+    for (const CLASS_TYPE characterClass : classes)
+    {
+        for (const int upgrade : {0, MaximumUpgradeLevel})
+        {
+            INFO("class " << int(characterClass) << " upgrade " << upgrade);
+            ITEM wings = MakeItem(UnityType, {upgrade});
+            // No harmony service is initialized in these item-rule tests.
+            // Keep that unrelated branch inactive at every tested upgrade.
+            wings.Jewel_Of_Harmony_OptionLevel = MaximumUpgradeLevel + 1;
+            SetItemAttributes(&wings);
+            items.SetCharacter(characterClass, 399);
+            CHECK_FALSE(IsRequireEquipItem(&wings));
+            items.SetCharacter(characterClass, 400);
+            CHECK(IsRequireEquipItem(&wings));
+        }
+    }
+
+    ITEM storm = MakeItem(ITEM_WING_OF_STORM);
+    storm.Jewel_Of_Harmony_OptionLevel = MaximumUpgradeLevel + 1;
+    SetItemAttributes(&storm);
+    items.SetCharacter(CLASS_WIZARD, 400);
+    CHECK_FALSE(IsRequireEquipItem(&storm));
+    items.SetCharacter(CLASS_KNIGHT, 400);
+    CHECK_FALSE(IsRequireEquipItem(&storm));
+    items.SetCharacter(CLASS_BLADEMASTER, 400);
+    CHECK(IsRequireEquipItem(&storm));
+}
+
+TEST_CASE("Original wings keep their upgrade level requirements [data][items][rules]")
+{
+    ShippedItemsScope items;
+    struct RequirementCase
+    {
+        int itemType;
+        int level;
+        int requiredLevel;
+    };
+    const RequirementCase cases[] = {
+        {ITEM_WING, 0, 180},
+        {ITEM_WING, 15, 240},
+        {ITEM_WINGS_OF_SPIRITS, 0, 215},
+        {ITEM_WINGS_OF_SPIRITS, 15, 290},
+        {ITEM_WING_OF_STORM, 0, 400},
+        {ITEM_WING_OF_STORM, 15, 400},
+        {ITEM_CAPE_OF_OVERRULE, 0, 400},
+        {ITEM_CAPE_OF_OVERRULE, 15, 400},
+        {KrisType, 15, 0},
+    };
+    for (const RequirementCase& entry : cases)
+    {
+        INFO("type " << entry.itemType << " upgrade " << entry.level);
+        ITEM item = MakeItem(entry.itemType, {entry.level});
+        SetItemAttributes(&item);
+        CHECK(item.RequireLevel == entry.requiredLevel);
+    }
+}
+
+TEST_CASE("Wings of Unity use third tier luck and excellent options [data][items][rules]")
+{
+    ShippedItemsScope items;
+    constexpr int UnityType = MakeItemType(12, 245);
+    constexpr BYTE AllThirdTierExcellentOptions = 0x0F;
+    ITEM wings = MakeItem(UnityType);
+    wings.HasLuck = true;
+    wings.ExcellentFlags = AllThirdTierExcellentOptions;
+    SetItemAttributes(&wings);
+
+    REQUIRE(wings.SpecialNum == 5);
+    CHECK(wings.Special[0] == AT_ONE_PERCENT_DAMAGE);
+    CHECK(wings.Special[1] == AT_DAMAGE_REFLECTION);
+    CHECK(wings.Special[2] == AT_RECOVER_FULL_LIFE);
+    CHECK(wings.Special[3] == AT_RECOVER_FULL_MANA);
+    for (int option = 0; option < 4; ++option)
+    {
+        CHECK(wings.SpecialValue[option] == 5);
+    }
+    CHECK(wings.Special[4] == AT_LUCK);
+    CHECK(wings.RequireLevel == 400);
+
+    wings.OptionType = 3;
+    wings.OptionLevel = 7;
+    SetItemAttributes(&wings);
+    REQUIRE(wings.SpecialNum == 6);
+    CHECK(wings.Special[4] == AT_LUCK);
+    CHECK(wings.Special[5] == AT_IMPROVE_DAMAGE);
+    CHECK(wings.SpecialValue[5] == 28);
+}
+
+TEST_CASE("Wings of Unity additional options match the server profile [data][items][rules]")
+{
+    ShippedItemsScope items;
+    constexpr int UnityType = MakeItemType(12, 245);
+    constexpr BYTE MaximumOptionLevel = 7;
+    const WORD expectedOptions[] = {AT_LIFE_REGENERATION, 0, AT_IMPROVE_DEFENSE, AT_IMPROVE_DAMAGE};
+    for (BYTE type = 0; type < std::size(expectedOptions); ++type)
+    {
+        for (BYTE level = 1; level <= MaximumOptionLevel; ++level)
+        {
+            INFO("type " << int(type) << " level " << int(level));
+            ITEM wings = MakeItem(UnityType);
+            wings.OptionType = type;
+            wings.OptionLevel = level;
+            SetItemAttributes(&wings);
+            if (type == 1)
+            {
+                CHECK(wings.SpecialNum == 0);
+                continue;
+            }
+            REQUIRE(wings.SpecialNum == 1);
+            CHECK(wings.Special[0] == expectedOptions[type]);
+            CHECK(wings.SpecialValue[0] == (type == 0 ? level : level * 4));
+        }
+    }
+
+    // Original third tier wings retain their differing physical/magic profile.
+    for (const int itemType : {ITEM_WING_OF_STORM, ITEM_WING_OF_ETERNAL})
+    {
+        ITEM wings = MakeItem(itemType);
+        wings.OptionType = 3;
+        wings.OptionLevel = MaximumOptionLevel;
+        SetItemAttributes(&wings);
+        REQUIRE(wings.SpecialNum == 1);
+        CHECK(wings.Special[0] == (itemType == ITEM_WING_OF_STORM ? AT_IMPROVE_DAMAGE : AT_IMPROVE_MAGIC));
+        CHECK(wings.SpecialValue[0] == MaximumOptionLevel * 4);
+    }
 }
 
 TEST_CASE("Wings, the Dinorant, the Dark Horse and the Fenrir are flight equipment [data][items][rules]")

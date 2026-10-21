@@ -48,6 +48,21 @@ namespace
 const std::filesystem::path DataDirectory = MU_TEST_DATA_DIR;
 const std::filesystem::path ClientDirectory = DataDirectory.parent_path();
 const std::filesystem::path ModelDirectory = DataDirectory / "Items" / "Models";
+const std::filesystem::path PrivateUnityModelFile = DataDirectory / "Item" / "Wing245.bmd";
+
+bool IsUninstalledPrivateModel(const ItemModelDefinition& model)
+{
+    constexpr int WingGroup = 12;
+    constexpr int UnityNumber = 245;
+    if (model.group != WingGroup || model.number != UnityNumber ||
+        std::filesystem::is_regular_file(PrivateUnityModelFile))
+    {
+        return false;
+    }
+
+    MESSAGE("Wings of Unity private assets are not installed; checking the tracked mapping only.");
+    return true;
+}
 
 const ItemModelDefinition* FindModel(const std::vector<ItemModelDefinition>& models, int group, int number)
 {
@@ -167,6 +182,28 @@ TEST_CASE("Shipped item models load without problems [data][items]")
         CHECK(false);
     }
     CHECK(result.models.size() > 850);
+}
+
+TEST_CASE("Wings of Unity resolve their own model and texture folder [data][items]")
+{
+    const ItemModelDefinition* model = FindModel(ShippedModels().models, 12, 245);
+    REQUIRE(model != nullptr);
+    CHECK(model->file == "Data/Item/Wing245.bmd");
+    CHECK(model->textureFolders == std::vector<std::string>{"Item"});
+    CHECK(model->inventory.scale == doctest::Approx(0.002));
+    CHECK_FALSE(model->cloth);
+}
+
+TEST_CASE("Installed Wings of Unity assets open with matching textures [data][items][private-assets]"
+          * doctest::skip(!std::filesystem::is_regular_file(PrivateUnityModelFile)))
+{
+    const ItemModelDefinition* model = FindModel(ShippedModels().models, 12, 245);
+    REQUIRE(model != nullptr);
+    const std::unique_ptr<BMD> bmd = OpenModelFile(*model);
+    CHECK(bmd->NumMeshs > 0);
+    CHECK(bmd->NumBones > 0);
+    CHECK(bmd->NumActions > 0);
+    CHECK(FindTexturesOutsideFolders(*model).empty());
 }
 
 // Nothing in the client saves model files yet; this checks that the shipped
@@ -468,6 +505,10 @@ TEST_CASE("Shipped item model files and texture folders exist [data][items]")
 {
     for (const ItemModelDefinition& model : ShippedModels().models)
     {
+        if (IsUninstalledPrivateModel(model))
+        {
+            continue;
+        }
         INFO("(" << model.group << "," << model.number << ") " << model.file);
         CHECK(std::filesystem::is_regular_file(ClientDirectory / model.file));
         for (const std::string& folder : model.textureFolders)
@@ -484,6 +525,10 @@ TEST_CASE("Every texture of a shipped item model is in one of its texture folder
 {
     for (const ItemModelDefinition& model : ShippedModels().models)
     {
+        if (IsUninstalledPrivateModel(model))
+        {
+            continue;
+        }
         for (const std::string& missing : FindTexturesOutsideFolders(model))
         {
             INFO("(" << model.group << "," << model.number << ") " << model.file << " " << missing);
@@ -498,6 +543,10 @@ TEST_CASE("Every texture of a shipped item model is a .jpg or .tga texture or hi
 {
     for (const ItemModelDefinition& model : ShippedModels().models)
     {
+        if (IsUninstalledPrivateModel(model))
+        {
+            continue;
+        }
         for (const std::string& texture : ReadMeshTextures(model))
         {
             INFO("(" << model.group << "," << model.number << ") " << model.file << " " << texture);

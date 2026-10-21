@@ -1490,6 +1490,21 @@
       "glow": {
         "level": 0
       }
+    },
+    {
+      "number": 245,
+      "file": "Data/Item/Wing245.bmd",
+      "textureFolders": ["Item"],
+      "inventory": {
+        "scale": 0.002
+      },
+      "ground": {
+        "rotation": [270, 0, 45]
+      },
+      "glow": {
+        "level": 0,
+        "excellent": false
+      }
     }
   ]
 }

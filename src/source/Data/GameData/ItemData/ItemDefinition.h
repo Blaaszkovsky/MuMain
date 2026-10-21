@@ -39,6 +39,12 @@ enum class WingTier : BYTE
     Third,
 };
 
+enum class AdditionalOptionProfile : BYTE
+{
+    Legacy,
+    ThirdTierPhysicalWing,
+};
+
 // What a player may do with an item. See the rule flags in ItemDefinition.
 enum class ItemAction : BYTE
 {
@@ -88,6 +94,7 @@ struct ItemDefinition
     BYTE height = 0;
     ItemSlot slot = ItemSlot::None;
     WingTier wingTier = WingTier::None;
+    AdditionalOptionProfile additionalOptionProfile = AdditionalOptionProfile::Legacy;
     bool twoHanded = false;
     WORD skill = 0;
     WORD level = 0;

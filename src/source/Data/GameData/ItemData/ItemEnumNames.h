@@ -16,6 +16,7 @@ template <typename TEnum> struct EnumName
 
 std::span<const EnumName<ItemSlot>> GetEnumNames(ItemSlot);
 std::span<const EnumName<WingTier>> GetEnumNames(WingTier);
+std::span<const EnumName<AdditionalOptionProfile>> GetEnumNames(AdditionalOptionProfile);
 std::span<const EnumName<ItemTag>> GetEnumNames(ItemTag);
 
 // nullptr when the value has no name.

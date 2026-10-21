@@ -30,6 +30,10 @@ constexpr std::array<EnumName<WingTier>, 4> WingTierNames = {{
     {WingTier::Third, "third"},
 }};
 
+constexpr std::array<EnumName<AdditionalOptionProfile>, 1> AdditionalOptionProfileNames = {{
+    {AdditionalOptionProfile::ThirdTierPhysicalWing, "thirdTierPhysicalWing"},
+}};
+
 constexpr std::array<EnumName<ItemTag>, static_cast<size_t>(ItemTag::Count)> ItemTagNames = {{
     {ItemTag::Cape, "cape"},
     {ItemTag::Mount, "mount"},
@@ -72,6 +76,11 @@ std::span<const EnumName<ItemSlot>> GetEnumNames(ItemSlot)
 std::span<const EnumName<WingTier>> GetEnumNames(WingTier)
 {
     return WingTierNames;
+}
+
+std::span<const EnumName<AdditionalOptionProfile>> GetEnumNames(AdditionalOptionProfile)
+{
+    return AdditionalOptionProfileNames;
 }
 
 std::span<const EnumName<ItemTag>> GetEnumNames(ItemTag)

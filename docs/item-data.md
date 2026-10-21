@@ -79,6 +79,7 @@ read as the English name only; saving writes the object form.
 | `width`, `height` | Size in inventory slots |
 | `slot` | Equipment slot: `mainHand`, `offHand`, `helm`, `armor`, `pants`, `gloves`, `boots`, `wings`, `pet`, `pendant`, `ring`. Left out = not equippable |
 | `wingTier` | Only for wings: `small`, `first`, `second`, `third`. The wing formulas (defense, damage increase, absorption) depend on it |
+| `additionalOptionProfile` | Optional `thirdTierPhysicalWing`: additional option types 0 (life recovery, 1 per option level), 2 (defense, 4 per level) and 3 (physical damage, 4 per level). Other types give no bonus. Omit to keep the original item's option rules |
 | `twoHanded` | Weapon needs both hands |
 | `skill` | Skill the item gives |
 | `level` | Item level (the drop level); also used in price and damage calculations |
@@ -125,6 +126,32 @@ can have several tags; the file lists them in the order below.
 | `valuable` | The game asks for confirmation before the item is sold or dropped |
 
 Wings need no tag: an item is a wing when its `slot` is `wings`.
+
+### Wings of Unity
+
+The extended client includes Wings of Unity at item `(12,245)`: a 4 by 3
+inventory item for all seven classes, with 60 base defense, 220 base durability
+and a fixed level requirement of 400. Upgrades from +0 through +15 keep that
+requirement, following the third tier wing rule. Luck and the four third tier
+excellent options use the existing third tier calculations.
+
+Install the separately supplied private `Wing245.bmd` and `Wing245_0.ozj` files
+under `Data/Item/` beside the client executable. These files are not distributed
+through Git. For a local build that copies runtime assets, also put them under
+`src/bin/Data/Item/` before building. Both files are required; the JSON model
+mapping alone does not supply the appearance. Verify the model and animation
+in game before deploying a package.
+
+The automated mapping and item-rule tests run without these private assets.
+The asset test is skipped when `Wing245.bmd` is absent; installing it enables
+the BMD and matching-texture checks, which then require `Wing245_0.ozj` too.
+
+The additional option (`OptionLevel`) uses `thirdTierPhysicalWing`, matching
+the server's recovery, defense and physical damage options. Other original
+wings retain their own profiles, including their magic and curse bonuses.
+The JSON entry does not add crafting recipes, drops, or server combat rules.
+Servers must implement those separately and use the extended appearance protocol to show the custom item to
+other players; the original Season 6 appearance encoding cannot identify it.
 
 ### Flight equipment
 

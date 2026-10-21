@@ -109,6 +109,7 @@ void CopyFieldsNotInItemAttribute(const ItemDefinition& source, ItemDefinition& 
 {
     target.tags = source.tags;
     target.wingTier = source.wingTier;
+    target.additionalOptionProfile = source.additionalOptionProfile;
     target.tradable = source.tradable;
     target.droppable = source.droppable;
     target.storable = source.storable;

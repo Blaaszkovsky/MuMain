@@ -29,6 +29,7 @@
 #include "Character/CharacterManager.h"
 #include "GameLogic/Skills/SkillManager.h"
 #include "Data/GameData/ItemData/ItemModelSlots.h"
+#include "Data/GameData/ItemData/ItemDatabase.h"
 
 CLASS_ATTRIBUTE     ClassAttribute[MAX_CLASS];
 MONSTER_SCRIPT      MonsterScript[MAX_MONSTER];
@@ -716,6 +717,85 @@ void CalcDefense(ITEM* ip, ITEM_ATTRIBUTE* p)
     }
 }
 
+namespace
+{
+void ApplyPhysicalWingAdditionalOption(ITEM* item)
+{
+    constexpr BYTE HealthRecoveryType = 0;
+    constexpr BYTE DefenseType = 2;
+    constexpr BYTE PhysicalDamageType = 3;
+    constexpr int StatPerOptionLevel = 4;
+    WORD option;
+    BYTE value = item->OptionLevel * StatPerOptionLevel;
+    switch (item->OptionType)
+    {
+    case HealthRecoveryType:
+        option = AT_LIFE_REGENERATION;
+        value = item->OptionLevel;
+        break;
+    case DefenseType: option = AT_IMPROVE_DEFENSE; break;
+    case PhysicalDamageType: option = AT_IMPROVE_DAMAGE; break;
+    default: return;
+    }
+
+    item->Special[item->SpecialNum] = option;
+    item->SpecialValue[item->SpecialNum] = value;
+    ++item->SpecialNum;
+}
+
+// A declared profile owns the additional option, including unsupported option
+// types, which must not fall back to an unrelated legacy item's formula.
+bool ApplyAdditionalOptionProfile(ITEM* item)
+{
+    const auto* definition = g_ItemDatabase.Find(item->Type);
+    if (definition == nullptr || definition->additionalOptionProfile !=
+        Data::Items::AdditionalOptionProfile::ThirdTierPhysicalWing)
+    {
+        return false;
+    }
+
+    ApplyPhysicalWingAdditionalOption(item);
+    return true;
+}
+
+WORD CalculateRequiredLevel(const ITEM* item, const ITEM_ATTRIBUTE* attribute)
+{
+    if (attribute->RequireLevel == 0)
+    {
+        return 0;
+    }
+
+    // Third tier wings keep their base requirement at every upgrade level,
+    // including custom wings outside the original item-number ranges.
+    if (GameLogic::Items::IsThirdTierWing(item))
+    {
+        return attribute->RequireLevel;
+    }
+
+    if ((item->Type >= ITEM_SWORD && item->Type < ITEM_WING)
+        || item->Type == ITEM_HORN_OF_FENRIR
+        || (item->Type >= ITEM_ORB_OF_TWISTING_SLASH && item->Type <= ITEM_CAPE_OF_EMPEROR)
+        || ((item->Type >= ITEM_WING_OF_DIMENSION && item->Type < ITEM_CAPE_OF_EMPEROR)
+            && item->Type != ITEM_CAPE_OF_FIGHTER))
+    {
+        return attribute->RequireLevel;
+    }
+
+    if ((item->Type >= ITEM_WING && item->Type <= ITEM_ORB_OF_TWISTING_SLASH)
+        || (item->Type >= ITEM_WING_OF_CURSE && item->Type <= ITEM_WINGS_OF_DESPAIR)
+        || item->Type == ITEM_CAPE_OF_FIGHTER || item->Type >= ITEM_HELPER)
+    {
+        constexpr int StandardLevelIncrease = 4;
+        constexpr int SecondTierWingLevelIncrease = 5;
+        const int increase = GameLogic::Items::IsSecondTierWingExceptCape(item)
+                                 ? SecondTierWingLevelIncrease : StandardLevelIncrease;
+        return attribute->RequireLevel + item->Level * increase;
+    }
+
+    return 0;
+}
+} // namespace
+
 void CalcRequirements(ITEM* ip, ITEM_ATTRIBUTE* p)
 {
     bool isExcellent = ip->ExcellentFlags > 0;
@@ -731,31 +811,7 @@ void CalcRequirements(ITEM* ip, ITEM_ATTRIBUTE* p)
         ItemLevel = p->Level + 30;
     }
 
-    int addValue = 4;
-
-    if (GameLogic::Items::IsSecondTierWingExceptCape(ip))
-    {
-        addValue = 5;
-    }
-
-    if (p->RequireLevel
-        && ((ip->Type >= ITEM_SWORD && ip->Type < ITEM_WING)
-        || (ip->Type == ITEM_HORN_OF_FENRIR)
-        || (ip->Type >= ITEM_ORB_OF_TWISTING_SLASH && ip->Type <= ITEM_CAPE_OF_EMPEROR)
-        || (ip->Type >= ITEM_WING_OF_DIMENSION && ip->Type < ITEM_CAPE_OF_EMPEROR)
-        && (ip->Type != ITEM_CAPE_OF_FIGHTER)))
-    {
-        ip->RequireLevel = p->RequireLevel;
-    }
-    else if (p->RequireLevel && ((ip->Type >= ITEM_WING && ip->Type <= ITEM_ORB_OF_TWISTING_SLASH)
-        || (ip->Type >= ITEM_WING_OF_CURSE && ip->Type <= ITEM_WINGS_OF_DESPAIR)
-        || (ip->Type == ITEM_CAPE_OF_FIGHTER)
-        || ip->Type >= ITEM_HELPER))
-    {
-        ip->RequireLevel = p->RequireLevel + ip->Level * addValue;
-    }
-    else
-        ip->RequireLevel = 0;
+    ip->RequireLevel = CalculateRequiredLevel(ip, p);
 
     if (p->RequireStrength)
         ip->RequireStrength = 20 + (p->RequireStrength) * (ItemLevel + ip->Level * 3) * 3 / 100;
@@ -1162,7 +1218,7 @@ void SetItemAttributes(ITEM* ip)
     }
 
     int Option3 = ip->OptionLevel;
-    if (Option3)
+    if (Option3 && !ApplyAdditionalOptionProfile(ip))
     {
         if (ip->Type == ITEM_HORN_OF_DINORANT)
         {
@@ -1335,21 +1391,7 @@ void SetItemAttributes(ITEM* ip)
             }
             else if (ip->Type == ITEM_WING_OF_STORM)
             {
-                if (ip->OptionType == 0)
-                {
-                    ip->SpecialValue[ip->SpecialNum] = Option3;
-                    ip->Special[ip->SpecialNum] = AT_LIFE_REGENERATION; ip->SpecialNum++;
-                }
-                else if (ip->OptionType == 2)
-                {
-                    ip->SpecialValue[ip->SpecialNum] = Option3 * 4;
-                    ip->Special[ip->SpecialNum] = AT_IMPROVE_DEFENSE; ip->SpecialNum++;
-                }
-                else if (ip->OptionType == 3)
-                {
-                    ip->SpecialValue[ip->SpecialNum] = Option3 * 4;
-                    ip->Special[ip->SpecialNum] = AT_IMPROVE_DAMAGE; ip->SpecialNum++;
-                }
+                ApplyPhysicalWingAdditionalOption(ip);
             }
             else if (ip->Type == ITEM_WING_OF_ETERNAL)
             {

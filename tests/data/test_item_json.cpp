@@ -88,6 +88,30 @@ TEST_CASE("Item JSON keeps every value through write and read [data][items]")
     CHECK(read.buyPrice == kris.buyPrice);
 }
 
+TEST_CASE("Additional option profiles survive JSON and legacy import [data][items]")
+{
+    const ReadResult result = Read(GroupFile(12,
+        R"({"number":245,"name":{"en":"Wings of Unity"},"slot":"wings","wingTier":"third",
+            "additionalOptionProfile":"thirdTierPhysicalWing"})"));
+    REQUIRE(result.issues.empty());
+    REQUIRE(result.items.size() == 1);
+    const ItemDefinition& wings = result.items.front();
+    CHECK(wings.additionalOptionProfile == AdditionalOptionProfile::ThirdTierPhysicalWing);
+    const ReadResult reread = Read(WriteItemGroupJson(12, result.items));
+    REQUIRE(reread.issues.empty());
+    REQUIRE(reread.items.size() == 1);
+    CHECK(reread.items.front().additionalOptionProfile == wings.additionalOptionProfile);
+
+    ItemDefinition imported;
+    CopyFieldsNotInItemAttribute(wings, imported);
+    CHECK(imported.additionalOptionProfile == wings.additionalOptionProfile);
+    CHECK(MakeKris().additionalOptionProfile == AdditionalOptionProfile::Legacy);
+
+    const ReadResult invalid = Read(GroupFile(12,
+        R"({"number":245,"name":{"en":"Wings of Unity"},"additionalOptionProfile":"typo"})"));
+    CHECK(HasIssue(invalid.issues, ItemDataIssueSeverity::Error, "additionalOptionProfile"));
+}
+
 TEST_CASE("Extended weapon damage survives JSON and runtime conversion [data][items]")
 {
     ItemDefinition sword = MakeKris();
