@@ -89,6 +89,8 @@ src/graphify-out/
 
 # Local-only files
 docs/reviews/
+# Private reference artwork; supplied locally, never redistributed.
+/src/bin/Data/Interface/RmlUi/assets/MapName_I2.OZT
 
 # In-game test runner output (docs/in-game-tests.md)
 in-game-test-results/
