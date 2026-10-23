@@ -19,6 +19,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace UI::Placement
 {
@@ -73,15 +74,19 @@ Rml::ElementDocument* Workspace()
     return g_workspaceView.Ensure() ? g_workspaceView.Document() : nullptr;
 }
 
-// A name the workspace uses but no window answers to does nothing, so say so once per workspace.
+// A name the workspace uses but no window answers to does nothing, so say so once per workspace. Only
+// once the main scene registered its windows: before that only the participants are known.
 void CheckNames(const Rml::ElementList& slots)
 {
-    if (g_namesChecked || g_windows.empty())
+    const bool windowsRegistered =
+        std::any_of(g_windows.begin(), g_windows.end(), [](const auto& item) { return item.second.windowId != 0; });
+    if (g_namesChecked || !windowsRegistered)
         return;
     g_namesChecked = true;
-    const auto check = [](const std::string& name, const char* attribute)
+    std::unordered_set<std::string> reported;
+    const auto check = [&reported](const std::string& name, const char* attribute)
     {
-        if (!name.empty() && g_windows.find(name) == g_windows.end())
+        if (!name.empty() && g_windows.find(name) == g_windows.end() && reported.insert(name).second)
             g_ErrorReport.Write(L"> [Placement] workspace.rml %hs names unknown window '%hs'.\r\n", attribute,
                                 name.c_str());
     };
@@ -155,9 +160,10 @@ Rml::Vector2f PanelSize(const Entry& entry)
             return panel != nullptr ? panel->GetBox().GetSize(Rml::BoxArea::Border) : Rml::Vector2f{};
         };
         Rml::Vector2f size = panelSize();
-        if (size.x <= 0.f || size.y <= 0.f)
+        // The context leaves hidden documents out of its update: a window about to open may still be laid
+        // out as it was when hidden (before a resize or a content change), or never laid out at all.
+        if (!document->IsVisible() || size.x <= 0.f || size.y <= 0.f)
         {
-            // Never shown yet: lay it out once to learn its size.
             {
                 FRAME_PROFILE(UILayout);
                 document->UpdateDocument();

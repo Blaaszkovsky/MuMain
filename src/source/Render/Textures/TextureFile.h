@@ -9,8 +9,8 @@ namespace Render::Textures
 {
 // Covers the imported 2048-square images with at most 16 MiB of RGBA pixels.
 inline constexpr int MaxTextureDimension = 2048;
-// Allows a full raw image plus metadata while bounding file allocation separately.
-inline constexpr std::size_t MaxTextureFileBytes = 32u * 1024u * 1024u;
+// Covers 4x upscaled raw images and metadata while bounding file allocation separately.
+inline constexpr std::size_t MaxTextureFileBytes = 272u * 1024u * 1024u;
 
 constexpr bool IsReadableTextureSize(int width, int height)
 {

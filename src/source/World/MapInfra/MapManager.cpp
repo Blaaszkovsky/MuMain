@@ -42,7 +42,7 @@ void LoadGenericWorldModels(int world, int assetWorld)
     mu_swprintf(directory, L"Data\\Object%d\\", assetWorld);
     Render::WorldModels::ForEachWorldModel(world, [&](int type, int slot)
     {
-        gLoadData.AccessModel(slot, directory, L"Object", type + 1);
+        gLoadData.AccessModel(slot, directory, L"Object", type + 1, true);
     });
     mu_swprintf(directory, L"Object%d\\", assetWorld);
     Render::WorldModels::ForEachWorldModel(world, [&](int, int slot)
@@ -1516,6 +1516,8 @@ void CMapManager::LoadWorld(int Map)
         g_pNewUIMiniMap->UnloadImages();
         g_pNewUIMiniMap->LoadImages(WorldName);
     }
+
+    Bitmaps.LogTextureFilteringSummary("world loaded");
 }
 
 void CMapManager::DeleteObjects()

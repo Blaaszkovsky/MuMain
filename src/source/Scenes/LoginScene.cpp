@@ -36,6 +36,8 @@
 #ifdef _EDITOR
 #include "Core/BmdRuntimeProbe.h"
 #endif
+#include "Scenes/SceneLightingSetup.h"
+#include "Scenes/ScenePostProcessing.h"
 
 // External declarations
 extern int DeleteGuildIndex;
@@ -416,6 +418,7 @@ bool NewRenderLogInScene(HDC hDC)
 
     const auto viewport = UI::Scaling::FullReferenceViewport();
     BeginOpengl(viewport.x, viewport.y, viewport.width, viewport.height);
+    Scenes::Lighting::SubmitSceneLighting();
 
     // LoginScene doesn't call CreateFrustrum (DefaultCamera tour mode angles differ from
     // legacy hardcoded values). Instead, TestFrustrum2D is bypassed for LOG_IN_SCENE and
@@ -447,13 +450,19 @@ bool NewRenderLogInScene(HDC hDC)
                 RenderObjects_AfterCharacter();
             }
         }
-        { FRAME_PROFILE(Characters); ThePetProcess().RenderPets(); }
+        {
+            FRAME_PROFILE(Characters);
+            Scenes::PostProcessing::RenderPetsWithoutBloom();
+        }
     }
 
     BeginSprite();
     RenderSprites();
     RenderParticles();
     EndSprite();
+
+    Scenes::PostProcessing::EndSceneGeometry();
+
     BeginBitmap();
 
     const bool tourMode = CCameraMove::GetInstancePtr()->IsTourMode();

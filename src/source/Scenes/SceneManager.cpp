@@ -12,6 +12,7 @@
 #include <numeric>
 #include <cmath>
 #include <iterator>
+#include <thread>
 #include "SceneManager.h"
 #include "Core/Utilities/FrameProfiler.h"
 #include "UI/Diagnostics/DiagnosticsOverlay.h"
@@ -42,6 +43,7 @@ FrameTimingState g_frameTiming;
 #include "LoginSceneOverlay.h"
 #include "ScreenshotCaptureState.h"
 #include "Audio/DSPlaySound.h"
+#include "Core/Utilities/BuildInfo.h"
 #include "Render/Renderer/MuRenderer.h"
 #include "Render/Renderer/RenderUtils.h"
 #include "Render/Textures/ZzzOpenglUtil.h"
@@ -64,7 +66,9 @@ FrameTimingState g_frameTiming;
 #include "Camera/CameraMode.h"
 #include "Camera/CameraConfig.h"
 #include "Camera/CameraProjection.h"
+#include "Scenes/SceneLightingSetup.h"
 #include "Scenes/SceneNames.h"
+#include "Render/Lighting/LightMoodSetting.h"
 
 #ifdef _EDITOR
 #include "../MuEditor/Core/MuEditorCore.h"
@@ -135,8 +139,12 @@ bool GetShowFpsCounter()
     return g_bShowFpsCounter;
 }
 
+// The overlay has its own flag: a benchmark run counts without drawing it into its own frames.
+static bool g_bShowGLStatsOverlay = false;
+
 void SetShowGLStats(bool enabled)
 {
+    g_bShowGLStatsOverlay = enabled;
     FrameProfiler::g_CountersEnabled = enabled;
     mu::GetRenderer().SetStatsEnabled(enabled);
 }
@@ -278,10 +286,10 @@ static int g_screenshotQuality = BestScreenshotQuality;
 // The readback is only ready on a later frame than the one that asked for it,
 // and a request may arrive either before or after this frame's consume pass
 // (Print Screen comes from the scene update, a scripted capture from the
-// control socket's poll). A frame the renderer skips (no swapchain image: a
-// minimized window, or too many frames in flight) delivers nothing and leaves
-// the request for the next one, so the wait allows for a few skipped frames:
-// about a second at 60 frames per second.
+// control socket's poll). A frame that renders delivers its readback when it
+// ends, so the attempts cover a request that arrives after this frame's
+// consume pass. A window that renders no frames (minimized, on Vulkan) skips
+// every frame, so its capture fails once the attempts run out.
 constexpr int MaxScreenshotConsumeAttempts = 60;
 static int g_screenshotConsumeAttempts = 0;
 
@@ -549,11 +557,17 @@ static void UpdateCoreSystems()
  * @brief Sets both the OpenGL clear color and the global fog color to the same RGB.
  *
  * Every world uses the fog color as its clear color, so this keeps them in sync
- * and avoids duplicating the two assignments at every call site.
+ * and avoids duplicating the two assignments at every call site. The map's
+ * light mood scales both (its background scale), so distant geometry does not
+ * fade into a background brighter than the scene.
  */
 static void SetClearAndFogColor(float r, float g, float b)
 {
     extern GLfloat FogColor[4];
+    const float background = Render::Lighting::LightMood::Active().background;
+    r *= background;
+    g *= background;
+    b *= background;
     mu::GetRenderer().SetClearColor(r, g, b, 1.f);
     FogColor[0] = r;
     FogColor[1] = g;
@@ -648,41 +662,21 @@ static void RestartFrameStatsOnSceneChange()
 // Which binary runs where: one line each for the build and the OS.
 static void AddBuildLines(std::vector<std::string>& lines)
 {
-    constexpr const char* kBuildType =
-#if defined(_DEBUG) || defined(DEBUG)
-        "Debug";
-#else
-        "Release";
-#endif
-    constexpr const char* kEditor =
-#ifdef _EDITOR
-        "Editor";
-#else
-        "NoEditor";
-#endif
-    constexpr const char* kCompiler =
-#if defined(__MINGW32__) || defined(__MINGW64__)
-        "MinGW";
-#elif defined(__clang__)
-        "Clang";
-#elif defined(_MSC_VER)
-        "MSVC";
-#elif defined(__GNUC__)
-        "GCC";
-#else
-        "Unknown";
-#endif
-    constexpr const char* kArch =
-#if defined(_WIN64) || defined(__x86_64__) || defined(__aarch64__)
-        "x64";
-#else
-        "x86";
-#endif
     char line[160];
-    std::snprintf(line, sizeof(line), "Build: %s %s %s %s  %s %s", kBuildType, kEditor, kCompiler, kArch, __DATE__,
-                  __TIME__);
+    std::snprintf(line, sizeof(line), "Build: %s %s %s %s  %s %s", Core::Build::kConfiguration, Core::Build::kEditor,
+                  Core::Build::kCompiler, Core::Build::kArchitecture, Core::Build::kDate, Core::Build::kTime);
     lines.emplace_back(line);
     lines.push_back("OS: " + Core::Text::ToUtf8(Core::Platform::GetOSVersionString().c_str()));
+
+    const std::string& processor = Core::Platform::GetProcessorName();
+    std::snprintf(line, sizeof(line), "CPU: %s (%u threads)   RAM: %.1f GB",
+                  processor.empty() ? "unknown" : processor.c_str(), std::thread::hardware_concurrency(),
+                  Core::Platform::GetSystemMemoryMB() / 1024.0);
+    lines.emplace_back(line);
+
+    const char* gpu = mu::GetRenderer().GetGPUDeviceName();
+    std::snprintf(line, sizeof(line), "GPU: %s", (gpu && *gpu) ? gpu : "unknown");
+    lines.emplace_back(line);
 }
 
 // The active camera: mode, field of view, angle, distances and culling planes.
@@ -730,7 +724,7 @@ static void UpdateDiagnostics()
     }
     UI::Diagnostics::FrameSummary summary;
     summary.details = g_bShowDebugInfo;
-    summary.counters = FrameProfiler::g_CountersEnabled;
+    summary.counters = g_bShowGLStatsOverlay;
     summary.fpsOnly = g_bShowFpsCounter;
     summary.fps = FPS_AVG;
     summary.averageFps = s_avgFps;
@@ -1195,6 +1189,7 @@ void MainScene(HDC hDC)
     try
     {
         Success = RenderCurrentScene(hDC);
+        Scenes::Lighting::SubmitDynamicLights();
 
         LogFrameTiming();
         {

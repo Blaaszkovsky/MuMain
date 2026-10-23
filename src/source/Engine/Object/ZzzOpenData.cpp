@@ -373,7 +373,7 @@ void OpenPlayerTextures()
     }
 }
 
-// The game cannot run with broken item or effect data: shows the errors and quits.
+// The game cannot run with broken item, effect or server list data: shows the errors and quits.
 static void StopOnDataError(const char* title, const std::string& errorMessage)
 {
     const std::wstring message = Core::Text::FromUtf8(errorMessage);
@@ -385,6 +385,17 @@ static void StopOnDataError(const char* title, const std::string& errorMessage)
 static void StopOnItemDataError(const std::string& errorMessage)
 {
     StopOnDataError("Item data error", errorMessage);
+}
+
+// Loads the server groups of the login screen (Data/Local/ServerList.json);
+// errors stop the game.
+static void OpenServerList()
+{
+    std::string errorMessage;
+    if (!g_ServerListManager->LoadServerListScript(errorMessage))
+    {
+        StopOnDataError("Server list error", errorMessage);
+    }
 }
 
 // Loads the effect types (Data/Effects) and builds the effect registry from
@@ -467,7 +478,7 @@ constexpr float GrandSoulClothHeight = 85.0f;
 // The cloth of the Grand Soul pants is drawn on mesh 2 of their model.
 // Creating the cloth once rebuilds the triangles and texture coordinates of
 // that mesh as a cloth grid; the cloth itself is not needed.
-static void PrepareGrandSoulPantsClothMesh()
+void PrepareGrandSoulPantsClothMesh()
 {
     if (!CPhysicsClothMesh::CanCreate(MODEL_GRAND_SOUL_PANTS, GrandSoulClothMesh, GrandSoulClothColumns,
                                       GrandSoulClothRows))
@@ -3528,7 +3539,7 @@ void OpenImages()
     LoadBitmap(L"Interface\\lock_02.jpg", BITMAP_INVENTORY_BUTTON + 15);
     LoadBitmap(L"Interface\\lock_03.jpg", BITMAP_INVENTORY_BUTTON + 16);
     LoadBitmap(L"Interface\\lock_04.jpg", BITMAP_INVENTORY_BUTTON + 17);
-    LoadBitmap(L"Interface\\guild.tga", BITMAP_GUILD);
+    LoadCanvasBitmap(L"Interface\\guild.tga", BITMAP_GUILD);
 }
 
 void OpenSounds()
@@ -4227,7 +4238,7 @@ void OpenBasicData(HDC hDC)
     LoadBitmap(L"Interface\\DoorCL.jpg", BITMAP_INTERFACE_EX + 40);
     LoadBitmap(L"Interface\\DoorOP.jpg", BITMAP_INTERFACE_EX + 41);
     //OpenJpeg( "Effect\\FireSnuff.jpg"       , BITMAP_FIRE_SNUFF,    GL_LINEAR, GL_CLAMP_TO_EDGE );
-    LoadBitmap(L"Object31\\Flag.tga", BITMAP_INTERFACE_MAP + 0, GL_LINEAR, GL_CLAMP_TO_EDGE);
+    LoadCanvasBitmap(L"Object31\\Flag.tga", BITMAP_INTERFACE_MAP + 0, GL_LINEAR, GL_CLAMP_TO_EDGE);
     LoadBitmap(L"Interface\\CursorAttack2.tga", BITMAP_CURSOR2);
     LoadBitmap(L"Effect\\Cratered.tga", BITMAP_CRATER);
     LoadBitmap(L"Effect\\FormationMark.tga", BITMAP_FORMATION_MARK);
@@ -4422,7 +4433,7 @@ void OpenBasicData(HDC hDC)
 
     wchar_t Text[100];
 
-    g_ServerListManager->LoadServerListScript();
+    OpenServerList();
 
     // NPC dialog text used to live in Data\Local\<lang>\Dialog_<lang>.bmd
     // and was loaded into g_DialogScript here. The text and answer labels

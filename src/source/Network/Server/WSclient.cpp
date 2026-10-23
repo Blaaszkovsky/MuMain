@@ -3282,7 +3282,7 @@ void ReceiveAttackDamageCastle(CHARACTER* c, OBJECT* o, const bool success, cons
         }
         else
         {
-            if (c->MonsterIndex != MONSTER_ILLUSION_OF_KUNDUN_7 && rand_fps_check(2))
+            if (c->MonsterIndex != MONSTER_ILLUSION_OF_KUNDUN_7 && (rand() % 2 == 0))
             {
                 SetPlayerShock(c, damage);
             }
@@ -3364,7 +3364,7 @@ void ReceiveAttackDamage(CHARACTER* c, OBJECT* o, const bool success, const int 
         }
         else
         {
-            if (c->MonsterIndex != MONSTER_ILLUSION_OF_KUNDUN_7 && rand_fps_check(2))
+            if (c->MonsterIndex != MONSTER_ILLUSION_OF_KUNDUN_7 && (rand() % 2 == 0))
             {
                 SetPlayerShock(c, damage);
             }
@@ -5638,7 +5638,7 @@ void ReceiveMagicPosition(const BYTE* ReceiveBuffer, int Size)
         int TargetKey = ((int)(Data2->KeyH) << 8) + Data2->KeyL;
         CHARACTER* tc = &CharactersClient[FindCharacterIndex(TargetKey)];
         OBJECT* to = &tc->Object;
-        if (rand_fps_check(2))
+        if (rand() % 2 == 0)
             SetPlayerShock(tc, tc->Hit);
         if (tc->Hit > 0)
         {
@@ -9283,20 +9283,31 @@ void ReceiveSetPriceResult(const BYTE* ReceiveBuffer)
 {
     auto Header = (LPPSHOPSETPRICE_RESULTINFO)ReceiveBuffer;
 
-    if (Header->byResult != 0x01 && g_IsPurchaseShop == PSHOPWNDTYPE_SALE)
+    if (g_IsPurchaseShop != PSHOPWNDTYPE_SALE)
     {
-        // Header->byResult == 0x06
-        if (UI::Inventory::HasPickedItem())
-        {
-            UI::Inventory::DiscardPickedItem();
-        }
-
-        RemovePersonalItemPrice(UI::Shop::OwnShopPriceTargetIndex(), PSHOPWNDTYPE_SALE);
-
-        SocketClient->ToGameServer()->SendInventoryRequest();
-
-        g_ErrorReport.Write(L"@ [Fault] ReceiveSetPriceResult (result : %d)\n", Header->byResult);
+        return;
     }
+
+    if (Header->byResult == 0x01)
+    {
+        UI::Shop::ForgetReplacedOwnShopPrice(Header->byItemPos);
+        return;
+    }
+
+    // The server refused the price (Header->byResult == 0x06).
+    if (UI::Inventory::HasPickedItem())
+    {
+        UI::Inventory::DiscardPickedItem();
+    }
+
+    if (!UI::Shop::RestoreReplacedOwnShopPrice(Header->byItemPos))
+    {
+        RemovePersonalItemPrice(UI::Shop::OwnShopPriceTargetIndex(), PSHOPWNDTYPE_SALE);
+    }
+
+    SocketClient->ToGameServer()->SendInventoryRequest();
+
+    g_ErrorReport.Write(L"@ [Fault] ReceiveSetPriceResult (result : %d)\n", Header->byResult);
 }
 
 void ReceiveCreatePersonalShop(const BYTE* ReceiveBuffer)
@@ -10818,15 +10829,17 @@ void ReceiveBCStatus(const BYTE* ReceiveBuffer)
         CMultiLanguage::ConvertFromUtf8(ownerGuild, Data->cOwnerGuild, MAX_GUILDNAME);
         CMultiLanguage::ConvertFromUtf8(ownerGuildMaster, Data->cOwnerGuildMaster, MAX_USERNAME_SIZE);
         UI::Siege::GuardStatus status{
-            static_cast<CASTLESIEGE_STATE>(Data->cCastleSiegeState), ownerGuild, ownerGuildMaster,
-            {MAKEWORD(Data->btStartYearL, Data->btStartYearH), Data->btStartMonth,
-             Data->btStartDay, Data->btStartHour, Data->btStartMinute},
-            {MAKEWORD(Data->btEndYearL, Data->btEndYearH), Data->btEndMonth,
-             Data->btEndDay, Data->btEndHour, Data->btEndMinute},
-            {MAKEWORD(Data->btSiegeStartYearL, Data->btSiegeStartYearH), Data->btSiegeStartMonth,
-             Data->btSiegeStartDay, Data->btSiegeStartHour, Data->btSiegeStartMinute},
-            MAKELONG(MAKEWORD(Data->btStateLeftSec4, Data->btStateLeftSec3),
-                     MAKEWORD(Data->btStateLeftSec2, Data->btStateLeftSec1))};
+            static_cast<CASTLESIEGE_STATE>(Data->cCastleSiegeState),
+            ownerGuild,
+            ownerGuildMaster,
+            {MAKEWORD(Data->btStartYearL, Data->btStartYearH), Data->btStartMonth, Data->btStartDay, Data->btStartHour,
+             Data->btStartMinute},
+            {MAKEWORD(Data->btEndYearL, Data->btEndYearH), Data->btEndMonth, Data->btEndDay, Data->btEndHour,
+             Data->btEndMinute},
+            {MAKEWORD(Data->btSiegeStartYearL, Data->btSiegeStartYearH), Data->btSiegeStartMonth, Data->btSiegeStartDay,
+             Data->btSiegeStartHour, Data->btSiegeStartMinute},
+            static_cast<std::uint32_t>(MAKELONG(MAKEWORD(Data->btStateLeftSec4, Data->btStateLeftSec3),
+                                                MAKEWORD(Data->btStateLeftSec2, Data->btStateLeftSec1)))};
         UI::Siege::ShowGuardStatus(status);
     }
     break;

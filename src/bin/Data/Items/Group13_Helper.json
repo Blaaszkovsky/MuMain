@@ -10,9 +10,42 @@
         "es": "Angel Guardián",
         "pt": "Anjo guardião"
       },
+      "description": [
+        {
+          "text": {
+            "en": "Absorb 20% of Damage",
+            "de": "Absorbiert 20% des Schadens",
+            "es": "Absorber daño 20% of",
+            "id": "Menyerap Kerusakan 20% of",
+            "ja": "ダメージ 20%吸収",
+            "pl": "Pochłania 20% obrażeń",
+            "pt": "Absorver Dano 20% of",
+            "ru": "Поглощение 20% of урона",
+            "tl": "Isipsip ang 20% of Pinsala",
+            "uk": "Поглинання шкоди 20% of",
+            "zh-TW": "吸收20% of傷害"
+          }
+        },
+        {
+          "text": {
+            "en": "Max HP +50 increased",
+            "de": "Max. HP +50 erhöht",
+            "es": "HP máximo +50 aumentado",
+            "id": "HP Maks +50 meningkat",
+            "ja": "最大生命力 +50増加",
+            "pl": "Zwiększono maksymalne HP +50",
+            "pt": "HP máximo +50 aumentado",
+            "ru": "Макс. HP +50 увеличен.",
+            "tl": "Tumaas ang Max HP +50",
+            "uk": "Макс HP +50 збільшено",
+            "zh-TW": "最大生命值+50增加"
+          }
+        }
+      ],
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 23,
       "durability": 255,
       "repairable": false,
@@ -33,12 +66,31 @@
       "number": 1,
       "name": {
         "en": "Imp",
+        "de": "Imp",
         "es": "Diablillo",
         "pt": "Diabrete"
       },
+      "description": [
+        {
+          "text": {
+            "en": "Increase 30% of attacking & Wizardry Dmg",
+            "de": "Erhöht Angriffs- und Zaubereischaden um 30%",
+            "es": "Aumenta 30% of ataque y daño de hechicería",
+            "id": "Meningkatkan 30% of serangan & Dmg Sihir",
+            "ja": "攻撃力、力 30%増加",
+            "pl": "Zwiększa obrażenia fizyczne i magiczne o 30%",
+            "pt": "Aumenta em 30% o dano de ataque e magia",
+            "ru": "Увеличение на 30% of урона от атак и волшебства.",
+            "tl": "Dagdagan ang 30% of pag-atake at Wizardry Dmg",
+            "uk": "Збільште на 30% of шкоду від атаки та магії",
+            "zh-TW": "攻擊力和魔法傷害增加30% of"
+          }
+        }
+      ],
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 28,
       "durability": 255,
       "repairable": false,
@@ -67,6 +119,7 @@
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 25,
       "durability": 255,
       "repairable": false,
@@ -92,9 +145,42 @@
         "pt": "Chifre de Dinorant"
       },
       "tags": ["mount", "hornMount", "flying", "valuable"],
+      "description": [
+        {
+          "text": {
+            "en": "Increase 15% of Damage",
+            "de": "Erhöht den Schaden um 15%",
+            "es": "Aumenta el daño de 15% of",
+            "id": "Meningkatkan Kerusakan 15% of",
+            "ja": "ダメージ 15%増加",
+            "pl": "Zwiększa obrażenia o 15%",
+            "pt": "Aumentar o dano de 15% of",
+            "ru": "Увеличение урона 15% of",
+            "tl": "Dagdagan ang 15% of Pinsala",
+            "uk": "Збільшення шкоди на 15% of",
+            "zh-TW": "增加 15% of 傷害"
+          }
+        },
+        {
+          "text": {
+            "en": "Absorb 10% of Damage",
+            "de": "Absorbiert 10% des Schadens",
+            "es": "Absorber daño 10% of",
+            "id": "Menyerap Kerusakan 10% of",
+            "ja": "ダメージ 10%吸収",
+            "pl": "Pochłania 10% obrażeń",
+            "pt": "Absorver Dano 10% of",
+            "ru": "Поглощение 10% of урона",
+            "tl": "Isipsip ang 10% of Pinsala",
+            "uk": "Поглинання шкоди 10% of",
+            "zh-TW": "吸收10% of傷害"
+          }
+        }
+      ],
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "skill": 49,
       "level": 110,
       "durability": 255,
@@ -124,6 +210,7 @@
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "skill": 62,
       "level": 218,
       "durability": 255,
@@ -190,6 +277,7 @@
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 20,
       "durability": 50,
       "attackType": 2,
@@ -220,6 +308,7 @@
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 17,
       "durability": 50,
       "attackType": 4,
@@ -247,11 +336,13 @@
         "es": "Anillo de Transformación",
         "pt": "Anel de Transformação"
       },
+      "tags": ["transformationRing"],
       "width": 1,
       "height": 1,
       "slot": "ring",
       "durability": 200,
       "repairable": false,
+      "requirementsByLevel": {"level": [20, 20, 20, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]},
       "classRequirements": {
         "darkWizard": 1,
         "darkKnight": 1,
@@ -295,6 +386,7 @@
       "width": 1,
       "height": 1,
       "slot": "pendant",
+      "statProfile": "helper",
       "level": 21,
       "durability": 50,
       "attackType": 3,
@@ -325,6 +417,7 @@
       "width": 1,
       "height": 1,
       "slot": "pendant",
+      "statProfile": "helper",
       "level": 13,
       "durability": 50,
       "attackType": 1,
@@ -355,6 +448,7 @@
       "tags": ["valuable"],
       "width": 1,
       "height": 2,
+      "statProfile": "helper",
       "level": 78,
       "repairable": false,
       "requirements": {
@@ -525,6 +619,7 @@
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 30,
       "durability": 50,
       "attackType": 3,
@@ -555,6 +650,7 @@
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 38,
       "durability": 50,
       "attackType": 1,
@@ -585,6 +681,7 @@
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 44,
       "durability": 50,
       "attackType": 2,
@@ -615,6 +712,7 @@
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 47,
       "durability": 50,
       "attackType": 3,
@@ -642,6 +740,7 @@
       "width": 1,
       "height": 1,
       "slot": "pendant",
+      "statProfile": "helper",
       "level": 34,
       "durability": 50,
       "attackType": 1,
@@ -672,6 +771,7 @@
       "width": 1,
       "height": 1,
       "slot": "pendant",
+      "statProfile": "helper",
       "level": 42,
       "durability": 50,
       "attackType": 2,
@@ -702,6 +802,7 @@
       "width": 1,
       "height": 1,
       "slot": "pendant",
+      "statProfile": "helper",
       "level": 46,
       "durability": 50,
       "attackType": 4,
@@ -732,6 +833,7 @@
       "width": 1,
       "height": 1,
       "slot": "pendant",
+      "statProfile": "helper",
       "level": 50,
       "durability": 50,
       "requirements": {
@@ -777,12 +879,46 @@
         "pt": "Capa do Lorde"
       },
       "tags": ["cape", "valuable"],
+      "description": [
+        {
+          "text": {
+            "en": "Increase {table:capeDamageIncrease}% of Damage",
+            "de": "Erhöht den Schaden um {table:capeDamageIncrease}%",
+            "es": "Aumenta el daño de {table:capeDamageIncrease}% of",
+            "id": "Meningkatkan Kerusakan {table:capeDamageIncrease}% of",
+            "ja": "ダメージ {table:capeDamageIncrease}%増加",
+            "pl": "Zwiększa obrażenia o {table:capeDamageIncrease}%",
+            "pt": "Aumentar o dano de {table:capeDamageIncrease}% of",
+            "ru": "Увеличение урона {table:capeDamageIncrease}% of",
+            "tl": "Dagdagan ang {table:capeDamageIncrease}% of Pinsala",
+            "uk": "Збільшення шкоди на {table:capeDamageIncrease}% of",
+            "zh-TW": "增加 {table:capeDamageIncrease}% of 傷害"
+          }
+        },
+        {
+          "text": {
+            "en": "Absorb {table:capeOfLordDamageAbsorb}% of Damage",
+            "de": "Absorbiert {table:capeOfLordDamageAbsorb}% des Schadens",
+            "es": "Absorber daño {table:capeOfLordDamageAbsorb}% of",
+            "id": "Menyerap Kerusakan {table:capeOfLordDamageAbsorb}% of",
+            "ja": "ダメージ {table:capeOfLordDamageAbsorb}%吸収",
+            "pl": "Pochłania {table:capeOfLordDamageAbsorb}% obrażeń",
+            "pt": "Absorver Dano {table:capeOfLordDamageAbsorb}% of",
+            "ru": "Поглощение {table:capeOfLordDamageAbsorb}% of урона",
+            "tl": "Isipsip ang {table:capeOfLordDamageAbsorb}% of Pinsala",
+            "uk": "Поглинання шкоди {table:capeOfLordDamageAbsorb}% of",
+            "zh-TW": "吸收{table:capeOfLordDamageAbsorb}% of傷害"
+          }
+        }
+      ],
       "width": 2,
       "height": 3,
       "slot": "wings",
       "wingTier": "second",
+      "statProfile": "secondTierCape",
       "level": 180,
       "durability": 200,
+      "defense": 15,
       "requirements": {
         "level": 180
       },
@@ -930,8 +1066,10 @@
       "width": 2,
       "height": 2,
       "slot": "pet",
+      "statProfile": "default",
       "level": 300,
       "durability": 255,
+      "excellentRaisesLevel": false,
       "repairable": false,
       "requirements": {
         "level": 300
@@ -954,9 +1092,27 @@
         "es": "Pendiente de Piedra Lunar",
         "pt": "Pingente da pedra da lua"
       },
+      "description": [
+        {
+          "text": {
+            "en": "I.D. of Kantur Chief Scientist. You can enter the Refinery Tower.",
+            "de": "Ausweis des Chefwissenschaftlers von Kantur. Sie können den Raffinerieturm betreten.",
+            "es": "IDENTIFICACIÓN. del científico jefe de Kantur. Puedes ingresar a la Torre de la Refinería.",
+            "id": "PENGENAL. dari Kepala Ilmuwan Kantur. Anda bisa memasuki Menara Kilang.",
+            "ja": "カントルの首席研究員たちの入出許可証。精製の塔へ入ることが出来ます。",
+            "pl": "Identyfikator głównego naukowca Kantur. Pozwala wejść do Refinery Tower.",
+            "pt": "EU IA. do Cientista Chefe Kantur. Você pode entrar na Torre da Refinaria.",
+            "ru": "ИДЕНТИФИКАТОР. главного научного сотрудника Кантура. Вы можете войти в Башню нефтеперерабатывающего завода.",
+            "tl": "I.D. ng Kantur Chief Scientist. Maaari kang pumasok sa Refinery Tower.",
+            "uk": "І.Д. головного наукового співробітника Кантур. Ви можете увійти до вежі нафтопереробного заводу.",
+            "zh-TW": "ID。坎圖爾首席科學家。您可以進入煉油塔。"
+          }
+        }
+      ],
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 21,
       "durability": 120,
       "attackType": 3,
@@ -984,9 +1140,11 @@
         "es": "Aro Esqueleto Traslado Élite",
         "pt": "Anel Esqueleto Transf. Acel."
       },
+      "tags": ["transformationRing"],
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 10,
       "durability": 255,
       "tradable": false,
@@ -1013,9 +1171,11 @@
         "es": "Anillo de Jack O'Lantern",
         "pt": "Anel do Jack Olantern"
       },
+      "tags": ["transformationRing"],
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 10,
       "durability": 100,
       "repairable": false,
@@ -1040,9 +1200,11 @@
         "es": "Aro de Traslado de Navidad",
         "pt": "Anel do Natal de Transf."
       },
+      "tags": ["transformationRing"],
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 1,
       "durability": 100,
       "repairable": false,
@@ -1067,6 +1229,7 @@
         "es": "Anillo de GM",
         "pt": "Anel de GM"
       },
+      "tags": ["transformationRing"],
       "width": 1,
       "height": 1,
       "slot": "ring",
@@ -1640,6 +1803,7 @@
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 1,
       "durability": 255,
       "tradable": false,
@@ -1673,6 +1837,7 @@
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 1,
       "durability": 255,
       "tradable": false,
@@ -1727,6 +1892,7 @@
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 28,
       "durability": 255,
       "repairable": false,
@@ -1751,9 +1917,11 @@
         "es": "Aro Mutación Hombre de Nieve",
         "pt": "Anel Transf. Homem da Neve"
       },
+      "tags": ["transformationRing"],
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 10,
       "durability": 100,
       "repairable": false,
@@ -1951,10 +2119,11 @@
         "es": "Anillo Panda",
         "pt": "Anel do Panda"
       },
-      "tags": ["pandaOrSkeleton", "valuable"],
+      "tags": ["pandaOrSkeleton", "transformationRing", "valuable"],
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 1,
       "durability": 255,
       "tradable": false,
@@ -1988,6 +2157,7 @@
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 1,
       "durability": 255,
       "tradable": false,
@@ -2391,6 +2561,7 @@
       "name": {
         "en": "Magic Gladiator Character Card",
         "de": "Charakterkarte: Magischer Gladiator",
+        "es": "Tarjeta de Personaje del Gladiador Mago",
         "pt": "Carta de Personagem - Gladiador Mágico"
       },
       "tradable": false,
@@ -2402,6 +2573,7 @@
       "name": {
         "en": "Dark Lord Character Card",
         "de": "Charakterkarte: Dunkler Lord",
+        "es": "Tarjeta de Personaje del Señor Oscuro",
         "pt": "Carta de Personagem - Lorde Sombrio"
       },
       "tradable": false,
@@ -2413,6 +2585,7 @@
       "name": {
         "en": "Character Slot Key",
         "de": "Charakterplatz-Schlüssel",
+        "es": "Clave de Ranura de Personaje",
         "pt": "Fenda de Chave de Personagem"
       },
       "slot": "mainHand",
@@ -2510,6 +2683,7 @@
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 28,
       "durability": 255,
       "tradable": false,
@@ -2898,10 +3072,11 @@
         "es": "Aro Mutación de Esqueleto",
         "pt": "Anel Transf. de Esqueleto"
       },
-      "tags": ["pandaOrSkeleton", "valuable"],
+      "tags": ["pandaOrSkeleton", "transformationRing", "valuable"],
       "width": 1,
       "height": 1,
       "slot": "ring",
+      "statProfile": "helper",
       "level": 1,
       "durability": 255,
       "tradable": false,
@@ -2935,6 +3110,7 @@
       "width": 1,
       "height": 1,
       "slot": "pet",
+      "statProfile": "helper",
       "level": 1,
       "durability": 255,
       "tradable": false,

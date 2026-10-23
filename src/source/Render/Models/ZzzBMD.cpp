@@ -3,10 +3,17 @@
 
 #include "stdafx.h"
 #include <cstdint>
+// u_char is used below. On glibc it arrives transitively through other
+// headers; musl targets (Emscripten) need its declaring header explicitly.
+#include <sys/types.h>
 #include <cstring>
 #include <cmath>
 #include <cassert>
+#include <climits>
+#include <map>
+#include <optional>
 #include <set>
+#include <tuple>
 #include <utility>
 #include <vector>
 #include "Render/Textures/ZzzOpenglUtil.h"
@@ -30,7 +37,10 @@
 #include "Render/Models/GpuSkinningPath.h"
 #include "Render/Renderer/MuRenderer.h"
 #include "Render/Renderer/RenderUtils.h"
+#include "Render/Terrain/TerrainHeightGrid.h"
 #include "Core/Utilities/FrameProfiler.h"
+#include "Scenes/MainScene.h"
+#include "Render/Lighting/LightMoodSetting.h"
 
 using mu::PackABGR;
 
@@ -43,6 +53,9 @@ vec3_t BoundingMin[MAX_BONES];
 vec3_t BoundingMax[MAX_BONES];
 
 float  BoneTransform[MAX_BONES][3][4];
+// BoneTransform's slots from here on are identity; Animation's tail fill only rewrites what lies
+// below it. Starts at MAX_BONES: the zero-initialised array is not identity.
+static int s_boneTransformWrittenEnd = MAX_BONES;
 const float (*g_pActiveBoneTransform)[3][4] = nullptr;
 unsigned int g_BoneTransformVersion = 0;
 
@@ -125,6 +138,16 @@ std::pair<int, int> ResolveMeshRange(int meshCount, int requestedStart, int requ
 {
     return {requestedStart == -1 ? 0 : requestedStart, requestedEnd == -1 ? meshCount : requestedEnd};
 }
+
+// One cached shadow stream per model and RenderBodyShadow() mesh selection (model, start, end, hidden mesh,
+// blend texture); an entry's address is its key in the renderer's mesh cache. Kept outside BMD, which
+// OpenPlayers() zero-fills, and never destroyed, so a model released at exit still finds it.
+using ShadowStreamId = std::tuple<std::uintptr_t, int, int, int, int>;
+std::map<ShadowStreamId, char>& ShadowStreams()
+{
+    static auto* streams = new std::map<ShadowStreamId, char>();
+    return *streams;
+}
 } // namespace
 
 bool  StopMotion = false;
@@ -143,7 +166,6 @@ void BMD::Animation(float (*BoneMatrix)[3][4], float AnimationFrame, float Prior
     if (PriorAction >= NumActions) PriorAction = 0;
     if (currentAction >= NumActions) currentAction = 0;
 
-    vec4_t boneQuaternion[MAX_BONES] = {};
 
     float currentAnimation = AnimationFrame;
     int currentAnimationFrame = (int)AnimationFrame;
@@ -263,17 +285,18 @@ void BMD::Animation(float (*BoneMatrix)[3][4], float AnimationFrame, float Prior
             q2 = bm2->Quaternion[currentAnimationFrame];
         }
 
+        vec4_t boneQuaternion;
         if (!QuaternionCompare(q1, q2))
         {
-            QuaternionNLERP(q1, q2, s1, boneQuaternion[i]);
+            QuaternionNLERP(q1, q2, s1, boneQuaternion);
         }
         else
         {
-            QuaternionCopy(q1, boneQuaternion[i]);
+            QuaternionCopy(q1, boneQuaternion);
         }
 
         float Matrix[3][4];
-        QuaternionMatrix(boneQuaternion[i], Matrix);
+        QuaternionMatrix(boneQuaternion, Matrix);
         const float* Position1 = bm1->Position[PriorAnimationFrame];
         const float* Position2 = bm2->Position[currentAnimationFrame];
 
@@ -322,7 +345,15 @@ void BMD::Animation(float (*BoneMatrix)[3][4], float AnimationFrame, float Prior
     // declared buffer capacity -- NOT MAX_BONES -- because several internal callers pass
     // NumBones-sized heap scratch buffers (AnimationTransformWithAttachHighModel* /
     // AnimationTransformOnlySelf), which a MAX_BONES-bound loop would overflow.
-    for (int i = NumBones; i < BoneMatrixCapacity; i++)
+    // The shared BoneTransform tracks how far the last models wrote, so the tail fill stops there
+    // instead of rewriting slots that are already identity.
+    const bool sharedPalette = BoneMatrix == BoneTransform && BoneMatrixCapacity == MAX_BONES;
+    const int fillEnd = sharedPalette ? std::max<int>(NumBones, s_boneTransformWrittenEnd) : BoneMatrixCapacity;
+    if (sharedPalette)
+    {
+        s_boneTransformWrittenEnd = NumBones;
+    }
+    for (int i = NumBones; i < fillEnd; i++)
     {
         BoneMatrix[i][0][0] = 1.f;
         BoneMatrix[i][0][1] = 0.f;
@@ -340,9 +371,23 @@ void BMD::Animation(float (*BoneMatrix)[3][4], float AnimationFrame, float Prior
 }
 
 extern EGameScene SceneFlag;
+extern float g_fSpecialHeight;
 extern int EditFlag;
 
 bool HighLight = true;
+
+// The light mood's highlight shoulder on a CPU-lit model colour; a knee of 1 (Classic) leaves it.
+static void RollOffModelLight(vec3_t light, float knee)
+{
+    if (knee >= 1.f)
+    {
+        return;
+    }
+    for (int i = 0; i < 3; ++i)
+    {
+        light[i] = Render::Lighting::LightMood::RollOffHighlight(light[i], knee);
+    }
+}
 float BoneScale = 1.f;
 
 void BMD::ClaimSkinStamp() const
@@ -404,6 +449,8 @@ void BMD::TransformCheap(float (*BoneMatrix)[3][4], vec3_t BoundingBoxMin, vec3_
             Vector(0.f, -1.5f, 0.f, Position);
         }
 
+        // The light mood's sun scales the directional part of the model light.
+        Render::Lighting::LightMood::ScaleSunDirection(Render::Lighting::LightMood::Active(), Position);
         AngleMatrix(ShadowAngle, Matrix);
         VectorIRotate(Position, Matrix, m_LastLightPosition); // for RenderMesh's GPU-skinned in-shader lighting
     }
@@ -841,6 +888,7 @@ void BMD::AnimationTransformWithAttachHighModel_usingGlobalTM(OBJECT* oHighHiera
 
     Animation(arrBonesTMLocal, 0, 0, 0, Temp, Temp, false, false, nullptr, -1, NumBones);
 
+    s_boneTransformWrittenEnd = std::max<int>(s_boneTransformWrittenEnd, NumBones);
     for (int i_ = 0; i_ < NumBones; ++i_)
     {
         R_ConcatTransforms(tmBoneHierarchicalObject, arrBonesTMLocal[i_], BoneTransform[i_]);
@@ -1367,6 +1415,8 @@ void BMD::RenderMesh(int meshIndex, int renderFlags, float alpha, int blendMeshI
 
     int finalRenderFlags = renderFlags;
     bool useBlendMeshColor = false;
+    // A chrome pass reflects light off the surface and is no bloom source; held until the mesh is drawn.
+    std::optional<mu::ScopedBloomExclusion> chromePass;
     if ((renderFlags & RENDER_COLOR) == RENDER_COLOR)
     {
         finalRenderFlags = RENDER_COLOR;
@@ -1413,6 +1463,7 @@ void BMD::RenderMesh(int meshIndex, int renderFlags, float alpha, int blendMeshI
         if (m->NoneBlendMesh)
             return;
 
+        chromePass.emplace();
         finalRenderFlags = RENDER_CHROME;
         if ((renderFlags & RENDER_CHROME4) == RENDER_CHROME4)
         {
@@ -1586,9 +1637,15 @@ void BMD::RenderMesh(int meshIndex, int renderFlags, float alpha, int blendMeshI
 
         if (usesCpuLighting)
         {
+            // Lit per vertex here, so the point lights the base light leaves out come back as a whole.
+            vec3_t light;
+            VectorCopy(BodyLight, light);
+            AddVertexLitDynamicLight(BodyOrigin[0], BodyOrigin[1], light);
+            const float knee = Render::Lighting::LightMood::Active().highlightKnee;
             for (int j = 0; j < m->NumNormals; ++j)
             {
-                VectorScale(BodyLight, IntensityTransform[meshIndex][j], LightTransform[meshIndex][j]);
+                VectorScale(light, IntensityTransform[meshIndex][j], LightTransform[meshIndex][j]);
+                RollOffModelLight(LightTransform[meshIndex][j], knee);
             }
         }
 
@@ -1660,38 +1717,38 @@ void BMD::RenderMesh(int meshIndex, int renderFlags, float alpha, int blendMeshI
     if (gpuSkinningEligible)
     {
         const auto textureCoordinates = GetSkinningTextureCoordinates(renderFlags);
-        auto skinnedVertices = GetRendererSkinnedVertexScratch(maxVertexCount);
-        std::size_t skinnedVertexCount = 0;
-        for (int j = 0; j < m->NumTriangles; ++j)
+        // A scrolling texture bakes this frame's offset into the UVs, so only the other meshes are cached.
+        const bool waveTextureCoordinates = textureCoordinates == mu::SkinningTextureCoordinates::Mesh && EnableWave;
+        const std::uint32_t color =
+            PackABGR(BodyLight[0] * colorScale, BodyLight[1] * colorScale, BodyLight[2] * colorScale, baseAlpha);
+        auto buildSkinnedVertices = [&]()
         {
-            const auto* triangle = &m->Triangles[j];
-            for (int k = 0; k < triangle->Polygon; ++k)
+            auto skinnedVertices = GetRendererSkinnedVertexScratch(maxVertexCount);
+            std::size_t skinnedVertexCount = 0;
+            for (int j = 0; j < m->NumTriangles; ++j)
             {
-                const int vertexIndex = triangle->VertexIndex[k];
-                const int normalIndex = triangle->NormalIndex[k];
-                const auto& vertex = m->Vertices[vertexIndex];
-                const auto& normal = m->Normals[normalIndex];
-                const auto& texCoord = m->TexCoords[triangle->TexCoordIndex[k]];
-                const bool useMeshTextureCoordinates = textureCoordinates == mu::SkinningTextureCoordinates::Mesh;
-                const float u =
-                    texCoord.TexCoordU + (useMeshTextureCoordinates && EnableWave ? blendMeshTextureCoordU : 0.0f);
-                const float v =
-                    texCoord.TexCoordV + (useMeshTextureCoordinates && EnableWave ? blendMeshTextureCoordV : 0.0f);
-                const std::uint32_t color = PackABGR(BodyLight[0] * colorScale, BodyLight[1] * colorScale,
-                                                     BodyLight[2] * colorScale, baseAlpha);
-                skinnedVertices[skinnedVertexCount++] = {vertex.Position[0],
-                                                         vertex.Position[1],
-                                                         vertex.Position[2],
-                                                         normal.Normal[0],
-                                                         normal.Normal[1],
-                                                         normal.Normal[2],
-                                                         u,
-                                                         v,
-                                                         color,
-                                                         vertex.Node,
-                                                         normal.Node};
+                const auto* triangle = &m->Triangles[j];
+                for (int k = 0; k < triangle->Polygon; ++k)
+                {
+                    const auto& vertex = m->Vertices[triangle->VertexIndex[k]];
+                    const auto& normal = m->Normals[triangle->NormalIndex[k]];
+                    const auto& texCoord = m->TexCoords[triangle->TexCoordIndex[k]];
+                    const float u = texCoord.TexCoordU + (waveTextureCoordinates ? blendMeshTextureCoordU : 0.0f);
+                    const float v = texCoord.TexCoordV + (waveTextureCoordinates ? blendMeshTextureCoordV : 0.0f);
+                    skinnedVertices[skinnedVertexCount++] = {vertex.Position[0],
+                                                             vertex.Position[1],
+                                                             vertex.Position[2],
+                                                             normal.Normal[0],
+                                                             normal.Normal[1],
+                                                             normal.Normal[2],
+                                                             u,
+                                                             v,
+                                                             vertex.Node,
+                                                             normal.Node};
+                }
             }
-        }
+            return skinnedVertices.first(skinnedVertexCount);
+        };
 
         mu::SkinningParameters skinning{
             .boneMatrices = {&m_pCurrentBoneTransform[0][0][0], MAX_BONES * 12u},
@@ -1701,6 +1758,7 @@ void BMD::RenderMesh(int meshIndex, int renderFlags, float alpha, int blendMeshI
             .boneScale = m_LastBoneScale,
             .restPoseScale = m_LastSkinScale,
             .lightDirection = {m_LastLightPosition[0], m_LastLightPosition[1], m_LastLightPosition[2]},
+            .highlightKnee = Render::Lighting::LightMood::Active().highlightKnee,
             .textureCoordinateOffset = {blendMeshTextureCoordU, blendMeshTextureCoordV},
             .chromeWave = wave,
             .chromeWave2 = static_cast<int>(WorldTime) % 5000 * 0.00024f - 0.4f,
@@ -1709,9 +1767,18 @@ void BMD::RenderMesh(int meshIndex, int renderFlags, float alpha, int blendMeshI
             .textureCoordinates = textureCoordinates,
             .translate = m_LastTranslate,
             .lightEnabled = usesCpuLighting,
+            .specularStrength = texture->IsSkin || texture->IsHair ? 0.0f : SpecularStrength,
         };
-        gpuSkinningSubmitted =
-            mu::GetRenderer().RenderSkinnedTriangles(skinnedVertices.first(skinnedVertexCount), 0u, skinning);
+        auto& renderer = mu::GetRenderer();
+        if (!waveTextureCoordinates &&
+            (renderer.IsSkinnedMeshCached(m) || renderer.CacheSkinnedMesh(m, buildSkinnedVertices())))
+        {
+            gpuSkinningSubmitted = renderer.RenderCachedSkinnedMesh(m, color, 0u, skinning);
+        }
+        else
+        {
+            gpuSkinningSubmitted = renderer.RenderSkinnedTriangles(buildSkinnedVertices(), color, 0u, skinning);
+        }
     }
 
     const Render::Models::GpuSkinningPath skinningPath =
@@ -1863,14 +1930,18 @@ void BMD::RenderMeshAlternative(int iRndExtFlag, int iParam, int i, int RenderFl
     }
     else if (EnableLight)
     {
+        const float knee = Render::Lighting::LightMood::Active().highlightKnee;
         for (int j = 0; j < m->NumNormals; j++)
         {
             VectorScale(BodyLight, IntensityTransform[i][j], LightTransform[i][j]);
+            RollOffModelLight(LightTransform[i][j], knee);
         }
     }
 
     int Render = RenderFlag;
     bool useBlendMeshColor = false;
+    // A chrome pass reflects light off the surface and is no bloom source; held until the mesh is drawn.
+    std::optional<mu::ScopedBloomExclusion> chromePass;
     if ((RenderFlag & RENDER_COLOR) == RENDER_COLOR)
     {
         Render = RENDER_COLOR;
@@ -1908,6 +1979,7 @@ void BMD::RenderMeshAlternative(int iRndExtFlag, int iParam, int i, int RenderFl
         }
         if (m->NoneBlendMesh)
             return;
+        chromePass.emplace();
         Render = RENDER_CHROME;
         if ((RenderFlag & RENDER_CHROME4) == RENDER_CHROME4)
         {
@@ -2427,14 +2499,18 @@ void BMD::RenderMeshTranslate(int i, int RenderFlag, float Alpha, int BlendMesh,
     }
     else if (EnableLight)
     {
+        const float knee = Render::Lighting::LightMood::Active().highlightKnee;
         for (int j = 0; j < m->NumNormals; j++)
         {
             VectorScale(BodyLight, IntensityTransform[i][j], LightTransform[i][j]);
+            RollOffModelLight(LightTransform[i][j], knee);
         }
     }
 
     int Render = RenderFlag;
     bool useBlendMeshColor = false;
+    // A chrome pass reflects light off the surface and is no bloom source; held until the mesh is drawn.
+    std::optional<mu::ScopedBloomExclusion> chromePass;
     if ((RenderFlag & RENDER_COLOR) == RENDER_COLOR)
     {
         Render = RENDER_COLOR;
@@ -2458,6 +2534,7 @@ void BMD::RenderMeshTranslate(int i, int RenderFlag, float Alpha, int BlendMesh,
         }
         if (m->NoneBlendMesh)
             return;
+        chromePass.emplace();
         Render = RENDER_CHROME;
 
         float Wave2 = (int)WorldTime % 5000 * 0.00024f - 0.4f;
@@ -2769,10 +2846,98 @@ void BMD::AddMeshShadowTriangles(const int blendMesh, const int hiddenMesh, cons
     mu::GetRenderer().RenderTriangles(muVerts, 0u);
 }
 
+bool BMD::RenderGpuMeshShadow(const int blendMesh, const int hiddenMesh, const int startMesh, const int endMesh,
+    const float sx, const float sy, const std::uint32_t color) const
+{
+    if (!m_pCurrentBoneTransform || startMesh < 0 || endMesh > NumMeshs || endMesh > MAX_MESH)
+    {
+        return false;
+    }
+
+    const auto drawn = [&](int i)
+    {
+        return i != hiddenMesh && Meshs[i].NumTriangles > 0 && Meshs[i].Texture != blendMesh;
+    };
+    const bool cpuVerticesCurrent = m_SkinStamp == g_SkinStampCounter;
+    for (int i = startMesh; i < endMesh; i++)
+    {
+        // Already skinned this frame, maybe at another BodyOrigin, or written by the cloth simulation: the CPU
+        // shadow draws those positions.
+        if (drawn(i) && cpuVerticesCurrent && m_CpuVertsReady[i])
+        {
+            return false;
+        }
+    }
+
+    auto& renderer = mu::GetRenderer();
+    if (!renderer.SetTerrainHeights({BackTerrainHeight, Render::kTerrainCells}, {TerrainWall, Render::kTerrainCells},
+                                    TerrainHeightVersion()))
+    {
+        return false;
+    }
+
+    const auto stream = ShadowStreams()
+                            .try_emplace({reinterpret_cast<std::uintptr_t>(this), startMesh, endMesh, hiddenMesh,
+                                          blendMesh})
+                            .first;
+    const void* key = &*stream;
+    if (!renderer.IsSkinnedMeshCached(key))
+    {
+        std::size_t vertexCount = 0;
+        for (int i = startMesh; i < endMesh; i++)
+        {
+            for (int j = 0; drawn(i) && j < Meshs[i].NumTriangles; j++)
+            {
+                vertexCount += static_cast<std::size_t>(Meshs[i].Triangles[j].Polygon);
+            }
+        }
+
+        auto vertices = GetRendererSkinnedVertexScratch(vertexCount);
+        std::size_t count = 0;
+        for (int i = startMesh; i < endMesh; i++)
+        {
+            const Mesh_t* mesh = &Meshs[i];
+            for (int j = 0; drawn(i) && j < mesh->NumTriangles; j++)
+            {
+                const auto* tp = &mesh->Triangles[j];
+                for (int k = 0; k < tp->Polygon; k++)
+                {
+                    const auto& vertex = mesh->Vertices[tp->VertexIndex[k]];
+                    vertices[count++] = {vertex.Position[0], vertex.Position[1], vertex.Position[2], 0.f, 0.f, 0.f,
+                                         0.f, 0.f, vertex.Node, -1};
+                }
+            }
+        }
+        if (!renderer.CacheSkinnedMesh(key, vertices.first(count)))
+        {
+            return false;
+        }
+    }
+
+    // What EnsureCpuVertices() would skin with now.
+    const mu::SkinningParameters skinning{
+        .boneMatrices = {&m_pCurrentBoneTransform[0][0][0], MAX_BONES * 12u},
+        .paletteVersion = g_BoneTransformVersion,
+        .bodyOrigin = {BodyOrigin[0], BodyOrigin[1], BodyOrigin[2]},
+        .bodyScale = BodyScale,
+        .boneScale = m_LastBoneScale,
+        .restPoseScale = m_LastSkinScale,
+        .translate = m_LastTranslate,
+    };
+    const mu::ShadowProjection projection{
+        .origin = {BodyOrigin[0], BodyOrigin[1], BodyOrigin[2]},
+        .shearX = sx,
+        .shearHeight = sy,
+        .specialHeight = g_fSpecialHeight,
+        .terrain = SceneFlag != SERVER_LIST_SCENE && SceneFlag != WEBZEN_SCENE && SceneFlag != LOADING_SCENE,
+    };
+    return renderer.RenderCachedSkinnedShadow(key, color, skinning, projection);
+}
+
 void BMD::RenderBodyShadow(const int blendMesh, const int hiddenMesh, const int startMeshNumber,
     const int endMeshNumber, void* pClothes, const int clothesCount, const float alpha)
 {
-    if (!g_pOption->GetRenderAllEffects())
+    if (!g_pOption->GetRenderAllEffects() || IsBodyShadowsDisabledDebug())
     {
         return;
     }
@@ -2796,7 +2961,10 @@ void BMD::RenderBodyShadow(const int blendMesh, const int hiddenMesh, const int 
 
     if (clothesCount == 0)
     {
-        AddMeshShadowTriangles(blendMesh, hiddenMesh, startMesh, endMesh, sx, sy, shadowColor);
+        if (!RenderGpuMeshShadow(blendMesh, hiddenMesh, startMesh, endMesh, sx, sy, shadowColor))
+        {
+            AddMeshShadowTriangles(blendMesh, hiddenMesh, startMesh, endMesh, sx, sy, shadowColor);
+        }
     }
     else
     {
@@ -2951,6 +3119,30 @@ void BMD::ShareFrom(BMD& owner)
     m_bCompletedAlloc = true;
 }
 
+void BMD::SwapData(BMD& other)
+{
+    if (&other == this)
+    {
+        return;
+    }
+    // They were built from the meshes each slot had.
+    ReleaseShadowStreams();
+    other.ReleaseShadowStreams();
+    std::swap(Name, other.Name);
+    std::swap(Version, other.Version);
+    std::swap(NumMeshs, other.NumMeshs);
+    std::swap(NumBones, other.NumBones);
+    std::swap(NumActions, other.NumActions);
+    std::swap(Meshs, other.Meshs);
+    std::swap(Bones, other.Bones);
+    std::swap(Actions, other.Actions);
+    std::swap(Textures, other.Textures);
+    std::swap(IndexTexture, other.IndexTexture);
+    std::swap(m_bSharedData, other.m_bSharedData);
+    std::swap(m_sharedDataUsers, other.m_sharedDataUsers);
+    std::swap(m_bCompletedAlloc, other.m_bCompletedAlloc);
+}
+
 long BMD::GetDataUserCount() const
 {
     if (m_sharedDataUsers)
@@ -2960,8 +3152,22 @@ long BMD::GetDataUserCount() const
     return Meshs != nullptr ? 1 : 0;
 }
 
+void BMD::ReleaseShadowStreams()
+{
+    auto& shadowStreams = ShadowStreams();
+    const auto self = reinterpret_cast<std::uintptr_t>(this);
+    for (auto stream = shadowStreams.lower_bound({self, INT_MIN, INT_MIN, INT_MIN, INT_MIN});
+         stream != shadowStreams.end() && std::get<0>(stream->first) == self;)
+    {
+        mu::GetRenderer().ReleaseSkinnedMesh(&*stream);
+        stream = shadowStreams.erase(stream);
+    }
+}
+
 void BMD::Release()
 {
+    ReleaseShadowStreams();
+
     const bool othersUseTheData = m_sharedDataUsers && m_sharedDataUsers.use_count() > 1;
     m_sharedDataUsers.reset();
     if (othersUseTheData)
@@ -3032,6 +3238,7 @@ void BMD::Release()
         {
             Mesh_t* m = &Meshs[i];
 
+            mu::GetRenderer().ReleaseSkinnedMesh(m);
             if (m->Vertices) { delete[] m->Vertices; m->Vertices = nullptr; }
             if (m->Normals) { delete[] m->Normals; m->Normals = nullptr; }
             if (m->TexCoords) { delete[] m->TexCoords; m->TexCoords = nullptr; }

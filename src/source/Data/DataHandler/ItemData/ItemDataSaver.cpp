@@ -18,6 +18,7 @@
 #include "Data/DataHandler/ItemData/ItemComparisonMetadata.h"
 #include "UI/Console/MuEditorConsoleUI.h"
 #include "Core/Utilities/StringUtils.h"
+#include "Data/GameData/ItemData/ItemFileFit.h"
 
 // Comparison function - uses field metadata (NO MACROS!)
 static void CompareItems(const ITEM_ATTRIBUTE& oldItem, const ITEM_ATTRIBUTE& newItem,
@@ -65,16 +66,13 @@ static std::string GetItemNameUtf8(int index, const ITEM_ATTRIBUTE& item)
 
 bool ItemDataSaver::Save(const wchar_t* fileName, const ITEM_ATTRIBUTE* items, std::string* outChangeLog)
 {
-    for (int i = 0; i < MAX_ITEM; ++i)
+    if (const std::vector<ItemFileMisfit> misfits = FindItemFileMisfits(items, MAX_ITEM); !misfits.empty())
     {
-        if (items[i].DamageMin > 255 || items[i].DamageMax > 255)
+        if (outChangeLog != nullptr)
         {
-            if (outChangeLog != nullptr)
-            {
-                *outChangeLog = "Item.bmd cannot encode damage above 255; save item JSON instead.";
-            }
-            return false;
+            *outChangeLog += DescribeItemFileMisfits(misfits);
         }
+        return false;
     }
 
     // Create standard save config with item-specific parameters
