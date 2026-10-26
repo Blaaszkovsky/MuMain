@@ -1,0 +1,230 @@
+{
+  "pull_request": "https://github.com/sven-n/MuMain/pull/812",
+  "fix_commit": "f4b31f1e358557c3112237f498be77c31c1b5ed4",
+  "capture_build_base_commit": "1a83be2c86f6e42d281c4ee3b9bdf0eb476e967c",
+  "capture_build_working_tree_changed": true,
+  "capture_provenance": "Built and captured before committing the review fixes. Production sources and runtime assets are identical to the fix commit; only commit metadata changed.",
+  "binary_sha256": "d2ee1bc62df5b2b606320ee742c49cfce14378688903998ce7a9f07ef238105e",
+  "viewport": {
+    "width": 1600,
+    "height": 900
+  },
+  "server_source_commit": "ef41c19335ea7c9cb19627114b5d98761ac1a6be",
+  "visual_review": "All 20 original frames independently inspected: readable centered text, no clipping or text/ornament collision. Gens present on battle maps and cleared on return. Cursor overlaps part of the ornament in some frames. The modern 150% return frame was captured after banner timeout.",
+  "captures": [
+    {
+      "file": "legacy-75-lorencia.jpg",
+      "sha256": "10fa78c412bc9466e61fabecc320d32a2cf19518bc6dbf37f86dc496690de608",
+      "start_theme": "legacy",
+      "ui_scale_percent": 75,
+      "step": "lorencia",
+      "map_id": 0,
+      "map_name": "Lorencia",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "legacy-75-kanturu.jpg",
+      "sha256": "a740680f0186628eaebf2981902c77686587a2fea14317e3a8c073333d020404",
+      "start_theme": "legacy",
+      "ui_scale_percent": 75,
+      "step": "kanturu",
+      "map_id": 38,
+      "map_name": "Kanturu Relics",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "legacy-75-gens.jpg",
+      "sha256": "b13cf0833cad8df3e7de33e62a38e0f095dd6ac5d8773c992de534926bb54792",
+      "start_theme": "legacy",
+      "ui_scale_percent": 75,
+      "step": "gens",
+      "map_id": 63,
+      "map_name": "Vulcanus",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "legacy-75-theme-switch.jpg",
+      "sha256": "1e223fa9075523bb51e2aae6e16c7e454951c1554b2ba26327b8d411e7f3436c",
+      "start_theme": "legacy",
+      "ui_scale_percent": 75,
+      "step": "theme-switch",
+      "map_id": 63,
+      "map_name": "Vulcanus",
+      "active_theme": "modern"
+    },
+    {
+      "file": "legacy-75-return.jpg",
+      "sha256": "303e8f4bc2c2229006562f7b4f22db9e31133a30ffa5c43fb76c176e31393c6c",
+      "start_theme": "legacy",
+      "ui_scale_percent": 75,
+      "step": "return",
+      "map_id": 0,
+      "map_name": "Lorencia",
+      "active_theme": "modern"
+    },
+    {
+      "file": "legacy-150-lorencia.jpg",
+      "sha256": "117b6f7afc800fb2365ad3fc757f08bae5d7a7c84b192ea5d927aaab0cb89811",
+      "start_theme": "legacy",
+      "ui_scale_percent": 150,
+      "step": "lorencia",
+      "map_id": 0,
+      "map_name": "Lorencia",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "legacy-150-kanturu.jpg",
+      "sha256": "9ca13a43d1928f87408012e74584159a62b175ac5c50ee2815e8651ca72c6c21",
+      "start_theme": "legacy",
+      "ui_scale_percent": 150,
+      "step": "kanturu",
+      "map_id": 38,
+      "map_name": "Kanturu Relics",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "legacy-150-gens.jpg",
+      "sha256": "79074c32fe416684ff3c890dd696a9144a7d6fe614f446b08b9e812b1c2b9382",
+      "start_theme": "legacy",
+      "ui_scale_percent": 150,
+      "step": "gens",
+      "map_id": 63,
+      "map_name": "Vulcanus",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "legacy-150-theme-switch.jpg",
+      "sha256": "c097bc30feda3fdaee127d62292d3f658a2238bd415aff804cb1204162e5e3c0",
+      "start_theme": "legacy",
+      "ui_scale_percent": 150,
+      "step": "theme-switch",
+      "map_id": 63,
+      "map_name": "Vulcanus",
+      "active_theme": "modern"
+    },
+    {
+      "file": "legacy-150-return.jpg",
+      "sha256": "ff9a83e8b3bcd5e884a387dfea11a9880d3e941e78bca5d0b332575e8d5d8dbf",
+      "start_theme": "legacy",
+      "ui_scale_percent": 150,
+      "step": "return",
+      "map_id": 0,
+      "map_name": "Lorencia",
+      "active_theme": "modern"
+    },
+    {
+      "file": "modern-75-lorencia.jpg",
+      "sha256": "e9e49e50a63b5f7ff136c244987e4cdd9bbc6cb160ad9c0e1087c6892c74486a",
+      "start_theme": "modern",
+      "ui_scale_percent": 75,
+      "step": "lorencia",
+      "map_id": 0,
+      "map_name": "Lorencia",
+      "active_theme": "modern"
+    },
+    {
+      "file": "modern-75-kanturu.jpg",
+      "sha256": "6aa11fd16c2e623779fab71dffcbd85d0125de83cb4f8aa90f98287cbcec9a8e",
+      "start_theme": "modern",
+      "ui_scale_percent": 75,
+      "step": "kanturu",
+      "map_id": 38,
+      "map_name": "Kanturu Relics",
+      "active_theme": "modern"
+    },
+    {
+      "file": "modern-75-gens.jpg",
+      "sha256": "cce7b31f59334410e72e000fa95613461245ca2a03555b9c353dcb0fa3cd347c",
+      "start_theme": "modern",
+      "ui_scale_percent": 75,
+      "step": "gens",
+      "map_id": 63,
+      "map_name": "Vulcanus",
+      "active_theme": "modern"
+    },
+    {
+      "file": "modern-75-theme-switch.jpg",
+      "sha256": "6b0e8c7102ed7e6361fcddb7f7729b8b2a7d5fdf51a71c276ee7999b47fff68e",
+      "start_theme": "modern",
+      "ui_scale_percent": 75,
+      "step": "theme-switch",
+      "map_id": 63,
+      "map_name": "Vulcanus",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "modern-75-return.jpg",
+      "sha256": "439f46bb07d4232362d3b3cb8917f340613a226c2bfe674560ad34191d775708",
+      "start_theme": "modern",
+      "ui_scale_percent": 75,
+      "step": "return",
+      "map_id": 0,
+      "map_name": "Lorencia",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "modern-150-lorencia.jpg",
+      "sha256": "ff3ee64b8157019c76aac16edbc46c4922b1ee59e5361a4e07e745ec578968f6",
+      "start_theme": "modern",
+      "ui_scale_percent": 150,
+      "step": "lorencia",
+      "map_id": 0,
+      "map_name": "Lorencia",
+      "active_theme": "modern"
+    },
+    {
+      "file": "modern-150-kanturu.jpg",
+      "sha256": "3d794b6617d9c4e17e9d1ca810c447c8b1b18f22e3d5bf1d7e57dead585ef59a",
+      "start_theme": "modern",
+      "ui_scale_percent": 150,
+      "step": "kanturu",
+      "map_id": 38,
+      "map_name": "Kanturu Relics",
+      "active_theme": "modern"
+    },
+    {
+      "file": "modern-150-gens.jpg",
+      "sha256": "6d10be09486b9d812afcb5d2467b6fdc47a715ec519c21163048851427867fba",
+      "start_theme": "modern",
+      "ui_scale_percent": 150,
+      "step": "gens",
+      "map_id": 63,
+      "map_name": "Vulcanus",
+      "active_theme": "modern"
+    },
+    {
+      "file": "modern-150-theme-switch.jpg",
+      "sha256": "a6477ca34af9b8787b201099866ba18b80b54bb48baf7698493ff309ab227bbd",
+      "start_theme": "modern",
+      "ui_scale_percent": 150,
+      "step": "theme-switch",
+      "map_id": 63,
+      "map_name": "Vulcanus",
+      "active_theme": "legacy"
+    },
+    {
+      "file": "modern-150-return.jpg",
+      "sha256": "7a6f0fb507069d73e8cbc5b7c697755336d0b8764d30b1d48f58439403943ee6",
+      "start_theme": "modern",
+      "ui_scale_percent": 150,
+      "step": "return",
+      "map_id": 0,
+      "map_name": "Lorencia",
+      "active_theme": "legacy"
+    }
+  ],
+  "validation": {
+    "windows_x64_release_main_build": "passed",
+    "map_cases": 6,
+    "map_assertions_each_real_and_missing_font": 22251,
+    "theme_cases": 20,
+    "theme_assertions": 52203,
+    "gpu_gens_cases": 1,
+    "gpu_gens_assertions": 18,
+    "selected_ctest": "10/10",
+    "rml_contract_tests": "30/30",
+    "rml_rcss_guards": "4/4",
+    "format_and_cppcheck": "passed"
+  },
+  "limits": "No Linux/macOS builds, full unrelated test suite, or build of the combined latest-main integration tree. Hosted CI must be assessed separately."
+}
