@@ -1,0 +1,331 @@
+{
+  "pull_request": "https://github.com/sven-n/MuMain/pull/812",
+  "code_commit": "6b80fa4241a660f41a23081b101822bc963ba1eb",
+  "client_sha256": "df6082d42efe54efc24744e1edcdb513155497d63ea0fbca52ad75b2462669a6",
+  "commit_changed": false,
+  "source_contribution": "https://github.com/Mosch0512/MuMain/tree/c5ef3746de8fd2b94bfbe8921f2a06ff060997e7",
+  "total_local_captures": 89,
+  "published_captures": [
+    {
+      "file": "main-legacy-en-100-1600x900-lorencia.jpg",
+      "imageSha256": "0363a9bd65e8c812b2bcde2fc8cedfb73439acadc49a5b44c74e20917d200237",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-100-1600x900-lorencia.jpg",
+      "imageSha256": "064a325a32d1d1c1f1aae07824c482e7850562ec7411bf40aa1cd8d996e44b83",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-100-1600x900-devias.jpg",
+      "imageSha256": "83e620ba3bafda7dae06743be31630dddff43d92d07b72003eafdbfcf0d26736",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-100-1600x900-devias.jpg",
+      "imageSha256": "72c004ee289c9d53607106e4a89721da7756940578debdf97d028c635c1e77f8",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-100-1600x900-dungeon.jpg",
+      "imageSha256": "da8dd9ec0cf86ee92f429996ab2942567df4f9d5cc729dc18cbae33513c99407",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-100-1600x900-dungeon.jpg",
+      "imageSha256": "18e262ad6d6fcbec5862bf24f4d247ecfa24bb98b0886082154c7e6fbd52a7ca",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-100-1600x900-noria.jpg",
+      "imageSha256": "620e55cdf4a94889803eef96182186b4d305a7fbbfd612cf0a4db84210b79a84",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-100-1600x900-noria.jpg",
+      "imageSha256": "4562d2880c08eacf52b3cd90b196dcc90add025b7f5eef95ffe0991e0179b654",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-100-1600x900-kanturu38.jpg",
+      "imageSha256": "33d62651edd0f4f9c860638860256fd4f70ff1d7f36b7807da460b6344b8998e",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-100-1600x900-kanturu38.jpg",
+      "imageSha256": "0cef40afe1b17bc695773d301fb082245aaadc1ee687fea1f7ad0922d1d4693e",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-100-1600x900-balgass42.jpg",
+      "imageSha256": "a3b917f12304332a02772ed2c6244741489174ed3be7a1e4696a6e0f3678d86b",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-100-1600x900-balgass42.jpg",
+      "imageSha256": "d217fcff365262c80ef1ae1ab5e9d3448ad02b9ffb7ab4c2c7b682df7ee9226c",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-100-1600x900-gens63.jpg",
+      "imageSha256": "2bccd37941880a8a91135d821b00ae4c4e543e5dacf9ac097dccda5d3a3f104e",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-100-1600x900-gens63.jpg",
+      "imageSha256": "132052f25594bedefe6f351a609f443551af2a509e620c541d02008ced698b2b",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-75-1280x720-kanturu38.jpg",
+      "imageSha256": "735d3367f46b5535a12dd7a5cbd50da1394f278f546ac621075ab14c138f8d10",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 75,
+      "width": 1280,
+      "height": 720,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-75-1280x720-kanturu38.jpg",
+      "imageSha256": "a7c7025a411f5c6f7088a48e78c754b3573e33b47715b035598a9c7c729ce535",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 75,
+      "width": 1280,
+      "height": 720,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-150-1920x1080-kanturu38.jpg",
+      "imageSha256": "2a4b01d3b96251acf1882dcd87657acb784cd6e760f3c46f6f19bfff64f8eb15",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 150,
+      "width": 1920,
+      "height": 1080,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-150-1920x1080-kanturu38.jpg",
+      "imageSha256": "2d51f790db3c167677442b4427d6d3dfa954c4d80d86ac09e812b5a117d6e18f",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 150,
+      "width": 1920,
+      "height": 1080,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-150-800x600-kanturu38.jpg",
+      "imageSha256": "1f89dd5f5314ba1ae9c55b9e4cac947c90a3142352ef3351787c7501766151cc",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 150,
+      "width": 800,
+      "height": 600,
+      "scene": "world"
+    },
+    {
+      "file": "main-modern-en-150-800x600-kanturu38.jpg",
+      "imageSha256": "a5d6f3946200104f65e5987c5cdeb05ac845fa7e28fbf23dc23838550050dfb8",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 150,
+      "width": 800,
+      "height": 600,
+      "scene": "world"
+    },
+    {
+      "file": "locale-legacy-pl-100-1600x900-losttower4.jpg",
+      "imageSha256": "ecb5eb94a1d27d06c66d3031fbf3f93d2c22220c250ca3f644f05a3839442d20",
+      "theme": "legacy",
+      "locale": "pl",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "locale-modern-pl-100-1600x900-losttower4.jpg",
+      "imageSha256": "8d460cb1cc991fdde904cf0ae4562edcabaf5507f258f66d130a3429bb8aad4f",
+      "theme": "modern",
+      "locale": "pl",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "locale-legacy-ru-100-1600x900-kanturu38.jpg",
+      "imageSha256": "9b499f290fa1be26383e17a7acc120a145a73df2794266acc16667481d52a8cd",
+      "theme": "legacy",
+      "locale": "ru",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "locale-modern-ru-100-1600x900-kanturu38.jpg",
+      "imageSha256": "4c00ce17546a86e495de50a2f9a59532ba02ef480a4fb0fbd144c028300c653a",
+      "theme": "modern",
+      "locale": "ru",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "locale-legacy-ja-100-1600x900-kanturu38.jpg",
+      "imageSha256": "f102e2b5044bbf2fc70ceca09a46a048d03f3c539efb6f2cd0ba8a58c9c074f1",
+      "theme": "legacy",
+      "locale": "ja",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "locale-modern-ja-100-1600x900-kanturu38.jpg",
+      "imageSha256": "8f40c3155d0fe01cf666d1b63ca2e49215890b5161266b64cf77f1f3c7cc23e0",
+      "theme": "modern",
+      "locale": "ja",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "locale-legacy-zh-tw-100-1600x900-devias.jpg",
+      "imageSha256": "b7255ee29182870644889779e68f08207c25f980ef499b5be6ae8288b1aff8bc",
+      "theme": "legacy",
+      "locale": "zh-TW",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "locale-modern-zh-tw-100-1600x900-devias.jpg",
+      "imageSha256": "20e40016a7718879e6aa4eac4a7aa6505fedc383605ff275700cb8cc850d6792",
+      "theme": "modern",
+      "locale": "zh-TW",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-switch-modern-en-100-1600x900.jpg",
+      "imageSha256": "43f0c86d48c67ba8ab3b5f3945be9b3f96c3166f7360f4ad677faa59dcc7e456",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-100-1600x900-return-lorencia.jpg",
+      "imageSha256": "2fce5ef884cf0fe9f5a3890f158c19b1bd03b8221642b9877bb4b2bc280de8f0",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    },
+    {
+      "file": "main-legacy-en-100-1600x900-logout.jpg",
+      "imageSha256": "482b4b3fe729aa7033cfa5b0aec318a19ad34d8b6d772841e4dadb326a0df221",
+      "theme": "legacy",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "character_list"
+    },
+    {
+      "file": "interactions-return-modern-lorencia-banner.jpg",
+      "imageSha256": "47b5191020f019750578974d8288238b14c947179df3d258e2bb387df1134bf9",
+      "theme": "modern",
+      "locale": "en",
+      "scale": 100,
+      "width": 1600,
+      "height": 900,
+      "scene": "world"
+    }
+  ],
+  "server_source_commit": "ef41c19335ea7c9cb19627114b5d98761ac1a6be"
+}
