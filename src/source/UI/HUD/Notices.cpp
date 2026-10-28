@@ -18,6 +18,7 @@
 #include "UI/RmlBridge/RmlTheme.h"
 #include "UI/Scaling/UITransform.h"
 #include "Render/Text/CUIRenderText.h"
+#include "Scenes/SceneCore.h"
 
 #include <RmlUi/Core/ElementDocument.h>
 
@@ -84,10 +85,19 @@ namespace UI::Notices
     void Clear()
     {
         memset(s_notices, 0, sizeof(s_notices));
+        s_count = 0;
+        s_time = NOTICE_LIFETIME;
+        s_blinkPhase = 0.f;
+        s_renderedThisFrame = false;
+        SyncField(s_view.Binder(), &NoticesRmlModel::lines, "lines", std::vector<NoticeLineEntry>{});
+        s_view.Hide();
     }
 
     void Create(const wchar_t* text, int color)
     {
+        if (SceneFlag != MAIN_SCENE)
+            return;
+
         g_pRenderText->SetFont(g_hFontBold);
         const SIZE size = g_pRenderText->MeasureText(text, lstrlen(text));
 
@@ -112,6 +122,12 @@ namespace UI::Notices
 
     void Move()
     {
+        if (SceneFlag != MAIN_SCENE)
+        {
+            Clear();
+            return;
+        }
+
         if (!s_renderedThisFrame)
             UI::RmlBridge::SyncDocumentVisibility(s_view.Document(), false);
         s_renderedThisFrame = false;
@@ -199,6 +215,12 @@ namespace UI::Notices
 
     void Render()
     {
+        if (SceneFlag != MAIN_SCENE)
+        {
+            Clear();
+            return;
+        }
+
         s_renderedThisFrame = true;
 
 #ifdef KJH_ADD_INGAMESHOP_UI_SYSTEM

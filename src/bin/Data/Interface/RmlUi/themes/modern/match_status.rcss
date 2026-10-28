@@ -31,6 +31,6 @@ body { pointer-events: none; }
 #result_tie { top: 115px; }
 #result_tie .sharp-text { color: token(semantic-warning); }
 
-#result_ok { position: absolute; left: 115px; top: 160px; width: 70px; height: 20px; background-color: token(surface-raised); border: 1px token(border-frame); border-radius: token(radius-sm); pointer-events: auto; cursor: pointer; }
+#result_ok { position: absolute; left: 115px; top: 160px; width: 70px; height: 20px; background-color: token(surface-raised); border: 1px token(border-frame); border-radius: token(radius-sm)px; pointer-events: auto; cursor: pointer; }
 #result_ok:hover { background-color: token(accent-steel-hover); }
 #result_ok .ok-label { top: 50%; color: token(text-primary); }

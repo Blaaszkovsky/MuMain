@@ -112,6 +112,9 @@ protected:
     int m_iFontHeight;
     DWORD m_dwSlideTextColor;
     BOOL m_bBlink;
+
+private:
+    void ClearQueue();
 };
 
 class SlideTicker

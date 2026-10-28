@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "UI/HUD/SlideTicker.h"
+#include "UI/HUD/SlideTickerPresentation.h"
 
 #include "Core/Time/FrameTimerScheduler.h"
 #include "Render/Text/CUIRenderText.h"
@@ -26,10 +27,25 @@ SlideLane::SlideLane()
 
 SlideLane::~SlideLane()
 {
+    ClearQueue();
+}
+
+void SlideLane::ClearQueue()
+{
+    for (const auto& [time, slide] : m_SlideQueue)
+    {
+        // Repeats share their text; the last queued repeat owns its allocation.
+        if (slide.m_bLastData)
+            delete[] slide.m_pszText;
+    }
+    m_SlideQueue.clear();
+    m_RemoveQueueList.clear();
 }
 
 void SlideLane::Init(BOOL bBold, BOOL bBlink)
 {
+    ClearQueue();
+
     if (bBold == TRUE)
     {
         m_hFont = g_hFontBold;
@@ -426,25 +442,7 @@ void SlideTicker::Init()
 // visible at a time.
 SlideDisplay SlideTicker::Display()
 {
-    if (m_NoticeSlide.HaveText() == FALSE)
-    {
-        m_HelpSlide.Advance(TRUE);
-        return m_HelpSlide.Display(TRUE);
-    }
-
-    if (m_NoticeSlide.GetAlphaRate() <= 0)
-    {
-        m_HelpSlide.Advance();
-        return m_HelpSlide.Display();
-    }
-
-    if (m_HelpSlide.GetAlphaRate() <= 0)
-    {
-        m_NoticeSlide.Advance();
-        return m_NoticeSlide.Display();
-    }
-
-    return {};
+    return Detail::AdvanceSlideDisplay(m_HelpSlide, m_NoticeSlide);
 }
 
 void SlideTicker::Render()

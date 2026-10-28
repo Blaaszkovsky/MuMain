@@ -80,7 +80,7 @@
 	position: absolute;
 	width: 22px;
 	height: 22px;
-	border-radius: 50%;
+	border-radius: 11px;
 	cursor: pointer;
 	pointer-events: auto;
 	text-align: center;

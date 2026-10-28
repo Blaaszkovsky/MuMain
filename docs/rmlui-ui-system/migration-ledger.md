@@ -134,6 +134,8 @@ other places for single confirmations. The remaining dialog classes use RmlUi vi
 | `CQuestCountLimitMsgBoxLayout` | Compiled out | Its only creator is under `ASG_ADD_TIME_LIMIT_QUEST`, not defined |
 | `C3DItemCommonMsgBox` | Deleted | No users left; item dialogs are `CGenericConfirmDialog` with `item3D` |
 
+Blood Castle, Devil Square and Chaos Castle keep their final results visible after returning to town until the player closes them with OK. Opening a later result shows the new values.
+
 Native message boxes are not draggable (`window-placement.md` section 8). Each box's theme places it
 on the `.stage` by its kind (`message_box_view.rcss`, the cash shop's `igs_*.rcss`); C++ gives only its
 size and what is inside it, from its top-left.
@@ -153,7 +155,7 @@ siege lists, the cash shop lists.
 
 | Surface | Native code | Status |
 |---|---|---|
-| Centre-screen notices | `UI::Notices::Render()` | Done: `notices.rml`, depth 20, above game windows and tooltips, below scene and reconnect documents |
+| Centre-screen notices | `UI::Notices::Render()` | Done: `notices.rml`, depth 20, above game windows and tooltips, below scene and reconnect documents. Gameplay announcements only appear after entering the world and are cleared on leaving it; login errors keep their separate message dialog. Repeated slide announcements reset for a new gameplay session. |
 | Map name banner | `CUIMapName::Render()` | Done: `map_name.rml`, localized text between shared ornaments on world entry, behind every window; optional Gens warning |
 | Party HP bars over heads, Kanturu result banner, siege build-time bars, Hellas object labels | `RenderPartyHP()`, `M39Kanturu3rd::RenderKanturu3rdinterface()`, `battleCastle::RenderBuildTimes()`, `RenderObjectDescription()` | Done: recorded by the world-label layer |
 | Siege crown switch lines, macro cooldown, event entry countdown | `RenderSwichState()`, `RenderTimes()`, `CSBaseMatch::RenderTime()` | Done: `hud_status.rml` on the HUD board (`UI::Hud::StatusTexts`); `$preview status` |

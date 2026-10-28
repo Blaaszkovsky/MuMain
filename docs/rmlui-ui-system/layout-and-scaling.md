@@ -165,6 +165,11 @@ window-coordinate bounds through ancestor transforms. Raw `GetBox()` values desc
 before render transforms; `GetAbsoluteOffset()` alone does not supply transformed geometry.
 Do not multiply a drawn box by UI scale again.
 
+An item drag preserves the held point in cells across grids with different pitches.
+Drop placement and its preview use the same unrounded window coordinates; rounding
+to pixels is reserved for drawing, so fractional grid origins cannot shift a drop
+to the preceding row or column. Genuine positions outside the grid remain invalid.
+
 Legacy companions that still mirror layout calculations are compatibility exceptions. They must
 use the document's authoritative dimensions and matching units; `CompanionRatio()` supplies the
 shared ratio for direct `dp` layouts. The

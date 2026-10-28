@@ -69,6 +69,7 @@ bool CNPCQuest::Create(CManager* pNewUIMng)
 void CNPCQuest::BindRmlModel(Rml::DataModelConstructor& c, NPCQuestRmlModel& model)
 {
     c.Bind("text_px", &model.textPx);
+    c.Bind("page", &g_iCurrentDialogScript);
 
     c.Bind("npc_name", &model.npcName);
     c.Bind("quest_title", &model.questTitle);
@@ -365,6 +366,7 @@ void CNPCQuest::SyncRmlModel()
         return;
 
     auto& model = m_RmlView.GetModel();
+    m_RmlView.MarkDirty("page");
 
     UI::RmlBridge::SyncNativeTextSize(m_RmlView.Binder());
 

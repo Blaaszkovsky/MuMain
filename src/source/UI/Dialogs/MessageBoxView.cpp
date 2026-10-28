@@ -3,7 +3,6 @@
 #include "UI/Dialogs/MessageBoxView.h"
 
 #include "Core/Utilities/StringUtils.h"
-#include "Render/RmlUi/RmlUiRuntime.h"
 #include "Render/Text/CUIRenderTextSDLTtf.h"
 #include "UI/RmlBridge/RmlSyncField.h"
 #include "UI/RmlBridge/RmlColor.h"
@@ -82,7 +81,7 @@ void mu::ui::window::MessageBoxView::BindModel(Rml::DataModelConstructor& c, Mes
 
 void mu::ui::window::MessageBoxView::Create(int middleCount, const char* kind)
 {
-    if (m_View.Document() != nullptr || !RmlUiRuntime::Instance().IsCreated())
+    if (m_View.Document() != nullptr)
         return;
 
     m_View.GetModel().kind = kind;
@@ -138,7 +137,7 @@ void mu::ui::window::MessageBoxView::Destroy()
     m_View.Release();
 }
 
-void mu::ui::window::MessageBoxView::Sync(const std::vector<Line>& lines, const std::vector<Button>& buttons)
+void mu::ui::window::MessageBoxView::Refresh()
 {
     if (!m_View.Document())
         return;
@@ -159,6 +158,15 @@ void mu::ui::window::MessageBoxView::Sync(const std::vector<Line>& lines, const 
               static_cast<float>(CUIRenderTextSDLTtf::LineHeight(UI::Scaling::FontRole::Normal)));
     SyncField(m_View.Binder(), &MessageBoxViewRmlModel::boldLineHeight, "bold_line_height",
               static_cast<float>(CUIRenderTextSDLTtf::LineHeight(UI::Scaling::FontRole::Bold)));
+}
+
+void mu::ui::window::MessageBoxView::Sync(const std::vector<Line>& lines, const std::vector<Button>& buttons)
+{
+    if (!m_View.Document())
+        return;
+
+    Refresh();
+    MessageBoxViewRmlModel& model = m_View.GetModel();
 
     std::vector<MessageBoxViewLineEntry> lineEntries;
     for (const Line& line : lines)

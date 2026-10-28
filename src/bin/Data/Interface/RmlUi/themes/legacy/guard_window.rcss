@@ -134,10 +134,8 @@
 
 .gd-header { color: #dcdcdc; }
 .gd-cell { color: rgb(230, 220, 200); }
-/* RenderDataLine(): a selected row, and a defending guild's row, carry the same backdrop; only a
-   selected row's text turns black against it. */
+/* RenderDataLine(): a selected row, and a defending guild's row, carry the same backdrop. */
 .gd-row.selected .gd-row-back, .gd-row.defending .gd-row-back { background-color: rgba(0, 0, 0, 102); }
-.gd-row.selected .gd-cell { color: #000000; }
 
 /* Lengths inside counter-scaled layers: reference px times the panel's --root-scale. */
 #heading { width: calc(160px * var(--root-scale)); }

@@ -65,6 +65,8 @@ public:
 
     // Per frame: the lines and buttons. The theme places the box on the stage by its kind.
     void Sync(const std::vector<Line>& lines, const std::vector<Button>& buttons);
+    // Per-frame presentation of an owned snapshot, without replacing its contents.
+    void Refresh();
     // The box's list, or none (nullptr); call with Sync().
     void SyncList(const List* list);
 

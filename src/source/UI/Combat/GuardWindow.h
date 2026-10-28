@@ -15,6 +15,8 @@
 #include "UI/HUD/ChatLogWindow.h"
 #include "UI/Inventory/InventoryCtrl.h"
 
+#include <chrono>
+
 namespace Rml
 {
 class ElementDocument;
@@ -94,6 +96,7 @@ private:
     BYTE m_bySiegeStartHour = 0;
     BYTE m_bySiegeStartMinute = 0;
     DWORD m_dwStateLeftSec = 0;
+    std::chrono::steady_clock::time_point m_stateLeftReceivedAt = std::chrono::steady_clock::now();
 
 public:
     CGuardWindow();

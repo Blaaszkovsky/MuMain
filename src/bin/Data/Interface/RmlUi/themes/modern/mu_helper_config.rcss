@@ -174,10 +174,6 @@
 .mhc-class-col > * + * { margin-top: 2px; }
 .mhc-radios { display: flex; flex-direction: row; flex-wrap: wrap; padding-left: 12px; }
 .mhc-radios > .mh-check { flex: 0 1 auto; margin-right: 6px; }
-/* Native's order: Auto and Together on the left, Cease to the right of Auto. */
-#rb_raven_auto { order: 1; }
-#rb_raven_cease { order: 2; }
-#rb_raven_together { order: 3; }
 #cb_fallback { margin-top: 6px; }
 
 /* --- Buffs ------------------------------------------------------------------------------------ */

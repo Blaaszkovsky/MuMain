@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "UI/Combat/SiegeUpdates.h"
+#include "UI/Combat/CrownRegistrationMessageBox.h"
 
 #include "UI/Core/WindowAccess.h"
 #include "UI/Core/WindowSystem.h"
@@ -12,6 +13,22 @@
 
 namespace UI::Siege
 {
+namespace
+{
+mu::ui::window::CProgressMsgBox* CreateRegistrationNotice(bool succeeded)
+{
+    auto* message = CrownRegistrationMessageBox::CreateOnce(*g_MessageBox, succeeded);
+    if (!message)
+        return nullptr;
+    if (!message->Create())
+    {
+        g_MessageBox->DeleteMessageBox(message);
+        return nullptr;
+    }
+    return message;
+}
+} // namespace
+
 void ResetMiniMap()
 {
     if (g_pSiegeWarfare)
@@ -134,28 +151,18 @@ void ShowCrownNotice(CrownNotice notice, std::wstring_view actor,
     case CrownNotice::RegistrationStarted:
     case CrownNotice::RegistrationFailed:
     {
-        if (notice == CrownNotice::RegistrationStarted)
-            CreateMessageBox(MSGBOX_LAYOUT_CLASS(CSealRegisterStartLayout), &message);
-        else
-            CreateMessageBox(MSGBOX_LAYOUT_CLASS(CSealRegisterFailLayout), &message);
+        message = CreateRegistrationNotice(false);
         if (!message)
             break;
-        wchar_t text[256];
-        int seconds = static_cast<int>(accessTimeMs / 1000);
-        if (seconds >= 59)
-            seconds = 59;
-        mu_swprintf(text, I18N::Game::SAccumulatedHourDseconds,
-                    notice == CrownNotice::RegistrationStarted
-                        ? I18N::Game::OfficialSealRegistrationWillStart
-                        : I18N::Game::OfficialSealRegistrationIsFailed,
-                    seconds);
-        message->AddMsg(text);
+        message->AddMsg(CrownRegistrationMessageBox::FormatText(notice == CrownNotice::RegistrationStarted, accessTimeMs));
         if (notice == CrownNotice::RegistrationStarted)
-            message->SetElapseTime(60000 - accessTimeMs);
+            message->SetElapseTime(CrownRegistrationMessageBox::StartedNoticeTtlMs);
         break;
     }
     case CrownNotice::RegistrationSucceeded:
-        CreateMessageBox(MSGBOX_LAYOUT_CLASS(CSealRegisterSuccessLayout));
+        message = CreateRegistrationNotice(true);
+        if (message)
+            message->AddMsg(I18N::Game::OfficialSealRegistrationIsSuccessful);
         break;
     case CrownNotice::RegistrationByOther:
         CreateMessageBox(MSGBOX_LAYOUT_CLASS(CSealRegisterOtherLayout));

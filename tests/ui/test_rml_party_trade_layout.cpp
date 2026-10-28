@@ -11,6 +11,7 @@
 #include "UI/Scaling/UITransform.h"
 
 #include <RmlUi/Core.h>
+#include <RmlUi/Core/ComputedValues.h>
 
 #include <filesystem>
 #include <cmath>
@@ -36,6 +37,107 @@ void OpenSlot(Rml::ElementDocument* workspace, const char* name, Rml::Vector2f s
         return;
     }
     FAIL("workspace slot is missing");
+}
+
+TEST_CASE("skill grid positions exist before binding and follow its index in both themes [ui][skills]")
+{
+    LayoutFixture fixture;
+    for (const std::string theme : {"legacy", "modern"})
+    for (const int percent : {75, 150})
+    {
+        CAPTURE(theme);
+        CAPTURE(percent);
+        fixture.Configure({1280, 720}, percent);
+        auto* document = fixture.Load(theme, "main_frame");
+        auto* cell = document->GetElementById("skill_grid")->GetFirstChild();
+        REQUIRE(cell != nullptr);
+        const float initialLeft = cell->GetRelativeOffset().x;
+        cell->SetProperty("--i", "4");
+        fixture.Refresh();
+        CHECK(cell->GetRelativeOffset().x - initialLeft ==
+            doctest::Approx(64.f * fixture.context->GetDensityIndependentPixelRatio()));
+        fixture.context->UnloadDocument(document);
+    }
+}
+
+TEST_CASE("empty bound styles restore stylesheet values without parser errors [ui][binding]")
+{
+    LayoutFixture fixture;
+    Rml::String color;
+    auto constructor = fixture.context->CreateDataModel("style_reset");
+    REQUIRE(constructor.Bind("color", &color));
+    auto model = constructor.GetModelHandle();
+    auto* document = fixture.LoadMarkup(
+        "<rml><head><style>#bound { color: #00ff00; }</style></head>"
+        "<body data-model='style_reset'><div id='bound' data-style-color='color'></div></body></rml>");
+    auto* element = document->GetElementById("bound");
+    REQUIRE(element != nullptr);
+    CHECK(element->GetComputedValues().color() == Rml::Colourb(0, 255, 0));
+    color = "#ff0000";
+    model.DirtyVariable("color");
+    fixture.Refresh();
+    CHECK(element->GetComputedValues().color() == Rml::Colourb(255, 0, 0));
+    color.clear();
+    model.DirtyVariable("color");
+    fixture.Refresh();
+    CHECK(element->GetComputedValues().color() == Rml::Colourb(0, 255, 0));
+    for (const auto& message : fixture.Diagnostics())
+        CHECK_MESSAGE(message.find("Syntax error") == std::string::npos, message);
+}
+
+TEST_CASE("gameplay stylesheets load without syntax or substitution diagnostics in both themes [ui][assets]")
+{
+    LayoutFixture fixture;
+    fixture.Configure({1280, 720}, 100);
+    fixture.context->GetRootElement()->SetProperty("--text-px", std::to_string(
+        UI::Scaling::NativeTextPixelSize(UI::Scaling::FontRole::Normal, 1280, 720)) + "px");
+    for (const std::string theme : {"legacy", "modern"})
+    for (const char* name : {"main_frame", "trade", "hud_status", "match_status", "siege_warfare",
+                            "lucky_coin_registration", "lucky_coin_exchange", "generic_menu_dialog", "mu_helper_config",
+                            "mix_inventory", "my_quest_info", "party_info", "npc_quest", "npc_dialogue",
+                            "quest_progress", "lucky_item"})
+    {
+        CAPTURE(theme);
+        CAPTURE(name);
+        auto* document = fixture.Load(theme, name);
+        fixture.context->UnloadDocument(document);
+    }
+    for (const auto& message : fixture.Diagnostics())
+    {
+        CHECK_MESSAGE(message.find("Syntax error") == std::string::npos, message);
+        CHECK_MESSAGE(message.find("Failed to load style sheet") == std::string::npos, message);
+        CHECK_MESSAGE(message.find("Invalid substitution") == std::string::npos, message);
+    }
+}
+
+TEST_CASE("shrinking repeated rows removes stale bindings before reading their array [ui][binding]")
+{
+    LayoutFixture fixture;
+    std::vector<Rml::String> names;
+    auto constructor = fixture.context->CreateDataModel("rows_reset");
+    REQUIRE(constructor.RegisterArray<decltype(names)>());
+    REQUIRE(constructor.Bind("names", &names));
+    auto model = constructor.GetModelHandle();
+    auto* document = fixture.LoadMarkup(
+        "<rml><head></head><body data-model='rows_reset'><div id='rows'>"
+        "<div data-for='name : names' data-attr-data-label='name'>{{name}}</div></div></body></rml>");
+    auto* rows = document->GetElementById("rows");
+    REQUIRE(rows != nullptr);
+    for (int iteration = 0; iteration < 10; ++iteration)
+    for (const int size : {32, 1, 0, 17, 3, 0})
+    {
+        names.assign(size, "row");
+        model.DirtyVariable("names");
+        fixture.Refresh();
+        CHECK(rows->GetNumChildren() == size + 1);
+        for (int index = 0; index < size; ++index)
+            CHECK(rows->GetChild(index)->GetAttribute<Rml::String>("data-label", "") == "row");
+    }
+    for (const auto& message : fixture.Diagnostics())
+    {
+        CHECK_MESSAGE(message.find("out of bounds") == std::string::npos, message);
+        CHECK_MESSAGE(message.find("Could not get value") == std::string::npos, message);
+    }
 }
 
 void Drawn(Rml::Element* element, Rml::Vector2f& offset, Rml::Vector2f& size)

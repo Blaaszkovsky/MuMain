@@ -205,6 +205,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	line-height: 1.2;
 	white-space: normal;
 }
 /* Text lives in its own element (not raw text directly in .gmd-btn) purely so a decorator change

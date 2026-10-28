@@ -263,6 +263,10 @@ inside the theme (the item grids' `--item-cell`, `item_grid.rcss`). A new theme 
 files; it does not need a C++ change. The stylesheet cache is cleared when a theme is selected
 again, so editing theme files and reselecting that theme refreshes their values.
 
+An empty `data-style-*` value clears that inline override and restores the stylesheet's value.
+This also clears a previous icon or color when the bound data becomes empty; use `none` explicitly
+when a decorator must stay hidden regardless of the theme's stylesheet.
+
 If a stylesheet refers to a token absent from the entire chain's `[Tokens]` sections, the client logs
 the token name and stylesheet path in `MuError.log`. The missing value still expands to an empty
 string. Add the key to `tokens.ini` and reselect the theme to reload the stylesheet.

@@ -4,6 +4,7 @@
 #include "UI/RmlBridge/ThemeFileInterface.h"
 #include <filesystem>
 #include <string>
+#include <vector>
 
 namespace UI::Tests
 {
@@ -11,6 +12,26 @@ std::string ReadFile(const std::filesystem::path& path);
 std::string AssetMarkup(const std::string& theme, const std::string& name);
 class RmlLayoutFixture
 {
+    struct LogRecorder : Rml::SystemInterface
+    {
+        bool LogMessage(Rml::Log::Type, const Rml::String& message) override
+        {
+            messages.push_back(message);
+            return true;
+        }
+        std::vector<std::string> messages;
+
+        // RmlUi's default JoinPath strips the leading slash of POSIX stylesheet paths.
+        void JoinPath(Rml::String& translated, const Rml::String& document, const Rml::String& path) override
+        {
+            if (!path.empty() && path.front() == '/')
+            {
+                translated = path;
+                return;
+            }
+            Rml::SystemInterface::JoinPath(translated, document, path);
+        }
+    };
     struct NullRenderer : Rml::RenderInterface
     {
         Rml::CompiledGeometryHandle CompileGeometry(Rml::Span<const Rml::Vertex>, Rml::Span<const int>) override { return 1; }
@@ -23,22 +44,6 @@ class RmlLayoutFixture
         void SetScissorRegion(Rml::Rectanglei) override {}
     };
 
-    // The fixture links stylesheets by absolute path. RmlUi's default JoinPath strips the leading
-    // '/' of one (it means "relative to the working directory" there), which loses a POSIX
-    // absolute path; a drive-letter path is kept as is.
-    struct AbsolutePathSystem : Rml::SystemInterface
-    {
-        void JoinPath(Rml::String& translated, const Rml::String& document, const Rml::String& path) override
-        {
-            if (!path.empty() && path.front() == '/')
-            {
-                translated = path;
-                return;
-            }
-            Rml::SystemInterface::JoinPath(translated, document, path);
-        }
-    };
-
 public:
     RmlLayoutFixture();
     ~RmlLayoutFixture();
@@ -46,11 +51,12 @@ public:
     Rml::ElementDocument* Load(const std::string& theme, const std::string& name);
     Rml::ElementDocument* LoadMarkup(const std::string& markup);
     void Refresh();
+    const std::vector<std::string>& Diagnostics() const { return m_System.messages; }
     Rml::Context* context = nullptr;
 
 private:
+    LogRecorder m_System;
     NullRenderer m_Renderer;
-    AbsolutePathSystem m_System;
     UI::RmlBridge::ThemeFileInterface m_Files;
     int m_PreviousPercent;
     float m_PreviousContentScale;

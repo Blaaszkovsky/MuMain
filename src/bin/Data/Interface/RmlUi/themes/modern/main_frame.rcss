@@ -173,7 +173,7 @@
 #item_slot_0, #item_slot_1, #item_slot_2, #item_slot_3,
 #skill_slot_0, #skill_slot_1, #skill_slot_2, #skill_slot_3, #skill_slot_4,
 #current_skill_slot {
-	border: none;
+	border-width: 0;
 }
 
 /* Real hover/click targets -- opt back into pointer-events (inherited `none` from body,

@@ -51,8 +51,8 @@ RmlLayoutFixture::RmlLayoutFixture()
     : m_PreviousPercent(GameConfig::GetInstance().GetUIScalePercent()),
       m_PreviousContentScale(UI::Scaling::GetWindowContentScale())
 {
-    Rml::SetRenderInterface(&m_Renderer);
     Rml::SetSystemInterface(&m_System);
+    Rml::SetRenderInterface(&m_Renderer);
     Rml::SetFileInterface(&m_Files);
     REQUIRE(Rml::Initialise());
     const std::string fonts = MU_FONT_DIR;
@@ -67,8 +67,8 @@ RmlLayoutFixture::RmlLayoutFixture()
 RmlLayoutFixture::~RmlLayoutFixture()
 {
     Rml::Shutdown();
-    Rml::SetFileInterface(nullptr);
     Rml::SetSystemInterface(nullptr);
+    Rml::SetFileInterface(nullptr);
     Rml::SetRenderInterface(nullptr);
     GameConfig::GetInstance().SetUIScalePercent(m_PreviousPercent);
     UI::Scaling::SetWindowContentScale(m_PreviousContentScale);

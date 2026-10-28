@@ -96,14 +96,13 @@ bool mu::ui::window::CPickedItem::Create(CItemMng* pNewItemMng, CInventoryCtrl* 
     const CInventoryCtrl* sizing = SizingGrid();
     m_Size = SizeIn(sizing);
     const bool hasGridAnchor = preservePickupAnchor && pSrc != nullptr;
-    const UI::Items::GridRect itemBox =
-        hasGridAnchor ? pSrc->Geometry().CellsRect(pItem->x, pItem->y, 1, 1) : UI::Items::GridRect{};
-    const POINT pointer = CInventoryCtrl::PointerPos();
-    const POINT offset = UI::Items::Drag::PickupOffset(static_cast<int>(std::lround(itemBox.x)),
-                                                       static_cast<int>(std::lround(itemBox.y)), m_Size.cx,
-                                                       m_Size.cy, pointer.x, pointer.y, hasGridAnchor);
+    const ITEM_ATTRIBUTE& itemAttribute = ItemAttribute[pItem->Type];
     const UI::Items::GridGeometry geometry = sizing ? sizing->Geometry() : UI::Items::GridGeometry{};
-    m_Anchor = {offset.x / geometry.PitchX(), offset.y / geometry.PitchY()};
+    const UI::Items::GridRect itemBox =
+        geometry.CellsRect(pItem->x, pItem->y, itemAttribute.Width, itemAttribute.Height);
+    m_Anchor = hasGridAnchor ? geometry.PickupAt(g_fWindowMouseX, g_fWindowMouseY, itemBox)
+                             : UI::Items::PickupAnchor{itemAttribute.Width / 2.f, itemAttribute.Height / 2.f};
+    const POINT pointer = CInventoryCtrl::PointerPos();
     m_Pos = TopLeftIn(sizing, pointer.x, pointer.y);
 
     return true;
@@ -211,14 +210,8 @@ int mu::ui::window::CPickedItem::GetSourceLinealPos()
 
 bool mu::ui::window::CPickedItem::GetTargetPos(CInventoryCtrl* pDest, int& iTargetColumnX, int& iTargetRowY)
 {
-    if (pDest != nullptr)
-    {
-        const POINT pointer = pDest->PointerPos();
-        const POINT itemTopLeft = TopLeftIn(pDest, pointer.x, pointer.y);
-
-        return pDest->GetSquarePosAtPt(itemTopLeft.x, itemTopLeft.y, iTargetColumnX, iTargetRowY);
-    }
-    return false;
+    return pDest != nullptr &&
+           pDest->Geometry().DragCellAt(g_fWindowMouseX, g_fWindowMouseY, m_Anchor, iTargetColumnX, iTargetRowY);
 }
 
 int mu::ui::window::CPickedItem::GetTargetLinealPos(CInventoryCtrl* pDest)
@@ -229,6 +222,11 @@ int mu::ui::window::CPickedItem::GetTargetLinealPos(CInventoryCtrl* pDest)
         return pDest->GetIndex(iTargetColumnX, iTargetRowY);
     }
     return -1;
+}
+
+bool mu::ui::window::CPickedItem::GetPreviewPos(const CInventoryCtrl* pDest, int& column, int& row) const
+{
+    return pDest != nullptr && pDest->Geometry().DragCellOf(g_fWindowMouseX, g_fWindowMouseY, m_Anchor, column, row);
 }
 
 bool mu::ui::window::CPickedItem::IsVisible() const
@@ -1125,6 +1123,11 @@ void mu::ui::window::CInventoryCtrl::UpdateCells()
             m_Cells[topRight].count = std::to_string(count);
     }
 
+    UpdateDropCells();
+}
+
+void mu::ui::window::CInventoryCtrl::UpdateDropCells()
+{
     m_bCanPushItem = false;
     if (ms_pPickedItem == nullptr || !ms_pPickedItem->IsVisible())
         return;
@@ -1144,7 +1147,8 @@ void mu::ui::window::CInventoryCtrl::UpdateCells()
     const ITEM_ATTRIBUTE* pItemAttr = &ItemAttribute[pPickItem->Type];
     int iColumnX = 0, iRowY = 0;
     int nItemColumn = pItemAttr->Width, nItemRow = pItemAttr->Height;
-    m_Geometry.CellOf(static_cast<float>(itemTopLeft.x), static_cast<float>(itemTopLeft.y), iColumnX, iRowY);
+    if (!ms_pPickedItem->GetPreviewPos(this, iColumnX, iRowY))
+        return;
 
     bool bWarning = false;
     if (iColumnX < 0 && iColumnX >= -nItemColumn)

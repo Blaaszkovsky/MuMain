@@ -102,6 +102,7 @@
 	width: 90dp;
 	height: auto;
 	min-height: 30dp;
+	line-height: 1.2;
 	white-space: normal;
 }
 /* Deliberately empty/inert for the default and compact sizes -- see legacy's own copy of this

@@ -6,6 +6,7 @@
 
 #include <RmlUi/Core.h>
 
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -61,8 +62,9 @@ public:
         REQUIRE(context != nullptr);
         resolved = context;
         UI::RmlBridge::SetContextResolver([this](std::string_view) { return resolved; });
-        m_Folder = std::filesystem::temp_directory_path() / "rml_themed_view_tests";
-        std::filesystem::remove_all(m_Folder);
+        // CTest runs individual cases in separate processes; each fixture owns its documents.
+        m_Folder = std::filesystem::temp_directory_path() /
+            ("rml_themed_view_tests_" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
         std::filesystem::create_directories(m_Folder);
         m_PreviousDirectory = std::filesystem::current_path();
         m_PreviousTheme = UI::RmlBridge::GetActiveThemeName();

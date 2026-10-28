@@ -5,6 +5,8 @@
 // document has laid out.
 namespace UI::Items
 {
+struct PickupAnchor;
+
 struct GridRect
 {
     float x = 0.f;
@@ -21,13 +23,34 @@ public:
     GridGeometry() = default;
     GridGeometry(float left, float top, float pitchX, float pitchY, int columns, int rows);
 
-    float Left() const { return m_Left; }
-    float Top() const { return m_Top; }
-    float PitchX() const { return m_PitchX; }
-    float PitchY() const { return m_PitchY; }
-    int Columns() const { return m_Columns; }
-    int Rows() const { return m_Rows; }
-    GridRect Bounds() const { return {m_Left, m_Top, m_Columns * m_PitchX, m_Rows * m_PitchY}; }
+    float Left() const
+    {
+        return m_Left;
+    }
+    float Top() const
+    {
+        return m_Top;
+    }
+    float PitchX() const
+    {
+        return m_PitchX;
+    }
+    float PitchY() const
+    {
+        return m_PitchY;
+    }
+    int Columns() const
+    {
+        return m_Columns;
+    }
+    int Rows() const
+    {
+        return m_Rows;
+    }
+    GridRect Bounds() const
+    {
+        return {m_Left, m_Top, m_Columns * m_PitchX, m_Rows * m_PitchY};
+    }
 
     bool Contains(float x, float y) const;
     // The cell holding (x, y); false outside the grid.
@@ -35,6 +58,10 @@ public:
     // The cell (x, y) falls in, also outside the grid, one further out on the negative side as
     // the original counted it: where an item hanging off the grid starts.
     void CellOf(float x, float y, int& column, int& row) const;
+    // Logical drag placement, before drawing rounds to pixels. Outside cells are kept for preview.
+    bool DragCellOf(float pointerX, float pointerY, const PickupAnchor& anchor, int& column, int& row) const;
+    bool DragCellAt(float pointerX, float pointerY, const PickupAnchor& anchor, int& column, int& row) const;
+    PickupAnchor PickupAt(float pointerX, float pointerY, const GridRect& itemBox) const;
     // The box of `width` x `height` cells from (column, row).
     GridRect CellsRect(int column, int row, int width, int height) const;
 
@@ -55,9 +82,12 @@ struct PickupAnchor
 {
     float column = 0.f;
     float row = 0.f;
+    // Representation bounds in cells, carried from the source's window coordinates.
+    float columnError = 0.f;
+    float rowError = 0.f;
 };
 
 // The item's top-left under the pointer, in a grid of the given pitch.
-void AnchoredTopLeft(float pointerX, float pointerY, const PickupAnchor& anchor, float pitchX, float pitchY,
-                     int& left, int& top);
+void AnchoredTopLeft(float pointerX, float pointerY, const PickupAnchor& anchor, float pitchX, float pitchY, int& left,
+                     int& top);
 } // namespace UI::Items

@@ -482,6 +482,7 @@ bool mu::ui::window::CBloodCastleResultMsgBox::Create(float fPriority)
 #endif // KJH_ADD_INGAMESHOP_UI_SYSTEM
 
     m_View.Create(static_cast<int>(MIDDLE_COUNT), "blood-castle-result");
+    SyncMatchResultView(m_View);
 
     return true;
 }
@@ -498,7 +499,7 @@ bool mu::ui::window::CBloodCastleResultMsgBox::Update()
         return true;
 
     if (m_View.IsShown())
-        SyncMatchResultView(m_View);
+        m_View.Refresh();
     return true;
 }
 
@@ -546,6 +547,7 @@ bool mu::ui::window::CDevilSquareRankMsgBox::Create(float fPriority)
     const auto middles = static_cast<int>(MIDDLE_COUNT1 + MIDDLE_COUNT2);
     m_View.Create(middles, "devil-square-rank");
     m_View.SetFrame(middles, static_cast<int>(MIDDLE_COUNT1));
+    SyncMatchResultView(m_View);
 
     return true;
 }
@@ -562,7 +564,7 @@ bool mu::ui::window::CDevilSquareRankMsgBox::Update()
         return true;
 
     if (m_View.IsShown())
-        SyncMatchResultView(m_View);
+        m_View.Refresh();
     return true;
 }
 
@@ -610,6 +612,7 @@ bool mu::ui::window::CChaosCastleResultMsgBox::Create(float fPriority)
 #endif // KJH_ADD_INGAMESHOP_UI_SYSTEM
 
     m_View.Create(static_cast<int>(MIDDLE_COUNT), "chaos-castle-result");
+    SyncMatchResultView(m_View);
 
     return true;
 }
@@ -626,7 +629,7 @@ bool mu::ui::window::CChaosCastleResultMsgBox::Update()
         return true;
 
     if (m_View.IsShown())
-        SyncMatchResultView(m_View);
+        m_View.Refresh();
     return true;
 }
 
@@ -923,6 +926,7 @@ void mu::ui::window::CCursedTempleProgressMsgBox::SyncView()
 void mu::ui::window::CCursedTempleProgressMsgBox::SetNpcIndex(DWORD dwIndex)
 {
     m_dwNpcIndex = dwIndex;
+    SocketClient->ToGameServer()->SendTalkToNpcRequest(m_dwNpcIndex);
 }
 
 DWORD mu::ui::window::CCursedTempleProgressMsgBox::GetNpcIndex()

@@ -206,8 +206,9 @@ float CGuardWindow::GetLayerDepth()
 bool CGuardWindow::ProclaimLocked() const
 {
     // RenderRegisterTab(): the owner guild (or its alliance) cannot announce.
-    return !wcscmp(GuildMark[Hero->GuildMarkIndex].UnionName, m_szOwnerGuild) ||
-           !wcscmp(GuildMark[Hero->GuildMarkIndex].GuildName, m_szOwnerGuild);
+    return m_szOwnerGuild[0] != L'\0' &&
+           (!wcscmp(GuildMark[Hero->GuildMarkIndex].UnionName, m_szOwnerGuild) ||
+            !wcscmp(GuildMark[Hero->GuildMarkIndex].GuildName, m_szOwnerGuild));
 }
 
 void CGuardWindow::UpdateRegisterTab(GUARD_BUTTON button)
@@ -302,6 +303,7 @@ void CGuardWindow::SetData(const UI::Siege::GuardStatus& status)
     m_bySiegeStartHour = status.battleStart.hour;
     m_bySiegeStartMinute = status.battleStart.minute;
     m_dwStateLeftSec = status.secondsRemaining;
+    m_stateLeftReceivedAt = std::chrono::steady_clock::now();
 }
 
 void CGuardWindow::AddDeclareGuildList(std::wstring_view name, int markCount, bool gaveUp, BYTE sequence)
@@ -550,8 +552,15 @@ void CGuardWindow::SyncContent()
             mu_swprintf(szTemp, I18N::Game::UUUUU, m_wSiegeStartYear, m_bySiegeStartMonth, m_bySiegeStartDay,
                         m_bySiegeStartHour, m_bySiegeStartMinute);
             statusExpectedTime = pageLine(szTemp);
-            mu_swprintf(szTemp, I18N::Game::UUURemainedForTheNextStage, m_dwStateLeftSec / 3600,
-                        (m_dwStateLeftSec % 3600) / 60, (m_dwStateLeftSec % 3600) % 60);
+            const auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(
+                                            std::chrono::steady_clock::now() - m_stateLeftReceivedAt)
+                                            .count();
+            const DWORD secondsRemaining =
+                elapsedSeconds >= static_cast<decltype(elapsedSeconds)>(m_dwStateLeftSec)
+                    ? 0
+                    : m_dwStateLeftSec - static_cast<DWORD>(elapsedSeconds);
+            mu_swprintf(szTemp, I18N::Game::UUURemainedForTheNextStage, secondsRemaining / 3600,
+                        (secondsRemaining % 3600) / 60, (secondsRemaining % 3600) % 60);
             statusNextStage = pageLine(szTemp);
         }
         break;

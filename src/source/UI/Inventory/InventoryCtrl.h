@@ -104,6 +104,8 @@ namespace mu::ui::window
 
         int GetSourceLinealPos();
         bool GetTargetPos(CInventoryCtrl* pDest, int& iTargetColumnX, int& iTargetRowY);
+        // Keeps outside cells so the preview can warn about a hanging item.
+        bool GetPreviewPos(const CInventoryCtrl* pDest, int& column, int& row) const;
         int GetTargetLinealPos(CInventoryCtrl* pDest);
 
         bool IsVisible() const;
@@ -174,6 +176,7 @@ namespace mu::ui::window
 
         UI::Items::ItemGridCells m_Cells;
         void UpdateCells();
+        void UpdateDropCells();
         // Whether dropping `pPickItem` on `pTargetItem` acts on it: Render()'s green cell.
         bool DropActsOn(ITEM* pPickItem, ITEM* pTargetItem);
 

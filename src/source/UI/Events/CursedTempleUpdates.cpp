@@ -1,15 +1,19 @@
 #include "stdafx.h"
 
 #include "UI/Events/CursedTempleUpdates.h"
+#include "UI/Events/CursedTempleScenePolicy.h"
 
 #include "UI/Core/WindowAccess.h"
 #include "UI/Core/WindowSystem.h"
 #include "Audio/DSPlaySound.h"
+#include "Scenes/SceneCore.h"
 
 namespace UI::CursedTemple
 {
 void OpenEntryOffer(std::uint8_t remainingTime, std::uint8_t entryCount)
 {
+    if (!CanApplyNetworkUpdate(SceneFlag))
+        return;
     UI::Windows::Show(mu::ui::window::INTERFACE_CURSEDTEMPLE_NPC);
     g_pCursedTempleEnterWindow->SetEntryOffer(remainingTime, entryCount);
 }
@@ -41,6 +45,8 @@ void SetSkillPoints(std::uint8_t points)
 
 void ShowMatchResult(const MatchResult& result)
 {
+    if (!CanApplyNetworkUpdate(SceneFlag))
+        return;
     UI::Windows::HideAll();
     if (UI::Windows::IsVisible(mu::ui::window::INTERFACE_CURSEDTEMPLE_GAMESYSTEM))
     {
@@ -55,6 +61,8 @@ void ShowMatchResult(const MatchResult& result)
 
 void BeginReadyPhase()
 {
+    if (!CanApplyNetworkUpdate(SceneFlag))
+        return;
     UI::Windows::HideAll();
     g_pCursedTempleWindow->ResetCursedTempleSystemInfo();
     g_pCursedTempleWindow->StartTutorialStep();

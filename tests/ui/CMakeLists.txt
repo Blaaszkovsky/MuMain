@@ -25,6 +25,71 @@ mu_add_test(
     PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/bin"
     LINK_LIBS MuClient
 )
+
+mu_add_test(
+    NAME notice_lifecycle_tests
+    SOURCES
+        test_notice_lifecycle.cpp
+        RmlLayoutFixture.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/bin"
+    LINK_LIBS MuClient
+)
+
+mu_add_test(
+    NAME event_entry_dialog_tests
+    SOURCES
+        test_event_entry_dialog.cpp
+        RmlLayoutFixture.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/bin"
+    LINK_LIBS MuClient
+)
+
+mu_add_test(
+    NAME crown_success_notice_tests
+    SOURCES
+        test_crown_success_notice.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    LINK_LIBS MuClient
+)
+
+mu_add_test(
+    NAME blood_castle_result_lifecycle_tests
+    SOURCES
+        test_blood_castle_result_lifecycle.cpp
+        RmlLayoutFixture.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    LINK_LIBS MuClient
+)
+target_compile_definitions(blood_castle_result_lifecycle_tests PRIVATE
+    MU_BIN_DIR="${CMAKE_SOURCE_DIR}/src/bin"
+    MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
+    MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
+)
+
+mu_add_test(
+    NAME crown_progress_visibility_tests
+    SOURCES
+        test_crown_progress_visibility.cpp
+        RmlLayoutFixture.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    LINK_LIBS MuClient
+)
+target_compile_definitions(crown_progress_visibility_tests PRIVATE
+    MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
+    MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
+)
+target_compile_definitions(event_entry_dialog_tests PRIVATE
+    MU_BIN_DIR="${CMAKE_SOURCE_DIR}/src/bin"
+    MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
+    MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
+)
+target_compile_definitions(notice_lifecycle_tests PRIVATE
+    MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
+    MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
+    MU_BIN_DIR="${CMAKE_SOURCE_DIR}/src/bin"
+)
 target_compile_definitions(map_name_tests PRIVATE
     MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
     MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
@@ -42,6 +107,21 @@ mu_add_test(
     SOURCES
         test_guard_guild_lists.cpp
         ${CMAKE_SOURCE_DIR}/src/source/UI/Combat/GuardGuildLists.cpp
+)
+
+mu_add_test(
+    NAME guard_registration_tests
+    SOURCES
+        test_guard_registration.cpp
+        RmlLayoutFixture.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    LINK_LIBS MuClient
+)
+
+target_compile_definitions(guard_registration_tests PRIVATE
+    MU_BIN_DIR="${CMAKE_SOURCE_DIR}/src/bin"
+    MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
+    MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
 )
 
 mu_add_test(
@@ -405,4 +485,19 @@ mu_add_test(
 target_compile_definitions(rml_styling_regression_tests PRIVATE
     MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
     MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
+)
+add_test(
+    NAME cursed_temple_channel_start_contract
+    COMMAND "${CMAKE_COMMAND}"
+        "-DMU_MESSAGE_BOX_SOURCE=${CMAKE_SOURCE_DIR}/src/source/UI/Dialogs/CustomMessageBox.cpp"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/test_cursed_temple_channel.cmake"
+)
+
+add_test(
+    NAME cursed_temple_scene_contract
+    COMMAND "${CMAKE_COMMAND}"
+        "-DMU_RECEIVER_SOURCE=${CMAKE_SOURCE_DIR}/src/source/Network/Server/WSclient.cpp"
+        "-DMU_UPDATE_SOURCE=${CMAKE_SOURCE_DIR}/src/source/UI/Events/CursedTempleUpdates.cpp"
+        "-DMU_WINDOW_SOURCE=${CMAKE_SOURCE_DIR}/src/source/UI/Core/WindowSystem.cpp"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/test_cursed_temple_scene.cmake"
 )

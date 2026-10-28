@@ -42,6 +42,10 @@
 #progress_back { position: absolute; left: 35px; bottom: 32px; width: 160px; height: 18px; decorator: image(box-progress-back); }
 #progress_bar { position: absolute; left: 40px; bottom: 37px; height: 8px; decorator: image(box-progress-bar); }
 
+/* Crown packets carry accumulated time, but no target duration for a percentage gauge. */
+#panel.crown-registration #progress_back,
+#panel.crown-registration #progress_bar { visibility: hidden; }
+
 .sharp-text { display: block; position: absolute; white-space: nowrap; pointer-events: none; }
 /* pre: RenderText() keeps leading and repeated spaces (the result tables' padded numbers). */
 
