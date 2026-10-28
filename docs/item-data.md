@@ -119,7 +119,7 @@ variants or option words. An online keyword need not select the same items offli
 | `nameLines` | How the game names the item (its tooltip, the repair window, windows, messages and ground labels) and the tooltip's name color, when not the standard name and color (see [Name lines](#name-lines)). Each is written like a `description` line without `bold` and `after` (the name is always bold and first), its text is checked like one, and its `text` and `color` may be left out. Name lines are in the item names' language (English with the options' "Translate item names" off), and a text that is empty in it keeps the standard name. A client-only field; the bmd import keeps it |
 | `width`, `height` | Size in inventory slots |
 | `slot` | Equipment slot: `mainHand`, `offHand`, `helm`, `armor`, `pants`, `gloves`, `boots`, `wings`, `pet`, `pendant`, `ring`. Left out = not equippable |
-| `additionalOptionProfile` | Optional `thirdTierPhysicalWing`: additional option types 0 (life recovery, 1 per option level), 2 (defense, 4 per level) and 3 (physical damage, 4 per level). Other types give no bonus. Omit to keep the original item's option rules |
+| `additionalOptionProfile` | Optional `thirdTierPhysicalWing` or `thirdTierMagicWing`: additional option types 0 (life recovery, 1 per option level), 2 (defense, 4 per level) and 3 (physical or magic damage respectively, 4 per level). Other types give no bonus. Omit to keep the original item's option rules |
 | `wingTier` | Only for wings: `small`, `first`, `second`, `third`. The wing formulas (defense, defense per level, damage increase, absorption) depend on it; excellent second and third tier wings get no extra durability, and the chaos mix knows a wing's tier from it |
 | `weaponKind` | Only for weapons and shields: `sword`, `glove`, `axe`, `mace`, `spear`, `bow`, `crossbow`, `staff`, `book`, `shield`, as OpenMU's item groups 0 to 6: swords and the Rage Fighter's gloves (group 0; gloves are the items only the Rage Fighter may use), axes (1), maces and sceptres (2), spears (3), bows and crossbows (4: bows have the slot `offHand`, crossbows `mainHand`; arrows and bolts have no weapon kind), staffs, sticks and books (5: books have the slot `offHand`) and shields (6). While an item has the weapon kind its group gives, the bmd import and the item editor (also when it moves an item to another number) keep it matching the group, the slot and, in group 0, the class requirements (a group gives its kind only on that kind's slot, and in group 4 only to two-handed items), so a new weapon gets one too; a kind written in the file that differs from the group's stays as long as it differs. Which bow or crossbow a character holds (its animations, arrows and damage), the elf's arrows-only rule, a spear's reach and Impale, the shield defense set option, the bonus of leveled arrows and bolts, a staff's damage (it counts for the left hand), which right-hand weapons a summoner may hold in the left hand (not staffs or books), the character window's wizardry line, the tooltip's magic power line, the knight skills that need a weapon without a staff or book, Death Stab, Death Cannon and Spiral Slash, the weapon in the left hand that adds its magic options, the dual wield of Dark Knights, Magic Gladiators and Rage Fighters, and the weapon that moves into an empty right hand depend on it |
 | `potionPriority` | Only for potions with the `healingPotion`, `manaPotion`, `complexPotion` or `shieldPotion` tag: which one of a kind the game takes first, the higher the earlier (0 or left out = last; equal ones take the higher group and number first). The shipped potions count up with their size, so the largest is taken first. A client-only field (OpenMU has none); the bmd import keeps it |
@@ -206,6 +206,21 @@ wings retain their own profiles, including their magic and curse bonuses.
 The JSON entry does not add crafting recipes, drops, or server combat rules.
 Servers must implement those separately and use the extended appearance protocol to show the custom item to
 other players; the original Season 6 appearance encoding cannot identify it.
+
+### Custom class wings
+
+Fearless Wings (Knight) `(12,248)` and Arcane Wings (Wizard) `(12,249)` retain the server's
+Wing of Storm and Wing of Eternal rules respectively: third-tier stats, level 400 through +15,
+4 by 3 inventory size, 220 durability, and third-class Knight or Wizard restrictions.
+Fearless has 60 base defense and `thirdTierPhysicalWing` additional options; Arcane has 45
+base defense and `thirdTierMagicWing` additional options. Both use the original third-tier
+excellent options and stat tables.
+
+Install the preserved private `Wing248.bmd`/`Wing248_0.ozj` and
+`Wing249.bmd`/`Wing249_0.ozj` pairs under `Data/Item/` (also `src/bin/Data/Item/`
+for builds copying assets). They are not distributed through Git. A runtime package supporting
+these server items must include all three custom wing pairs and record their hashes in its
+package manifest. Check their models and animations in game before release.
 
 ### Tooltip layouts
 

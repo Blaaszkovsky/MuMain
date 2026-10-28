@@ -307,11 +307,11 @@ ActionSkillType GetSkillByBook(int Type)
 
 namespace
 {
-void ApplyPhysicalWingAdditionalOption(ITEM* item)
+void ApplyThirdTierWingAdditionalOption(ITEM* item, WORD damageOption)
 {
     constexpr BYTE HealthRecoveryType = 0;
     constexpr BYTE DefenseType = 2;
-    constexpr BYTE PhysicalDamageType = 3;
+    constexpr BYTE DamageType = 3;
     constexpr int StatPerOptionLevel = 4;
     WORD option;
     BYTE value = item->OptionLevel * StatPerOptionLevel;
@@ -322,7 +322,7 @@ void ApplyPhysicalWingAdditionalOption(ITEM* item)
         value = item->OptionLevel;
         break;
     case DefenseType: option = AT_IMPROVE_DEFENSE; break;
-    case PhysicalDamageType: option = AT_IMPROVE_DAMAGE; break;
+    case DamageType: option = damageOption; break;
     default: return;
     }
 
@@ -336,13 +336,21 @@ void ApplyPhysicalWingAdditionalOption(ITEM* item)
 bool ApplyAdditionalOptionProfile(ITEM* item)
 {
     const auto* definition = g_ItemDatabase.Find(item->Type);
-    if (definition == nullptr || definition->additionalOptionProfile !=
-        Data::Items::AdditionalOptionProfile::ThirdTierPhysicalWing)
+    if (definition == nullptr)
+        return false;
+
+    switch (definition->additionalOptionProfile)
     {
+    case Data::Items::AdditionalOptionProfile::ThirdTierPhysicalWing:
+        ApplyThirdTierWingAdditionalOption(item, AT_IMPROVE_DAMAGE);
+        break;
+    case Data::Items::AdditionalOptionProfile::ThirdTierMagicWing:
+        ApplyThirdTierWingAdditionalOption(item, AT_IMPROVE_MAGIC);
+        break;
+    default:
         return false;
     }
 
-    ApplyPhysicalWingAdditionalOption(item);
     return true;
 }
 
@@ -777,25 +785,11 @@ void SetItemAttributes(ITEM* ip)
             }
             else if (ip->Type == ITEM_WING_OF_STORM)
             {
-                ApplyPhysicalWingAdditionalOption(ip);
+                ApplyThirdTierWingAdditionalOption(ip, AT_IMPROVE_DAMAGE);
             }
             else if (ip->Type == ITEM_WING_OF_ETERNAL)
             {
-                if (ip->OptionType == 0)
-                {
-                    ip->SpecialValue[ip->SpecialNum] = Option3;
-                    ip->Special[ip->SpecialNum] = AT_LIFE_REGENERATION; ip->SpecialNum++;
-                }
-                else if (ip->OptionType == 2)
-                {
-                    ip->SpecialValue[ip->SpecialNum] = Option3 * 4;
-                    ip->Special[ip->SpecialNum] = AT_IMPROVE_DEFENSE; ip->SpecialNum++;
-                }
-                else if (ip->OptionType == 3)
-                {
-                    ip->SpecialValue[ip->SpecialNum] = Option3 * 4;
-                    ip->Special[ip->SpecialNum] = AT_IMPROVE_MAGIC; ip->SpecialNum++;
-                }
+                ApplyThirdTierWingAdditionalOption(ip, AT_IMPROVE_MAGIC);
             }
             else if (ip->Type == ITEM_WING_OF_ILLUSION)
             {

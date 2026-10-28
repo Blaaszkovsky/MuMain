@@ -13,11 +13,13 @@
 #include "GameLogic/Items/EquipmentRestrictions.h"
 #include "GameLogic/Items/ItemCategories.h"
 #include "GameLogic/Items/ShopRestrictions.h"
+#include "GameLogic/Items/ItemStats.h"
 #include "GameLogic/Items/TradeRestrictions.h"
 #include "World/MapInfra/MapManager.h"
 
 #include <filesystem>
 #include <vector>
+#include <utility>
 
 extern CHARACTER* Hero;
 
@@ -599,29 +601,33 @@ TEST_CASE("Wings of Unity use third tier luck and excellent options [data][items
     CHECK(wings.SpecialValue[5] == 28);
 }
 
-TEST_CASE("Wings of Unity additional options match the server profile [data][items][rules]")
+TEST_CASE("Custom third tier wing additional options match the server profile [data][items][rules]")
 {
     ShippedItemsScope items;
     constexpr int UnityType = MakeItemType(12, 245);
     constexpr BYTE MaximumOptionLevel = 7;
-    const WORD expectedOptions[] = {AT_LIFE_REGENERATION, 0, AT_IMPROVE_DEFENSE, AT_IMPROVE_DAMAGE};
-    for (BYTE type = 0; type < std::size(expectedOptions); ++type)
+    for (const int itemType : {UnityType, MakeItemType(12, 248), MakeItemType(12, 249)})
     {
-        for (BYTE level = 1; level <= MaximumOptionLevel; ++level)
+        const WORD damageOption = itemType == MakeItemType(12, 249) ? AT_IMPROVE_MAGIC : AT_IMPROVE_DAMAGE;
+        const WORD expectedOptions[] = {AT_LIFE_REGENERATION, 0, AT_IMPROVE_DEFENSE, damageOption};
+        for (BYTE type = 0; type < std::size(expectedOptions); ++type)
         {
-            INFO("type " << int(type) << " level " << int(level));
-            ITEM wings = MakeItem(UnityType);
-            wings.OptionType = type;
-            wings.OptionLevel = level;
-            SetItemAttributes(&wings);
-            if (type == 1)
+            for (BYTE level = 1; level <= MaximumOptionLevel; ++level)
             {
-                CHECK(wings.SpecialNum == 0);
-                continue;
+                INFO("type " << int(type) << " level " << int(level));
+                ITEM wings = MakeItem(itemType);
+                wings.OptionType = type;
+                wings.OptionLevel = level;
+                SetItemAttributes(&wings);
+                if (type == 1)
+                {
+                    CHECK(wings.SpecialNum == 0);
+                    continue;
+                }
+                REQUIRE(wings.SpecialNum == 1);
+                CHECK(wings.Special[0] == expectedOptions[type]);
+                CHECK(wings.SpecialValue[0] == (type == 0 ? level : level * 4));
             }
-            REQUIRE(wings.SpecialNum == 1);
-            CHECK(wings.Special[0] == expectedOptions[type]);
-            CHECK(wings.SpecialValue[0] == (type == 0 ? level : level * 4));
         }
     }
 
@@ -698,4 +704,42 @@ TEST_CASE("In Icarus the last flight equipment cannot be taken off [data][items]
     CHECK(CanTakeOff(EQUIPMENT_WING, WD_39KANTURU_3RD, &none, &wings));
     CHECK(RequiresFlight(WD_10HEAVEN));
     CHECK_FALSE(RequiresFlight(WD_39KANTURU_3RD));
+}
+
+TEST_CASE("Custom class wings retain their stock third tier rules [data][items][rules]")
+{
+    ShippedItemsScope items;
+    const std::pair<int, int> wings[] = {{MakeItemType(12, 248), ITEM_WING_OF_STORM},
+                                         {MakeItemType(12, 249), ITEM_WING_OF_ETERNAL}};
+    for (const auto& [customType, originalType] : wings)
+    {
+        const auto* custom = g_ItemDatabase.Find(customType);
+        const auto* original = g_ItemDatabase.Find(originalType);
+        REQUIRE(custom != nullptr);
+        REQUIRE(original != nullptr);
+        CHECK(custom->classRequirements == original->classRequirements);
+        for (int level = 0; level <= 15; ++level)
+        {
+            CAPTURE(customType);
+            CAPTURE(level);
+            const auto customStats = ComputeItemStats(ItemAttribute[customType], {customType, level});
+            const auto originalStats = ComputeItemStats(ItemAttribute[originalType], {originalType, level});
+            CHECK(customStats.defense == originalStats.defense);
+            CHECK(customStats.requireLevel == 400);
+            ITEM customWing = MakeItem(customType, {level});
+            customWing.HasLuck = true;
+            customWing.ExcellentFlags = 0x0F;
+            ITEM originalWing = customWing;
+            originalWing.Type = static_cast<short>(originalType);
+            SetItemAttributes(&customWing);
+            SetItemAttributes(&originalWing);
+            CHECK(IsThirdTierWing(&customWing));
+            REQUIRE(customWing.SpecialNum == originalWing.SpecialNum);
+            for (int option = 0; option < customWing.SpecialNum; ++option)
+            {
+                CHECK(customWing.Special[option] == originalWing.Special[option]);
+                CHECK(customWing.SpecialValue[option] == originalWing.SpecialValue[option]);
+            }
+        }
+    }
 }

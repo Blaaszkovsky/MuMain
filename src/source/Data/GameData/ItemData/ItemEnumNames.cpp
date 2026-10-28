@@ -30,8 +30,9 @@ constexpr std::array<EnumName<WingTier>, 4> WingTierNames = {{
     {WingTier::Third, "third"},
 }};
 
-constexpr std::array<EnumName<AdditionalOptionProfile>, 1> AdditionalOptionProfileNames = {{
+constexpr std::array<EnumName<AdditionalOptionProfile>, 2> AdditionalOptionProfileNames = {{
     {AdditionalOptionProfile::ThirdTierPhysicalWing, "thirdTierPhysicalWing"},
+    {AdditionalOptionProfile::ThirdTierMagicWing, "thirdTierMagicWing"},
 }};
 
 constexpr std::array<EnumName<WeaponKind>, 10> WeaponKindNames = {{

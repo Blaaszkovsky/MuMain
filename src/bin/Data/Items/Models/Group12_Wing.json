@@ -1505,6 +1505,36 @@
         "level": 0,
         "excellent": false
       }
+    },
+    {
+      "number": 248,
+      "file": "Data/Item/Wing248.bmd",
+      "textureFolders": ["Item"],
+      "inventory": {
+        "scale": 0.002
+      },
+      "ground": {
+        "rotation": [270, 0, 45]
+      },
+      "glow": {
+        "level": 0,
+        "excellent": false
+      }
+    },
+    {
+      "number": 249,
+      "file": "Data/Item/Wing249.bmd",
+      "textureFolders": ["Item"],
+      "inventory": {
+        "scale": 0.002
+      },
+      "ground": {
+        "rotation": [270, 0, 45]
+      },
+      "glow": {
+        "level": 0,
+        "excellent": false
+      }
     }
   ]
 }

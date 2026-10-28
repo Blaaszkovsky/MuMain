@@ -50,6 +50,7 @@ enum class AdditionalOptionProfile : BYTE
 {
     Legacy,
     ThirdTierPhysicalWing,
+    ThirdTierMagicWing,
 };
 
 // The kind of weapon, as OpenMU's item groups give it: swords and the Rage

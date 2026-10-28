@@ -108,6 +108,13 @@ TEST_CASE("Additional option profiles survive JSON and legacy import [data][item
     CHECK(imported.additionalOptionProfile == wings.additionalOptionProfile);
     CHECK(MakeKris().additionalOptionProfile == AdditionalOptionProfile::Legacy);
 
+    ItemDefinition magicWing = wings;
+    magicWing.additionalOptionProfile = AdditionalOptionProfile::ThirdTierMagicWing;
+    const ReadResult magicRead = Read(WriteItemGroupJson(12, std::vector<ItemDefinition>{magicWing}));
+    REQUIRE(magicRead.issues.empty());
+    REQUIRE(magicRead.items.size() == 1);
+    CHECK(magicRead.items.front().additionalOptionProfile == AdditionalOptionProfile::ThirdTierMagicWing);
+
     const ReadResult invalid = Read(GroupFile(12,
         R"({"number":245,"name":{"en":"Wings of Unity"},"additionalOptionProfile":"typo"})"));
     CHECK(HasIssue(invalid.issues, ItemDataIssueSeverity::Fatal, "additionalOptionProfile"));

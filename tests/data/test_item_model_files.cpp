@@ -98,18 +98,19 @@ const std::filesystem::path DataDirectory = MU_TEST_DATA_DIR;
 const std::filesystem::path ClientDirectory = DataDirectory.parent_path();
 const std::filesystem::path ModelDirectory = DataDirectory / "Items" / "Models";
 const std::filesystem::path PrivateUnityModelFile = DataDirectory / "Item" / "Wing245.bmd";
+constexpr std::array PrivateWingNumbers = {245, 248, 249};
 
 bool IsUninstalledPrivateModel(const ItemModelDefinition& model)
 {
     constexpr int WingGroup = 12;
-    constexpr int UnityNumber = 245;
-    if (model.group != WingGroup || model.number != UnityNumber ||
-        std::filesystem::is_regular_file(PrivateUnityModelFile))
+    if (model.group != WingGroup ||
+        std::find(PrivateWingNumbers.begin(), PrivateWingNumbers.end(), model.number) == PrivateWingNumbers.end() ||
+        std::filesystem::is_regular_file(ClientDirectory / model.file))
     {
         return false;
     }
 
-    MESSAGE("Wings of Unity private assets are not installed; checking the tracked mapping only.");
+    MESSAGE("Private wing " << model.number << " is not installed; checking the tracked mapping only.");
     return true;
 }
 
@@ -233,26 +234,34 @@ TEST_CASE("Shipped item models load without problems [data][items]")
     CHECK(result.models.size() > 850);
 }
 
-TEST_CASE("Wings of Unity resolve their own model and texture folder [data][items]")
+TEST_CASE("Custom wings resolve their own models and texture folders [data][items]")
 {
-    const ItemModelDefinition* model = FindModel(ShippedModels().models, 12, 245);
-    REQUIRE(model != nullptr);
-    CHECK(model->file == "Data/Item/Wing245.bmd");
-    CHECK(model->textureFolders == std::vector<std::string>{"Item"});
-    CHECK(model->inventory.scale == doctest::Approx(0.002));
-    CHECK_FALSE(model->cloth);
+    for (const int number : PrivateWingNumbers)
+    {
+        const ItemModelDefinition* model = FindModel(ShippedModels().models, 12, number);
+        REQUIRE(model != nullptr);
+        CHECK(model->file == "Data/Item/Wing" + std::to_string(number) + ".bmd");
+        CHECK(model->textureFolders == std::vector<std::string>{"Item"});
+        CHECK(model->inventory.scale == doctest::Approx(0.002));
+        CHECK_FALSE(model->cloth);
+    }
 }
 
-TEST_CASE("Installed Wings of Unity assets open with matching textures [data][items][private-assets]"
+TEST_CASE("Installed custom wing assets open with matching textures [data][items][private-assets]"
           * doctest::skip(!std::filesystem::is_regular_file(PrivateUnityModelFile)))
 {
-    const ItemModelDefinition* model = FindModel(ShippedModels().models, 12, 245);
-    REQUIRE(model != nullptr);
-    const std::unique_ptr<BMD> bmd = OpenModelFile(*model);
-    CHECK(bmd->NumMeshs > 0);
-    CHECK(bmd->NumBones > 0);
-    CHECK(bmd->NumActions > 0);
-    CHECK(FindTexturesOutsideFolders(*model).empty());
+    for (const int number : PrivateWingNumbers)
+    {
+        const ItemModelDefinition* model = FindModel(ShippedModels().models, 12, number);
+        REQUIRE(model != nullptr);
+        if (IsUninstalledPrivateModel(*model))
+            continue;
+        const std::unique_ptr<BMD> bmd = OpenModelFile(*model);
+        CHECK(bmd->NumMeshs > 0);
+        CHECK(bmd->NumBones > 0);
+        CHECK(bmd->NumActions > 0);
+        CHECK(FindTexturesOutsideFolders(*model).empty());
+    }
 }
 
 // The shipped files are in the format the writer produces (sorted, fixed
