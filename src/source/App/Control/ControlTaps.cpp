@@ -38,22 +38,14 @@ int KeyOfIndex(int characterIndex)
 
 namespace App::Control::Events
 {
-void RecordAttackDamage(int attackerIndex, int targetKey, int damage, int shieldDamage, int damageType)
+static void RecordAttributedDamage(int attackerIndex, int targetKey, int damage, int shieldDamage, int damageType)
 {
-    if (!IsEnabled())
-    {
-        return;
-    }
-
     const int attackerKey = KeyOfIndex(attackerIndex);
     const bool heroWasHit = targetKey == HeroKey;
 
-    // The damage packet names only the target, so the attacker comes from
-    // the action packet that preceded it (`AttackPlayer`), and otherwise
-    // from the target this character is acting on — but only while its own
-    // swing is playing. `ActionTarget` alone is sticky: it outlives the
-    // swing that set it, and a third party hitting the same monster would
-    // then be reported as this character's blow.
+    // The packet names the target, not the attacker. Outgoing attribution
+    // remains an inference from the last action or the hero's active swing.
+    // ActionTarget alone is sticky, so it requires that swing guard.
     const bool swinging = GameLogic::Automation::IsSwingInProgress();
     const bool heroAttacked =
         !heroWasHit &&
@@ -67,9 +59,9 @@ void RecordAttackDamage(int attackerIndex, int targetKey, int damage, int shield
     }
 
     const bool critical = damageType == CriticalDamageType || damageType == ExcellentDamageType;
-    // `AttackPlayer` is whoever acted last, which is not the attacker when
-    // the character itself is swinging; name the hero in that case.
-    const int reportedAttacker = heroAttacked ? HeroKey : attackerKey;
+    // AttackPlayer can describe an unrelated object's later action. The
+    // received damage identifies our hero as target, but no attacker.
+    const int reportedAttacker = heroAttacked ? HeroKey : -1;
     // The packet's success bit marks the presentation the client plays, not
     // whether the blow landed; zero damage is what a miss looks like.
     const bool missed = damage <= 0 && shieldDamage <= 0;
@@ -80,6 +72,26 @@ void RecordAttackDamage(int attackerIndex, int targetKey, int damage, int shield
     {
         RecordHeroStats();
     }
+}
+
+void RecordAttackDamage(int attackerIndex, int targetKey, int damage, int shieldDamage, int damageType)
+{
+    if (!IsEnabled())
+        return;
+
+    RecordDamageObserved(targetKey, damage, shieldDamage, damageType, std::nullopt, std::nullopt);
+    RecordAttributedDamage(attackerIndex, targetKey, damage, shieldDamage, damageType);
+}
+
+void RecordAttackDamageExtended(int attackerIndex, int targetKey, std::uint32_t damage, std::uint32_t shieldDamage,
+                               int damageType, std::uint8_t healthStatus, std::uint8_t shieldStatus)
+{
+    if (!IsEnabled())
+        return;
+
+    RecordDamageObserved(targetKey, damage, shieldDamage, damageType, healthStatus, shieldStatus);
+    // Retain the existing attributed-hit presentation semantics; the observation above is lossless.
+    RecordAttributedDamage(attackerIndex, targetKey, static_cast<int>(damage), static_cast<int>(shieldDamage), damageType);
 }
 
 void RecordDeathOf(int victimKey, int killerKey)

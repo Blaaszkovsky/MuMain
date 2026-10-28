@@ -257,6 +257,12 @@ std::string Ui(const Request& request, std::unique_ptr<Act>&)
     json result;
     result["windows"] = windows;
     result["elements"] = Elements();
+    result["npc_quest_page"] = nullptr;
+    if (auto* quest = UI::Windows::FindElement(mu::ui::window::INTERFACE_NPCQUEST, "#content_root");
+        quest != nullptr && quest->IsVisible(true))
+    {
+        result["npc_quest_page"] = quest->GetAttribute<int>("data-page", -1);
+    }
     return EncodeResult(request.EncodedId(), result.dump());
 }
 

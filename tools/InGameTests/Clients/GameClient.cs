@@ -14,6 +14,7 @@ internal sealed class GameClient : IAsyncDisposable
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan WorldTimeout = TimeSpan.FromSeconds(90);
     private static readonly TimeSpan ConnectRetryInterval = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan UiPollInterval = TimeSpan.FromMilliseconds(200);
     // Commands that only read; everything else acts, and is followed by the step delay.
     private static readonly HashSet<string> ReadingCommands =
         ["ping", "scene", "state", "nearby", "events", "wait-for", "screenshot", "ui", "slot-pixel"];
@@ -64,7 +65,7 @@ internal sealed class GameClient : IAsyncDisposable
         {
             control = await ConnectAsync(socketPath, process, options.StartTimeout, cancellationToken);
             var client = new GameClient(role, process, control, options.StepDelay, options);
-            var ping = await client.SendAsync("ping");
+            var ping = await client.SendAsync("ping", timeout: options.StartTimeout);
             if (ping.TryGetProperty("commit", out var commit) && commit.GetString() is { } hash)
             {
                 client.Version = new ClientVersion(
@@ -164,10 +165,16 @@ internal sealed class GameClient : IAsyncDisposable
     /// <summary>Clicks a named window element that <c>ui</c> reports, e.g. "trade.confirm".</summary>
     public async Task ClickElementAsync(string element)
     {
-        var ui = await this.SendAsync("ui");
-        if (!ui.GetProperty("elements").TryGetProperty(element, out var rect))
+        var deadline = DateTime.UtcNow + CommandTimeout;
+        JsonElement rect;
+        while (!(await this.SendAsync("ui")).GetProperty("elements").TryGetProperty(element, out rect))
         {
-            throw new InvalidOperationException($"`{element}` is not on screen");
+            if (DateTime.UtcNow >= deadline)
+            {
+                throw new InvalidOperationException($"`{element}` is not on screen");
+            }
+
+            await Task.Delay(UiPollInterval);
         }
 
         var x = rect.GetProperty("x").GetDouble() + (rect.GetProperty("width").GetDouble() / 2);

@@ -499,6 +499,20 @@ bool CheckWall(int sx1, int sy1, int sx2, int sy2)
 {
     int Index = TERRAIN_INDEX_REPEAT(sx1, sy1);
 
+    // Gates occupy blocked terrain, but selecting one must not waive walls along the attack line.
+    // Only its own destination tile is exempt, also for Castle Siege gates.
+    bool gateAtDestination = false;
+    if (CharactersClient != nullptr && SelectedCharacter >= 0 && SelectedCharacter < MAX_CHARACTERS_CLIENT)
+    {
+        const auto& target = CharactersClient[SelectedCharacter].Object;
+        const bool isGate = target.Type == MODEL_EVIL_GATE || target.Type == MODEL_LION_GATE
+            || target.Type == MODEL_STAR_GATE || target.Type == MODEL_RUSH_GATE
+            || target.Type == MODEL_CASTLE_GATE1;
+        gateAtDestination = isGate
+            && static_cast<int>(target.Position[0] / TERRAIN_SCALE) == sx2
+            && static_cast<int>(target.Position[1] / TERRAIN_SCALE) == sy2;
+    }
+
     int nx1, ny1, d1, d2, len1, len2;
     int px1 = sx2 - sx1;
     int py1 = sy2 - sy1;
@@ -511,8 +525,7 @@ bool CheckWall(int sx1, int sy1, int sx2, int sy2)
 
     int error = 0, count = 0;
     do {
-        int _type = (SelectedCharacter >= 0 ? CharactersClient[SelectedCharacter].Object.Type : 0);
-        if ((_type != MODEL_EVIL_GATE && _type != MODEL_LION_GATE && _type != MODEL_STAR_GATE && _type != MODEL_RUSH_GATE)
+        if (!(gateAtDestination && count == len1)
             && (TerrainWall[Index] >= TW_NOMOVE && (TerrainWall[Index] & TW_ACTION) != TW_ACTION && (TerrainWall[Index] & TW_HEIGHT) != TW_HEIGHT && (TerrainWall[Index] & TW_CAMERA_UP) != TW_CAMERA_UP))
         {
             return false;

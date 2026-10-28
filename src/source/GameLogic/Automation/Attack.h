@@ -94,7 +94,7 @@ inline constexpr float BasicAttackRangeBow = 6.0f;
 [[nodiscard]] bool IsSwingInProgress();
 
 // Attacks the object with that server-assigned id, walking into range
-// first when needed. `huntingDistance` bounds how far the path finder may
-// search beyond the weapon's reach.
-AttackResult AttackObject(int targetKey, bool allowPlayers, int huntingDistance);
+// first when needed. Path endpoints use the equipped weapon's reach;
+// callers select which targets to pursue independently.
+AttackResult AttackObject(int targetKey, bool allowPlayers);
 } // namespace GameLogic::Automation

@@ -83,7 +83,7 @@ static float EquippedAttackRange()
     return BasicAttackRange(spear, bow);
 }
 
-AttackResult AttackObject(int targetKey, bool allowPlayers, int huntingDistance)
+AttackResult AttackObject(int targetKey, bool allowPlayers)
 {
     if (targetKey == -1)
     {
@@ -115,8 +115,8 @@ AttackResult AttackObject(int targetKey, bool allowPlayers, int huntingDistance)
     TargetX = (int)(target->Object.Position[0] / TERRAIN_SCALE);
     TargetY = (int)(target->Object.Position[1] / TERRAIN_SCALE);
 
-    // CheckWall reads the global SelectedCharacter on every step of its walk
-    // (ZzzInterface.cpp) to exempt gate models from the terrain-wall test —
+    // CheckWall reads the global SelectedCharacter (ZzzInterface.cpp)
+    // to exempt the selected gate's destination tile from the terrain-wall test —
     // gates stand on no-move tiles, so without the exemption they can never
     // be attacked. The selection therefore has to be this target *before*
     // the checks, as the helper path this was extracted from did. A refused
@@ -139,7 +139,7 @@ AttackResult AttackObject(int targetKey, bool allowPlayers, int huntingDistance)
 
     PATH_t path;
     if (!inRange && !PathFinding2(Hero->PositionX, Hero->PositionY, TargetX, TargetY, &path,
-                                  static_cast<float>(huntingDistance) + range))
+                                  range))
     {
         SelectedCharacter = previousSelection;
         return AttackResult::NoPath;

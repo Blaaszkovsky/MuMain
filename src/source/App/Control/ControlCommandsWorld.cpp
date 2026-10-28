@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "App/Control/ControlCommands.h"
 
+#include "App/Control/ControlCombat.h"
 #include "App/Control/ControlEvents.h"
 #include "App/Control/ControlObjects.h"
 #include "App/Control/ControlTargets.h"
@@ -23,6 +24,8 @@
 #include "UI/Dialogs/ConfirmRequest.h"
 #include "UI/Core/WindowSystem.h"
 #include "World/MapInfra/MapManager.h"
+#include "World/MapInfra/MapAssets.h"
+#include "World/MapInfra/MapNumber.h"
 
 #include "json.hpp"
 
@@ -32,25 +35,27 @@
 #include <chrono>
 #include <cmath>
 #include <exception>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
+
+extern int TargetX;
+extern int TargetY;
 
 namespace
 {
 using App::Control::Act;
 using App::Control::ErrorCode;
 using App::Control::Request;
+using App::Control::StopWalking;
 using App::Control::Targets::ResolveTarget;
 using App::Control::Targets::TargetError;
 using App::Control::Targets::TargetLookup;
 using nlohmann::json;
 namespace Automation = GameLogic::Automation;
 
-// How far beyond a weapon's reach the path finder may look for a way to
-// the target. The auto-helper's own hunting range, in tiles.
-constexpr int HuntingDistance = 10;
 // How far a drop may be and still be walked to. The client's own view is
 // about this wide, so anything `nearby` reports can be fetched; the
 // auto-helper keeps its own, tighter limit.
@@ -138,20 +143,9 @@ json PositionObject()
     return Hero != nullptr ? json::array({Hero->PositionX, Hero->PositionY}) : json::array({-1, -1});
 }
 
-// Drops the queued path so the character stops at the tile it reached.
-// The server is told nothing: this is the same as releasing the mouse.
-void StopWalking()
+bool WasRelocated(int fromMap, std::uint64_t teleportsBefore)
 {
-    if (SceneFlag != MAIN_SCENE || Hero == nullptr)
-    {
-        return;
-    }
-
-    Hero->Path.Lock.lock();
-    Hero->Path.PathNum = 0;
-    Hero->Path.CurrentPath = 0;
-    Hero->Path.CurrentPathFloat = 0;
-    Hero->Path.Lock.unlock();
+    return gMapManager.WorldActive != fromMap || App::Control::Events::TeleportCount() != teleportsBefore;
 }
 
 // Sends one chat line the way the chat box does.
@@ -175,7 +169,11 @@ bool IsTileOnMap(int tileX, int tileY)
 class MoveAct : public Act
 {
 public:
-    MoveAct(int tileX, int tileY) : m_tileX(tileX), m_tileY(tileY) {}
+    MoveAct(int tileX, int tileY)
+        : m_tileX(tileX), m_tileY(tileY), m_fromMap(gMapManager.WorldActive),
+          m_teleportsBefore(App::Control::Events::TeleportCount())
+    {
+    }
 
     [[nodiscard]] std::string_view Name() const override
     {
@@ -196,7 +194,20 @@ public:
 
     [[nodiscard]] Status Tick(std::string& response) override
     {
+        if (WasRelocated(m_fromMap, m_teleportsBefore))
+        {
+            response = App::Control::EncodeError(EncodedId(), ErrorCode::Interrupted,
+                                                 "the character relocated during the move", ProgressObject());
+            return Status::Finished;
+        }
+
         if (Hero == nullptr)
+        {
+            return Status::Running;
+        }
+
+        // Tile coordinates advance before the rendered walk finishes.
+        if (WalkInProgress())
         {
             return Status::Running;
         }
@@ -207,13 +218,6 @@ public:
             result["position"] = PositionObject();
             response = App::Control::EncodeResult(EncodedId(), result.dump());
             return Status::Finished;
-        }
-
-        // Let the planned path play out before planning the next one:
-        // re-planning every frame would restart the walk mid-step.
-        if (WalkInProgress())
-        {
-            return Status::Running;
         }
 
         // Pace the walk packets like a player's clicks; the server treats a
@@ -245,6 +249,8 @@ public:
 private:
     int m_tileX;
     int m_tileY;
+    int m_fromMap;
+    std::uint64_t m_teleportsBefore;
     std::chrono::steady_clock::time_point m_lastWalkAt{};
 };
 
@@ -253,7 +259,8 @@ class AttackAct : public Act
 {
 public:
     AttackAct(int targetKey, int times, std::chrono::milliseconds interval)
-        : m_targetKey(targetKey), m_times(times), m_interval(interval)
+        : m_targetKey(targetKey), m_times(times), m_interval(interval), m_fromMap(gMapManager.WorldActive),
+          m_teleportsBefore(App::Control::Events::TeleportCount()), m_approach(targetKey)
     {
     }
 
@@ -277,6 +284,9 @@ public:
 
     [[nodiscard]] Status Tick(std::string& response) override
     {
+        if (WasRelocated(m_fromMap, m_teleportsBefore))
+            return Fail(response, ErrorCode::Interrupted, "the character relocated during the attack");
+
         if (m_issued >= m_times)
         {
             json result;
@@ -297,15 +307,22 @@ public:
             return Status::Running;
         }
 
-        const Automation::AttackResult result = Automation::AttackObject(m_targetKey, true, HuntingDistance);
+        const Automation::AttackResult result = Automation::AttackObject(m_targetKey, true);
 
         switch (result)
         {
         case Automation::AttackResult::Attacked:
+            // Action already sent this swing. Release its repeat latch in this
+            // same main-thread call, before MoveHero can issue another one.
+            // Keep the animation/AttackTime: they enforce the engine cadence.
+            ReleaseIssuedRepeatIntent();
+            m_approach.Forget();
             ++m_issued;
             m_lastAttack = now;
             return Status::Running;
         case Automation::AttackResult::Approaching:
+            m_approach.Remember();
+            return Status::Running;
         case Automation::AttackResult::Busy:
             return Status::Running;
         case Automation::AttackResult::NotInView:
@@ -345,6 +362,21 @@ public:
     }
 
 private:
+    void ReleaseIssuedRepeatIntent()
+    {
+        const int index = FindCharacterIndex(m_targetKey);
+        if (Hero == nullptr || index == MAX_CHARACTERS_CLIENT || ActionTarget != index || Attacking != 1)
+            return;
+
+        Attacking = -1;
+        // Retain ActionTarget for the already-issued animation and damage tap.
+        // It cannot repeat without Attacking/SelectedCharacter or ATTACK movement.
+        if (SelectedCharacter == index)
+            SelectedCharacter = -1;
+        if (Hero->MovementType == MOVEMENT_ATTACK)
+            Hero->MovementType = MOVEMENT_MOVE;
+    }
+
     Status Fail(std::string& response, ErrorCode code, const std::string& message)
     {
         App::Control::Events::RecordError("attack", App::Control::ErrorCodeName(code), message);
@@ -355,9 +387,12 @@ private:
     int m_targetKey;
     int m_times;
     std::chrono::milliseconds m_interval;
+    int m_fromMap;
+    std::uint64_t m_teleportsBefore;
     int m_issued = 0;
     std::chrono::steady_clock::time_point m_lastAttack{};
     std::chrono::steady_clock::time_point m_lastStep{};
+    App::Control::OwnedApproach m_approach;
 };
 
 // skill: one cast on a target or at the caster's own tile.
@@ -365,7 +400,7 @@ class SkillAct : public Act
 {
 public:
     SkillAct(ActionSkillType skill, bool targetRequired, int targetKey)
-        : m_skill(skill), m_targetRequired(targetRequired), m_targetKey(targetKey)
+        : m_skill(skill), m_targetRequired(targetRequired), m_targetKey(targetKey), m_approach(targetKey)
     {
     }
 
@@ -389,13 +424,18 @@ public:
 
     [[nodiscard]] Status Tick(std::string& response) override
     {
+        if (m_approach.WasRelocated())
+            return Fail(response, ErrorCode::Interrupted, "the character relocated during the skill");
+
         if (WalkInProgress() || !StepIsDue(m_lastStep))
         {
             return Status::Running;
         }
 
         const Automation::SkillResult result =
-            Automation::CastSkill(m_skill, m_targetRequired, m_targetKey, true, HuntingDistance);
+            Automation::CastSkill(m_skill, m_targetRequired, m_targetKey, true);
+
+        ReleaseEngineRepeat(result);
 
         switch (result)
         {
@@ -429,6 +469,17 @@ public:
     }
 
 private:
+    void ReleaseEngineRepeat(Automation::SkillResult result)
+    {
+        // ExecuteSkill arms auto-repeat even when it only queues a movement
+        // skill. This act owns the retry, so MoveHero must never dispatch it.
+        if (result == Automation::SkillResult::Cast || result == Automation::SkillResult::Approaching ||
+            result == Automation::SkillResult::NotReady || result == Automation::SkillResult::Refused)
+            App::Control::DisarmCombatRepeat();
+        if (result == Automation::SkillResult::Approaching || result == Automation::SkillResult::NotReady)
+            m_approach.Remember();
+    }
+
     Status Fail(std::string& response, ErrorCode code, const std::string& message)
     {
         App::Control::Events::RecordError("skill", App::Control::ErrorCodeName(code), message);
@@ -440,6 +491,7 @@ private:
     bool m_targetRequired;
     int m_targetKey;
     std::chrono::steady_clock::time_point m_lastStep{};
+    App::Control::OwnedApproach m_approach;
 };
 
 // pickup: walk to a drop and ask for it.
@@ -613,7 +665,7 @@ class TeleportAct : public Act
 {
 public:
     TeleportAct(std::string command, int map, int tileX, int tileY)
-        : m_command(std::move(command)), m_map(map), m_tileX(tileX), m_tileY(tileY)
+        : m_command(std::move(command)), m_map(World::Maps::ClientMapNumber(map)), m_tileX(tileX), m_tileY(tileY)
     {
     }
 
@@ -661,8 +713,7 @@ public:
         // tile on the map it is leaving would otherwise satisfy this on the
         // first tick — before the server could have answered at all — and the
         // result would then report the old map it never left.
-        if (Hero == nullptr || gMapManager.WorldActive != m_map || std::abs(Hero->PositionX - m_tileX) > ArrivalTiles ||
-            std::abs(Hero->PositionY - m_tileY) > ArrivalTiles)
+        if (!HasArrived())
         {
             // The refusal window catches "the server ignored the command",
             // which is only distinguishable while nothing has happened at
@@ -691,6 +742,13 @@ public:
     }
 
 private:
+    bool HasArrived() const
+    {
+        return Hero != nullptr && App::Control::Events::TeleportCount() != m_teleportsBefore &&
+               gMapManager.WorldActive == m_map && std::abs(Hero->PositionX - m_tileX) <= ArrivalTiles &&
+               std::abs(Hero->PositionY - m_tileY) <= ArrivalTiles;
+    }
+
     std::string m_command;
     int m_map;
     int m_tileX;
@@ -803,6 +861,18 @@ std::string Teleport(const Request& request, std::unique_ptr<Act>& act)
         // then teleport somewhere the caller never asked for and report it
         // as a success.
         return EncodeError(request.EncodedId(), ErrorCode::BadRequest, "`teleport` needs a map index of 0 or more");
+    }
+
+    if (map < 0 || map > std::numeric_limits<std::int16_t>::max())
+    {
+        return EncodeError(request.EncodedId(), ErrorCode::BadRequest, "the map index must fit the server's signed 16-bit map number");
+    }
+
+    // Refuse before the server relocates the character into an unloadable world.
+    if (const auto missingAsset = World::Maps::FindFirstMissingCoreAsset(map, "Data"))
+    {
+        return EncodeError(request.EncodedId(), ErrorCode::NotAllowed,
+                           "missing required map asset: " + missingAsset->generic_string());
     }
 
     // The server's own game-master command: /move <character> <map> <x> <y>.
@@ -1215,6 +1285,7 @@ std::string Halt(const Request& request, std::unique_ptr<Act>&)
 {
     // The act in flight was already cancelled by the dispatcher; this stops
     // the character itself.
+    DisarmCombatRepeat();
     StopWalking();
 
     json result;

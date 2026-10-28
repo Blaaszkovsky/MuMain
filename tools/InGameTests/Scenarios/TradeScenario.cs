@@ -111,12 +111,10 @@ internal sealed class TradeScenario : Scenario
                     async () => (await buyer.OpenWindowsAsync()).Contains("message_box"),
                     ServerAnswer,
                     "the zen box does not open");
-                await buyer.SendAsync("type", new { text = ZenOffer.ToString(System.Globalization.CultureInfo.InvariantCulture) });
-                await Keys.PressUntilAsync(
-                    context,
-                    buyer,
-                    "enter",
+                await buyer.SendAsync("type", new { text = ZenOffer.ToString(System.Globalization.CultureInfo.InvariantCulture), enter = true });
+                await Expect.EventuallyAsync(
                     async () => !(await buyer.OpenWindowsAsync()).Contains("message_box"),
+                    ServerAnswer,
                     "the zen box does not take Enter");
                 var seen = 0;
                 await Expect.EventuallyAsync(

@@ -88,13 +88,13 @@ void StartGame()
 
 namespace Scenes
 {
-// A slot holds a character when the list filled its name in.
+// Cleared world objects keep their names; only live selection objects occupy slots.
 static bool HasCharacter(int slot)
 {
     if (slot < 0 || slot >= MAX_CHARACTERS_PER_ACCOUNT)
         return false;
 
-    return CharactersClient[slot].ID[0] != L'\0';
+    return CharactersClient[slot].Object.Live && CharactersClient[slot].ID[0] != L'\0';
 }
 
 const wchar_t* CharacterNameInSlot(int slot)

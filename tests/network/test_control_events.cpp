@@ -124,6 +124,7 @@ TEST_CASE("Control events record nothing while disabled [network][control-events
 
     Events::RecordScene("world");
     Events::RecordHit(Events::Direction::Dealt, 1, 2, 10, 0, false, false);
+    Events::RecordDamageObserved(2, 10, 0, 0, std::nullopt, std::nullopt);
     Events::RecordChat(L"someone", L"hello", "public");
     Events::RecordStat("life", 100, 1000);
     Events::RecordDrop(5, L"Jewel of Bless", 140, 130);
@@ -177,6 +178,44 @@ TEST_CASE("Control events describe a hit on both sides [network][control-events]
     REQUIRE(dealt.size() == 1);
     CHECK(FieldsOf(dealt.front())["direction"] == "dealt");
     CHECK(FieldsOf(dealt.front())["missed"] == true);
+}
+
+TEST_CASE("Control events keep damage observations honest without a resolver [network][control-events]")
+{
+    const RingFixture fixture;
+    Events::RecordDamageObserved(4321, 0, 0, 2, std::nullopt, std::nullopt);
+    const auto records = Events::Since(0);
+    REQUIRE(records.size() == 1);
+    CHECK(records.front().name == "damage_observed");
+    const auto fields = FieldsOf(records.front());
+    CHECK(fields["target"]["id"] == 4321);
+    CHECK(fields["target"]["kind"] == "unknown");
+    CHECK(fields["target"]["known"] == false);
+    CHECK_FALSE(fields["target"].contains("position"));
+    CHECK(fields["health_status"].is_null());
+    CHECK(fields["shield_status"].is_null());
+    CHECK(fields["damage"] == 0);
+    CHECK(fields["attacker"]["id"] == -1);
+    CHECK(fields["cause"] == "unknown");
+    CHECK_FALSE(fields.contains("skill"));
+    CHECK_FALSE(fields.contains("direction"));
+}
+
+TEST_CASE("Disabled damage observations do not resolve any object [network][control-events]")
+{
+    const RingFixture fixture;
+    int resolutions = 0;
+    Events::SetObjectResolver([&resolutions](int key) {
+        ++resolutions;
+        Events::ObjectDescription object;
+        object.id = key;
+        return object;
+    });
+    Events::SetEnabled(false);
+    Events::RecordDamageObserved(4321, 1, 2, 3, 255, 0);
+    Events::SetObjectResolver({});
+    CHECK(resolutions == 0);
+    CHECK(Events::LastSequence() == 0);
 }
 
 TEST_CASE("Control events name each recorder's fields [network][control-events]")

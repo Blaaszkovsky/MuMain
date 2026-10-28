@@ -89,6 +89,10 @@ void NoteTeleport();
 // fresh session; the client never calls it while a follower is attached.
 void Reset();
 
+// An observed decoded damage packet, independently of inferred combat ownership.
+// Status bytes are absent in packet variants which do not supply them.
+void RecordDamageObserved(int targetKey, std::int64_t damage, std::int64_t shieldDamage, int damageType,
+                          std::optional<std::uint8_t> healthStatus, std::optional<std::uint8_t> shieldStatus);
 void RecordHit(Direction direction, int attackerKey, int targetKey, int damage, int shieldDamage, bool critical,
                bool missed);
 void RecordDeath(int victimKey, int killerKey);

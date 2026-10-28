@@ -69,7 +69,7 @@ std::string UtcTimestamp()
 
 // {id, name, kind} for an object the client knows, or a placeholder for one
 // it does not (out of view, already deleted, or no resolver installed).
-json DescribeObject(int key)
+json DescribeObject(int key, bool includeKnown = false)
 {
     App::Control::Events::ObjectDescription description;
     description.id = key;
@@ -85,6 +85,10 @@ json DescribeObject(int key)
     described["id"] = description.id;
     described["name"] = description.name;
     described["kind"] = description.kind;
+    if (includeKnown)
+    {
+        described["known"] = description.known;
+    }
     if (description.known)
     {
         described["position"] = json::array({description.x, description.y});
@@ -181,6 +185,26 @@ void Reset()
     ring.next = 0;
     ring.count = 0;
     ring.lastSequence = 0;
+}
+
+void RecordDamageObserved(int targetKey, std::int64_t damage, std::int64_t shieldDamage, int damageType,
+                          std::optional<std::uint8_t> healthStatus, std::optional<std::uint8_t> shieldStatus)
+{
+    if (!IsEnabled())
+    {
+        return;
+    }
+
+    json fields;
+    fields["target"] = DescribeObject(targetKey, true);
+    fields["attacker"] = DescribeObject(-1);
+    fields["cause"] = "unknown";
+    fields["damage"] = damage;
+    fields["shield_damage"] = shieldDamage;
+    fields["damage_type"] = damageType;
+    fields["health_status"] = healthStatus ? json(*healthStatus) : json(nullptr);
+    fields["shield_status"] = shieldStatus ? json(*shieldStatus) : json(nullptr);
+    Push("damage_observed", fields);
 }
 
 void RecordHit(Direction direction, int attackerKey, int targetKey, int damage, int shieldDamage, bool critical,

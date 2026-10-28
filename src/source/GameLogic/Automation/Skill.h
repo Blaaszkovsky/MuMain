@@ -79,8 +79,7 @@ enum class SkillResult : std::uint8_t
 // `targetKey` given with one is still checked: the cast is refused when
 // that object has left view or is not attackable, so a scenario that names
 // a target is told rather than casting into an empty tile. `targetKey` is
-// ignored entirely when `targetRequired` is false. `huntingDistance` bounds how far the path
-// finder may search beyond the skill's range.
-SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey, bool allowPlayers,
-                      int huntingDistance);
+// ignored entirely when `targetRequired` is false. Path endpoints use the
+// skill's range; callers select which targets to pursue independently.
+SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey, bool allowPlayers);
 } // namespace GameLogic::Automation

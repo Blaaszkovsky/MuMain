@@ -85,7 +85,7 @@ static SkillResult AimAtSelf(int targetKey, bool allowPlayers)
 }
 
 // Aims a targeted skill, walking into range when needed.
-static SkillResult AimAtTarget(int targetKey, bool allowPlayers, int huntingDistance, float skillDistance)
+static SkillResult AimAtTarget(int targetKey, bool allowPlayers, float skillDistance)
 {
     if (targetKey == -1)
     {
@@ -132,7 +132,7 @@ static SkillResult AimAtTarget(int targetKey, bool allowPlayers, int huntingDist
 
     PATH_t path;
     if (!inRange && !PathFinding2(Hero->PositionX, Hero->PositionY, TargetX, TargetY, &path,
-                                  static_cast<float>(huntingDistance) + skillDistance))
+                                  skillDistance))
     {
         SelectedCharacter = previousSelection;
         return SkillResult::NoPath;
@@ -152,7 +152,7 @@ static SkillResult AimAtTarget(int targetKey, bool allowPlayers, int huntingDist
     return SkillResult::NotReady;
 }
 
-SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey, bool allowPlayers, int huntingDistance)
+SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey, bool allowPlayers)
 {
     // Let the current swing finish before issuing another action.
     if (IsSwingInProgress())
@@ -182,7 +182,7 @@ SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey,
     }
     else
     {
-        const SkillResult aimed = AimAtTarget(targetKey, allowPlayers, huntingDistance, skillDistance);
+        const SkillResult aimed = AimAtTarget(targetKey, allowPlayers, skillDistance);
         if (aimed != SkillResult::NotReady)
         {
             return aimed;

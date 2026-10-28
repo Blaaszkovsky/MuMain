@@ -112,7 +112,7 @@ internal static class Quests
             var wanted = dialog.Answers.FirstOrDefault(answer => answer.Action == action);
             if (wanted is not null)
             {
-                await client.ClickElementAsync($"npc_quest.answer.{wanted.Index}");
+                await ClickAnswerAsync(client, dialog.Page, wanted);
                 return pages;
             }
 
@@ -120,7 +120,7 @@ internal static class Quests
                        ?? throw new ScenarioFailedException(
                            $"page {dialog.Page} of the quest dialog (\"{dialog.Text}\") offers no answer to {action}: "
                            + string.Join(", ", dialog.Answers.Select(answer => $"\"{answer.Text}\" ({answer.Action})")));
-            await client.ClickElementAsync($"npc_quest.answer.{next.Index}");
+            await ClickAnswerAsync(client, dialog.Page, next);
             await Expect.EventuallyAsync(
                 async () => (await DialogAsync(client))?.Page != dialog.Page,
                 ServerAnswer,
@@ -128,6 +128,24 @@ internal static class Quests
         }
 
         throw new ScenarioFailedException($"no answer to {action} after {MaxPages} pages of the quest dialog");
+    }
+
+    private static async Task ClickAnswerAsync(GameClient client, int page, Answer answer)
+    {
+        var element = $"npc_quest.answer.{answer.Index}";
+        // Quest state can advance before RmlUi lays out the new answer rows.
+        await Expect.EventuallyAsync(
+            async () =>
+            {
+                var ui = await client.SendAsync("ui");
+                return ui.TryGetProperty("npc_quest_page", out var renderedPage)
+                    && renderedPage.ValueKind == JsonValueKind.Number
+                    && renderedPage.GetInt32() == page
+                    && ui.GetProperty("elements").TryGetProperty(element, out _);
+            },
+            ServerAnswer,
+            $"page {page} with the quest answer \"{answer.Text}\" is not on screen");
+        await client.ClickElementAsync(element);
     }
 
     /// <summary>What the client knows of a legacy quest: active, complete, not_started or none.</summary>

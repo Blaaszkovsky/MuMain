@@ -343,18 +343,16 @@ void Dispatcher::TickAct()
         return;
     }
 
-    std::string response;
-    if (m_act->Tick(response) == Act::Status::Finished)
-    {
-        Queue(m_actConnection, std::move(response));
-        m_act.reset();
-        return;
-    }
-
     const std::optional<std::chrono::milliseconds> deadline = m_act->Deadline();
     const auto elapsed = std::chrono::steady_clock::now() - m_actStartedAt;
     if (!deadline.has_value() || elapsed < *deadline)
     {
+        std::string response;
+        if (m_act->Tick(response) == Act::Status::Finished)
+        {
+            Queue(m_actConnection, std::move(response));
+            m_act.reset();
+        }
         return;
     }
 

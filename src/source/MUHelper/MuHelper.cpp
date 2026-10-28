@@ -874,7 +874,7 @@ namespace MUHelper
         // is monster-only, as it always was. A target that is not attackable is
         // still refused by the primitive when it is dead.
         const SkillResult result =
-            GameLogic::Automation::CastSkill(iSkill, bTargetRequired, iTarget, true, m_iHuntingDistance);
+            GameLogic::Automation::CastSkill(iSkill, bTargetRequired, iTarget, true);
 
         if (iTarget != -1 && GameLogic::Automation::ShouldForgetTarget(result))
         {
@@ -895,7 +895,7 @@ namespace MUHelper
             return 0;
         }
 
-        const AttackResult result = GameLogic::Automation::AttackObject(iTarget, false, m_iHuntingDistance);
+        const AttackResult result = GameLogic::Automation::AttackObject(iTarget, false);
 
         if (GameLogic::Automation::ShouldForgetTarget(result))
         {

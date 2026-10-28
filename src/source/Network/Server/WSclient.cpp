@@ -5,11 +5,13 @@
 #include "UI/Chat/ChatMessages.h"
 #include "UI/Combat/SiegeUpdates.h"
 #include "UI/Events/DoppelgangerUpdates.h"
+#include "Network/Server/IllusionTemplePacketReader.h"
 #include "UI/Events/EmpireGuardianUpdates.h"
 #include "UI/Events/CryWolfUpdates.h"
 #include "UI/Events/LuckyCoinUpdates.h"
 #include "UI/Events/KanturuUpdates.h"
 #include "UI/Events/CursedTempleUpdates.h"
+#include "UI/Events/CursedTempleScenePolicy.h"
 #include "UI/NPCs/NpcDialogueUpdates.h"
 #include "UI/Quests/QuestUpdates.h"
 #include "UI/Options/OptionUpdates.h"
@@ -52,6 +54,7 @@
 #include "GameLogic/Pets/w_PetProcess.h"
 #include "Network/Server/CSMapServer.h"
 #include "Network/Server/TransformViewportEntry.h"
+#include "Network/Server/CrownAccessStatePacket.h"
 #include "GameLogic/NPCs/npcGateSwitch.h"
 #include "GameLogic/Items/CComGem.h"
 #include "GameLogic/Items/InventoryUtils.h"
@@ -65,6 +68,7 @@
 #include "World/MapInfra/MapManager.h"
 #include "GameLogic/Events/SenatusInfo.h"
 #include "GameLogic/Events/SiegeRegistration.h"
+#include "Network/Server/SiegeGuildListPacket.h"
 #include "UI/Dialogs/ConfirmRequest.h"
 #include "UI/Inventory/TradeUpdates.h"
 #include "UI/Inventory/StorageUpdates.h"
@@ -1969,6 +1973,9 @@ void ReceiveChatKey(const BYTE* ReceiveBuffer)
 
 void ReceiveNotice(const BYTE* ReceiveBuffer)
 {
+    if (SceneFlag != MAIN_SCENE)
+        return;
+
     auto Data = (LPPRECEIVE_NOTICE)ReceiveBuffer;
     wchar_t Text[256]{};
     CMultiLanguage::ConvertFromUtf8(Text, Data->Notice);
@@ -1979,15 +1986,8 @@ void ReceiveNotice(const BYTE* ReceiveBuffer)
     }
     else if (Data->Result == 1)
     {
-        if (CHARACTER_SCENE != SceneFlag)
-        {
-            UI::Chat::PostSystem(Text, mu::ui::window::TYPE_SYSTEM_MESSAGE);
-            EnableUse = 0;
-        }
-        else
-        {
-            UI::LoginScene::AddServerMessage(Text);
-        }
+        UI::Chat::PostSystem(Text, mu::ui::window::TYPE_SYSTEM_MESSAGE);
+        EnableUse = 0;
     }
     else if (Data->Result == 2)
     {
@@ -3530,7 +3530,7 @@ void ReceiveAttackDamageExtended(const BYTE* ReceiveBuffer)
     }
     else
     {
-        c->ShieldStatus = static_cast<float>(Data->HealthStatus) / 250.f;
+        c->ShieldStatus = static_cast<float>(Data->ShieldStatus) / 250.f;
     }
 
     if (gMapManager.InChaosCastle())
@@ -3544,7 +3544,8 @@ void ReceiveAttackDamageExtended(const BYTE* ReceiveBuffer)
                             bDoubleEnable, bComboEnable);
     }
 
-    App::Control::Events::RecordAttackDamage(AttackPlayer, Key, Damage, ShieldDamage, DamageType);
+    App::Control::Events::RecordAttackDamageExtended(AttackPlayer, Key, Damage, ShieldDamage, DamageType,
+                                                   Data->HealthStatus, Data->ShieldStatus);
 }
 
 void ReceiveAction(const BYTE* ReceiveBuffer, int Size)
@@ -8719,10 +8720,7 @@ void ReceiveMoveToEventMatchResult(const BYTE* ReceiveBuffer)
 
     case 9:
     {
-        wchar_t strText[128];
-        mu_swprintf(strText, I18N::Game::TheMaximumCapacityOfSHasBeenReachedTheMaxNumberAllowedIsD,
-                    I18N::Game::ChaosCastle, MAX_CHAOS_CASTLE_MEN);
-        mu::ui::window::CreateOkMessageBox(strText);
+        mu::ui::window::CreateOkMessageBox(I18N::Game::CapacityExceeded);
     }
     break;
     }
@@ -8771,7 +8769,8 @@ void ReceiveEventZoneOpenTime(const BYTE* ReceiveBuffer)
             };
 
             mu_swprintf(szOpenTime1, I18N::Game::YouCanEnterSNow, I18N::Game::ChaosCastle);
-            mu_swprintf(szOpenTime2, I18N::Game::InSCurrentlyDDEntered, I18N::Game::ChaosCastle, Data->KeyM, 100);
+            // The opening-state packet carries the current count, not the configured capacity.
+            mu_swprintf_s(szOpenTime2, I18N::Game::CurrentlyDPeopleAreRegisteredToParticipate, static_cast<int>(Data->KeyM));
 
             UI::Dialogs::ConfirmRequest cfg;
             cfg.cancellable = true;
@@ -8863,10 +8862,7 @@ void ReceiveMoveToEventMatchResult2(const BYTE* ReceiveBuffer)
 
     case 5:
     {
-        wchar_t strText[128];
-        mu_swprintf(strText, I18N::Game::TheMaximumCapacityOfSHasBeenReachedTheMaxNumberAllowedIsD,
-                    I18N::Game::ChaosCastle, MAX_CHAOS_CASTLE_MEN);
-        mu::ui::window::CreateOkMessageBox(strText);
+        mu::ui::window::CreateOkMessageBox(I18N::Game::CapacityExceeded);
     }
     break;
 
@@ -11200,12 +11196,15 @@ void ReceiveBCNPCList(const BYTE* ReceiveBuffer, int Size)
     }
 }
 
-void ReceiveBCDeclareGuildList(const BYTE* ReceiveBuffer)
+void ReceiveBCDeclareGuildList(const BYTE* ReceiveBuffer, int Size)
 {
-    auto Data = (LPPMSG_ANS_CSREGGUILDLIST)ReceiveBuffer;
-    int Offset = sizeof(PMSG_ANS_CSREGGUILDLIST);
+    if (Size < 0)
+        return;
+    const auto packet = Network::Packets::ReadSiegeGuildList({ReceiveBuffer, static_cast<std::size_t>(Size)});
+    if (!packet)
+        return;
 
-    switch (Data->btResult)
+    switch (packet->result)
     {
     case 0:
         UI::Chat::PostSystem(I18N::Game::RequestHasFailed, mu::ui::window::TYPE_SYSTEM_MESSAGE);
@@ -11213,24 +11212,15 @@ void ReceiveBCDeclareGuildList(const BYTE* ReceiveBuffer)
     case 1:
     {
         std::vector<UI::Siege::DeclarationGuild> guilds;
-        for (int i = 0; i < Data->iCount; ++i)
+        for (std::size_t offset = 0; offset < packet->entries.size(); offset += 14)
         {
-            auto pData2 = (LPPMSG_CSREGGUILDLIST)(ReceiveBuffer + Offset);
-
-            // WTF - why not just use an int?
-            DWORD dwMarkCount;
-            auto* pMarkCount = (BYTE*)&dwMarkCount;
-            *pMarkCount++ = pData2->btRegMarks4;
-            *pMarkCount++ = pData2->btRegMarks3;
-            *pMarkCount++ = pData2->btRegMarks2;
-            *pMarkCount++ = pData2->btRegMarks1;
+            const auto entry = packet->entries.subspan(offset, 14);
+            const std::uint32_t markCount = (std::uint32_t(entry[8]) << 24) | (std::uint32_t(entry[9]) << 16)
+                | (std::uint32_t(entry[10]) << 8) | std::uint32_t(entry[11]);
 
             wchar_t guildName[MAX_GUILDNAME + 1]{};
-            CMultiLanguage::ConvertFromUtf8(guildName, pData2->szGuildName, MAX_GUILDNAME);
-            guilds.push_back({guildName, static_cast<int>(dwMarkCount),
-                              pData2->btIsGiveUp != 0, pData2->btSeqNum});
-
-            Offset += sizeof(PMSG_CSREGGUILDLIST);
+            CMultiLanguage::ConvertFromUtf8(guildName, reinterpret_cast<const char*>(entry.data()), MAX_GUILDNAME);
+            guilds.push_back({guildName, static_cast<int>(markCount), entry[12] != 0, entry[13]});
         }
         UI::Siege::ReplaceDeclarations(guilds);
     }
@@ -11238,12 +11228,15 @@ void ReceiveBCDeclareGuildList(const BYTE* ReceiveBuffer)
     }
 }
 
-void ReceiveBCGuildList(const BYTE* ReceiveBuffer)
+void ReceiveBCGuildList(const BYTE* ReceiveBuffer, int Size)
 {
-    auto Data = (LPPMSG_ANS_CSATTKGUILDLIST)ReceiveBuffer;
-    int Offset = sizeof(PMSG_ANS_CSATTKGUILDLIST);
+    if (Size < 0)
+        return;
+    const auto packet = Network::Packets::ReadSiegeGuildList({ReceiveBuffer, static_cast<std::size_t>(Size)});
+    if (!packet)
+        return;
 
-    switch (Data->btResult)
+    switch (packet->result)
     {
     case 0:
         UI::Chat::PostSystem(I18N::Game::RequestHasFailed, mu::ui::window::TYPE_SYSTEM_MESSAGE);
@@ -11251,16 +11244,14 @@ void ReceiveBCGuildList(const BYTE* ReceiveBuffer)
     case 1:
     {
         std::vector<UI::Siege::AttackingGuild> guilds;
-        for (int i = 0; i < Data->iCount; ++i)
+        for (std::size_t offset = 0; offset < packet->entries.size(); offset += 14)
         {
-            auto pData2 = (LPPMSG_CSATTKGUILDLIST)(ReceiveBuffer + Offset);
+            const auto entry = packet->entries.subspan(offset, 14);
             wchar_t guildName[MAX_GUILDNAME + 1]{};
-            CMultiLanguage::ConvertFromUtf8(guildName, pData2->szGuildName, MAX_GUILDNAME);
-
-            guilds.push_back({guildName, pData2->btCsJoinSide,
-                              pData2->btGuildInvolved, pData2->iGuildScore});
-
-            Offset += sizeof(PMSG_CSATTKGUILDLIST);
+            CMultiLanguage::ConvertFromUtf8(guildName, reinterpret_cast<const char*>(entry.data() + 2), MAX_GUILDNAME);
+            const std::uint32_t score = std::uint32_t(entry[10]) | (std::uint32_t(entry[11]) << 8)
+                | (std::uint32_t(entry[12]) << 16) | (std::uint32_t(entry[13]) << 24);
+            guilds.push_back({guildName, entry[0], entry[1], static_cast<int>(score)});
         }
         UI::Siege::ReplaceAttackingGuilds(guilds);
     }
@@ -11397,24 +11388,30 @@ void ReceiveCrownSwitchState(const BYTE* ReceiveBuffer)
     }
 }
 
-void ReceiveCrownRegist(const BYTE* ReceiveBuffer)
+void ReceiveCrownRegist(const BYTE* ReceiveBuffer, int Size)
 {
-    auto pData = (LPPRECEIVE_CROWN_STATE)ReceiveBuffer;
+    if (Size < 0)
+        return;
+    const auto packet = Network::Packets::ReadCrownAccessState({ReceiveBuffer, static_cast<std::size_t>(Size)});
+    if (!packet)
+        return;
 
-    UI::Siege::ClearCrownNotices();
+    const auto state = static_cast<CrownRegistrationState>(packet->state);
+    if (state != CrownRegistrationState::Succeeded)
+        UI::Siege::ClearCrownNotices();
 
-    switch (static_cast<CrownRegistrationState>(pData->m_byCrownState))
+    switch (state)
     {
     case CrownRegistrationState::Started:
         UI::Siege::ShowCrownNotice(UI::Siege::CrownNotice::RegistrationStarted,
-                                    {}, {}, pData->m_dwCrownAccessTime);
+                                    {}, {}, packet->accumulatedTimeMs);
         break;
     case CrownRegistrationState::Succeeded:
         UI::Siege::ShowCrownNotice(UI::Siege::CrownNotice::RegistrationSucceeded);
         break;
     case CrownRegistrationState::Failed:
         UI::Siege::ShowCrownNotice(UI::Siege::CrownNotice::RegistrationFailed,
-                                    {}, {}, pData->m_dwCrownAccessTime);
+                                    {}, {}, packet->accumulatedTimeMs);
         break;
     case CrownRegistrationState::OtherPlayer:
         UI::Siege::ShowCrownNotice(UI::Siege::CrownNotice::RegistrationByOther);
@@ -12052,95 +12049,114 @@ void RecevieKanturu3rdLeftUserandMonsterCount(const BYTE* ReceiveBuffer)
     M39Kanturu3rd::Kanturu3rdUserandMonsterCount(pData->bMonsterCount, pData->btUserCount);
 }
 
-void ReceiveCursedTempleEnterInfo(const BYTE* ReceiveBuffer)
+namespace
 {
-    auto data = (LPPMSG_CURSED_TEMPLE_USER_COUNT)ReceiveBuffer;
+std::span<const std::uint8_t> CursedTemplePacketSpan(const BYTE* buffer, int size)
+{
+    if (!UI::CursedTemple::CanApplyNetworkUpdate(SceneFlag) || !buffer || size < 0)
+        return {};
+    return {buffer, static_cast<std::size_t>(size)};
+}
+} // namespace
 
-    UI::CursedTemple::UpdateEntryCounts(std::span<const std::uint8_t, 6>(data->btUserCount));
+void ReceiveCursedTempleEnterInfo(const BYTE* ReceiveBuffer, int Size)
+{
+    const auto counts = Network::Packets::IllusionTemplePacketReader::ReadEntryCounts(CursedTemplePacketSpan(ReceiveBuffer, Size));
+    if (!counts)
+        return;
+    UI::CursedTemple::UpdateEntryCounts(*counts);
 }
 
-void ReceiveCursedTempleEnterResult(const BYTE* ReceiveBuffer)
+void ReceiveCursedTempleEnterResult(const BYTE* ReceiveBuffer, int Size)
 {
-    auto data = (LPPMSG_RESULT_ENTER_CURSED_TEMPLE)ReceiveBuffer;
-
-    if (data->Result == 0)
+    const auto result = Network::Packets::IllusionTemplePacketReader::ReadEntryResult(CursedTemplePacketSpan(ReceiveBuffer, Size));
+    if (!result)
+        return;
+    if (*result == 0)
     {
         UI::Windows::HideAll();
     }
-    g_CursedTemple->UpdateTempleSystemMsg(data->Result);
+    g_CursedTemple->UpdateTempleSystemMsg(*result);
 }
 
-void ReceiveCursedTempleInfo(const BYTE* ReceiveBuffer)
+void ReceiveCursedTempleInfo(const BYTE* ReceiveBuffer, int Size)
 {
-    auto data = (LPPMSG_CURSED_TAMPLE_STATE)ReceiveBuffer;
-
+    using Reader = Network::Packets::IllusionTemplePacketReader;
+    const auto data = Reader::ReadState(CursedTemplePacketSpan(ReceiveBuffer, Size));
+    if (!data)
+        return;
     std::vector<UI::CursedTemple::PartyPosition> party;
-    party.reserve(data->btPartyCount);
-    int Offset = sizeof(PMSG_CURSED_TAMPLE_STATE);
-    for (int i = 0; i < data->btPartyCount; ++i)
+    const auto count = data->members.size() / Reader::PartyMemberSize;
+    party.reserve(count);
+    for (std::size_t i = 0; i < count; ++i)
     {
-        auto member = (LPPMSG_CURSED_TAMPLE_PARTY_POS)(ReceiveBuffer + Offset);
-        party.push_back({ member->wPartyUserIndex, member->byMapNumber, member->btX, member->btY });
-        Offset += sizeof(PMSG_CURSED_TAMPLE_PARTY_POS);
+        const auto member = Reader::ReadPartyMember(data->members, i);
+        party.push_back({member->id, member->map, member->x, member->y});
     }
 
-    UI::CursedTemple::UpdateMatchStatus({ data->wRemainSec, data->btUserIndex, data->btX, data->btY,
-                                          data->btAlliedPoint, data->btIllusionPoint,
-                                          static_cast<SEASON3A::eCursedTempleTeam>(data->btMyTeam), party });
+    UI::CursedTemple::UpdateMatchStatus({data->remainingSeconds, data->relicHolder, data->x, data->y,
+        data->alliedScore, data->illusionScore, static_cast<SEASON3A::eCursedTempleTeam>(data->team), party});
+    // The legacy game-state update reads only this validated 14-byte fixed prefix.
     g_CursedTemple->ReceiveCursedTempleInfo(ReceiveBuffer);
 }
 
-void ReceiveCursedTempMagicResult(const BYTE* ReceiveBuffer)
+void ReceiveCursedTempMagicResult(const BYTE* ReceiveBuffer, int Size)
 {
-    auto data = (LPPMSG_CURSED_TEMPLE_USE_MAGIC_RESULT)ReceiveBuffer;
-    const WORD skill = (static_cast<WORD>(data->MagicH) << 8) + data->MagicL;
-    UI::CursedTemple::ResolveSkill({ skill, data->wSourceObjIndex, data->wTargetObjIndex, data->MagicResult != 0 });
+    const auto data = Network::Packets::IllusionTemplePacketReader::ReadSkillResult(CursedTemplePacketSpan(ReceiveBuffer, Size));
+    if (!data)
+        return;
+    UI::CursedTemple::ResolveSkill({data->skill, data->source, data->target, data->result != 0});
 }
 
-void ReceiveCursedTempSkillEnd(const BYTE* ReceiveBuffer)
+void ReceiveCursedTempSkillEnd(const BYTE* ReceiveBuffer, int Size)
 {
-    auto data = (LPPMSG_CURSED_TEMPLE_SKILL_END)ReceiveBuffer;
-    const WORD skill = (static_cast<WORD>(data->MagicH) << 8) + data->MagicL;
-    UI::CursedTemple::EndSkill(skill, data->wObjIndex);
+    const auto data = Network::Packets::IllusionTemplePacketReader::ReadSkillEnd(CursedTemplePacketSpan(ReceiveBuffer, Size));
+    if (!data)
+        return;
+    UI::CursedTemple::EndSkill(data->skill, data->target);
 }
 
-void ReceiveCursedTempSkillPoint(const BYTE* ReceiveBuffer)
+void ReceiveCursedTempSkillPoint(const BYTE* ReceiveBuffer, int Size)
 {
-    auto data = (LPPMSG_CURSED_TEMPLE_SKILL_POINT)ReceiveBuffer;
-    UI::CursedTemple::SetSkillPoints(data->btSkillPoint);
+    const auto points = Network::Packets::IllusionTemplePacketReader::ReadSkillPoints(CursedTemplePacketSpan(ReceiveBuffer, Size));
+    if (!points)
+        return;
+    UI::CursedTemple::SetSkillPoints(*points);
 }
 
 void ReceiveCursedTempleHolyItemRelics(const BYTE* ReceiveBuffer)
 {
 }
 
-void ReceiveCursedTempleGameResult(const BYTE* ReceiveBuffer)
+void ReceiveCursedTempleGameResult(const BYTE* ReceiveBuffer, int Size)
 {
-    auto data = (LPPMSG_CURSED_TEMPLE_RESULT)ReceiveBuffer;
-
+    using Reader = Network::Packets::IllusionTemplePacketReader;
+    const auto data = Reader::ReadResult(CursedTemplePacketSpan(ReceiveBuffer, Size));
+    if (!data)
+        return;
     std::vector<UI::CursedTemple::PlayerResult> players;
-    players.reserve(data->btUserCount);
-    int Offset = sizeof(PMSG_CURSED_TEMPLE_RESULT);
-    for (int i = 0; i < data->btUserCount; ++i)
+    const auto count = data->players.size() / Reader::PlayerResultSize;
+    players.reserve(count);
+    for (std::size_t i = 0; i < count; ++i)
     {
-        auto player = (LPPMSG_CURSED_TEMPLE_USER_ADD_EXP)(ReceiveBuffer + Offset);
+        const auto player = Reader::ReadPlayerResult(data->players, i);
         wchar_t name[MAX_USERNAME_SIZE + 1]{};
-        CMultiLanguage::ConvertFromUtf8(name, player->GameId, MAX_USERNAME_SIZE);
-        players.push_back({ name, player->byMapNumber, static_cast<SEASON3A::eCursedTempleTeam>(player->btTeam),
-                            gCharacterManager.ChangeServerClassTypeToClientClassType(player->btClass),
-                            player->nAddExp });
-        Offset += sizeof(PMSG_CURSED_TEMPLE_USER_ADD_EXP);
+        CMultiLanguage::ConvertFromUtf8(name, player->name.data(), MAX_USERNAME_SIZE);
+        players.push_back({name, player->map, static_cast<SEASON3A::eCursedTempleTeam>(player->team),
+            gCharacterManager.ChangeServerClassTypeToClientClassType(static_cast<SERVER_CLASS_TYPE>(player->playerClass)),
+            player->addedExperience});
     }
 
-    UI::CursedTemple::ShowMatchResult({ data->btAlliedPoint, data->btIllusionPoint, players });
+    UI::CursedTemple::ShowMatchResult({data->alliedScore, data->illusionScore, players});
 }
 
-void ReceiveCursedTempleState(const BYTE* ReceiveBuffer)
+void ReceiveCursedTempleState(const BYTE* ReceiveBuffer, int Size)
 {
-    auto data = (LPPMSG_ILLUSION_TEMPLE_STATE)ReceiveBuffer;
-
+    const auto phase = Network::Packets::IllusionTemplePacketReader::ReadPhase(CursedTemplePacketSpan(ReceiveBuffer, Size));
+    if (!phase)
+        return;
     // 0: wait, 1: wait->ready, 2: ready->play, 3: play->end
-    auto cursedtemple = static_cast<SEASON3A::eCursedTempleState>(data->btIllusionTempleState + 1);
+    auto cursedtemple = static_cast<SEASON3A::eCursedTempleState>(*phase + 1);
 
     if (cursedtemple == SEASON3A::eCursedTempleState_Ready)
     {
@@ -14253,7 +14269,7 @@ static void ProcessPacket(const BYTE* ReceiveBuffer, int32_t Size)
             break;
 
         case 0x15:
-            ReceiveCrownRegist(ReceiveBuffer);
+            ReceiveCrownRegist(ReceiveBuffer, Size);
             break;
 
         case 0x16:
@@ -14295,10 +14311,10 @@ static void ProcessPacket(const BYTE* ReceiveBuffer, int32_t Size)
         ReceiveBCNPCList(ReceiveBuffer, Size);
         break;
     case 0xB4:
-        ReceiveBCDeclareGuildList(ReceiveBuffer);
+        ReceiveBCDeclareGuildList(ReceiveBuffer, Size);
         break;
     case 0xB5:
-        ReceiveBCGuildList(ReceiveBuffer);
+        ReceiveBCGuildList(ReceiveBuffer, Size);
         break;
     case 0xB6:
         ReceiveGuildMemberLocation(ReceiveBuffer);
@@ -14559,31 +14575,31 @@ static void ProcessPacket(const BYTE* ReceiveBuffer, int32_t Size)
         switch (subcode)
         {
         case 0x00:
-            ReceiveCursedTempleEnterResult(ReceiveBuffer);
+            ReceiveCursedTempleEnterResult(ReceiveBuffer, Size);
             break;
         case 0x01:
-            ReceiveCursedTempleInfo(ReceiveBuffer);
+            ReceiveCursedTempleInfo(ReceiveBuffer, Size);
             break;
         case 0x02:
-            ReceiveCursedTempMagicResult(ReceiveBuffer);
+            ReceiveCursedTempMagicResult(ReceiveBuffer, Size);
             break;
         case 0x03:
-            ReceiveCursedTempleEnterInfo(ReceiveBuffer);
+            ReceiveCursedTempleEnterInfo(ReceiveBuffer, Size);
             break;
         case 0x04:
-            ReceiveCursedTempleGameResult(ReceiveBuffer);
+            ReceiveCursedTempleGameResult(ReceiveBuffer, Size);
             break;
         case 0x06:
-            ReceiveCursedTempSkillPoint(ReceiveBuffer);
+            ReceiveCursedTempSkillPoint(ReceiveBuffer, Size);
             break;
         case 0x07:
-            ReceiveCursedTempSkillEnd(ReceiveBuffer);
+            ReceiveCursedTempSkillEnd(ReceiveBuffer, Size);
             break;
         case 0x08:
             ReceiveCursedTempleHolyItemRelics(ReceiveBuffer);
             break;
         case 0x09:
-            ReceiveCursedTempleState(ReceiveBuffer);
+            ReceiveCursedTempleState(ReceiveBuffer, Size);
             break;
         case 0x0a:
             ReceiveChainMagic(ReceiveBuffer);

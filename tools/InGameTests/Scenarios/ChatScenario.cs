@@ -74,7 +74,7 @@ internal sealed class ChatScenario : Scenario
         await context.StepAsync(
             $"The first player types \"{line}\" and sends it with Enter",
             $"The chat box closes, and the line shows in both chat logs as said by {firstCharacter.Name}.",
-            () => SendLineAsync(context, first, firstCharacter.Name, line, [first, second]));
+            () => SendLineAsync(first, firstCharacter.Name, line, [first, second]));
         await context.StepAsync(
             $"The second player answers \"{answer}\" the same way",
             $"Enter opens {secondCharacter.Name}'s chat box, the answer is typed and Enter sends it; it shows in both chat logs "
@@ -82,7 +82,7 @@ internal sealed class ChatScenario : Scenario
             async () =>
             {
                 await OpenChatAsync(context, second);
-                await SendLineAsync(context, second, secondCharacter.Name, answer, [first, second]);
+                await SendLineAsync(second, secondCharacter.Name, answer, [first, second]);
             });
     }
 
@@ -97,7 +97,6 @@ internal sealed class ChatScenario : Scenario
     // Types the line into the open chat box and sends it; every one of
     // <paramref name="hearers"/> has to get it from <paramref name="sender"/>.
     private static async Task SendLineAsync(
-        ScenarioContext context,
         GameClient client,
         string sender,
         string line,
@@ -109,13 +108,10 @@ internal sealed class ChatScenario : Scenario
             sequences.Add(await hearer.LastEventSequenceAsync());
         }
 
-        await client.SendAsync("type", new { text = line });
-        // Enter sends the line and closes the box.
-        await Keys.PressUntilAsync(
-            context,
-            client,
-            "enter",
+        await client.SendAsync("type", new { text = line, enter = true });
+        await Expect.EventuallyAsync(
             async () => !(await client.OpenWindowsAsync()).Contains("chat_input"),
+            ServerAnswer,
             $"the {client.Role}'s chat box does not send the line");
         for (var index = 0; index < hearers.Count; index++)
         {

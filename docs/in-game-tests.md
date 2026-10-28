@@ -20,6 +20,12 @@ report each scenario as passed or failed.
 
 The rest of this page explains each part.
 
+Each running client owns a separate rotating log set in its client directory. The first
+uses `MuError.log`; simultaneous clients use `MuError-1.log`, `MuError-2.log`, and so on.
+Each set retains three rotated files (5 MiB per file). Include all `MuError*.log` files
+when diagnosing a multi-client run. Empty `.lock` files reserve a set only while its
+client is alive; a stopped or crashed client's set is reused on the next start.
+
 ## What you need
 
 - A developer build of the client: a `-mueditor` preset, which turns on
@@ -196,6 +202,13 @@ to 25 MB in a comment; the tester warns when a report is bigger):
 
 The screenshots are taken into a work folder in the temp folder, which the
 run deletes once the report has them.
+
+Startup allows up to 120 seconds for the client to answer, including its first
+`ping` while assets load. Quest scenarios wait until `ui.npc_quest_page` matches the
+current quest page and its answer row appears before clicking it; a page change can
+reach the client before its layout is ready.
+Named-button clicks also wait for their element to appear, including when an
+inventory window has just opened.
 
 ### The command line
 

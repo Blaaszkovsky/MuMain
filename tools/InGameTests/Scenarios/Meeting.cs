@@ -21,9 +21,9 @@ internal static class Meeting
     /// A warp to a town lands anywhere in it, and a character that is in the town
     /// already starts wherever it stood, so how far each one walks changes from run
     /// to run: across the whole town at worst. The walk gets time for that. And
-    /// <c>move</c> answers within a tile of its target while the walk may still take
-    /// its last step, so the walker heads for where the host stands now, until the
-    /// two are next to each other.
+    /// <c>move</c> waits for the planned path to finish and answers within a tile of
+    /// its target. The walker heads for where the host stands now until both
+    /// clients see the two next to each other.
     ///
     /// The walker's own client can also show it a step further than the others see
     /// it, when its last step did not reach them. Then the walker walks a few tiles

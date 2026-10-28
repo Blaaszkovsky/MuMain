@@ -6,6 +6,18 @@ mu_add_test(
 )
 
 mu_add_test(
+    NAME test_map_number
+    SOURCES test_map_number.cpp
+)
+
+mu_add_test(
+    NAME test_map_assets
+    SOURCES
+        test_map_assets.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/World/MapInfra/MapAssets.cpp
+)
+
+mu_add_test(
     NAME test_byte_order
     SOURCES
         test_byte_order.cpp
@@ -29,10 +41,56 @@ mu_add_test(
         MuClient
 )
 
+mu_add_test(
+    NAME test_siege_guild_list_packet
+    SOURCES test_siege_guild_list_packet.cpp
+)
+
+mu_add_test(
+    NAME test_crown_access_state_packet
+    SOURCES test_crown_access_state_packet.cpp
+)
+
+mu_add_test(
+    NAME test_illusion_temple_packets
+    SOURCES test_illusion_temple_packets.cpp
+    LINK_LIBS MuClient
+)
+
 # Control socket tests only exist in builds that enable it. Without it, the
 # control_socket_leak test proves that none of its sources were compiled into
 # the client (same mechanics as tests/editor's editor_leak).
+if(ENABLE_CONTROL_SOCKET AND WIN32)
+    mu_add_test(
+        NAME test_control_attack
+        SOURCES
+            test_control_attack.cpp
+            ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+        LINK_LIBS MuClient ws2_32
+        PROPERTIES WORKING_DIRECTORY "$<TARGET_FILE_DIR:Main>"
+    )
+    if(TARGET ClientLibrary)
+        add_dependencies(test_control_attack ClientLibrary)
+    endif()
+endif()
+
 if(ENABLE_CONTROL_SOCKET)
+    mu_add_test(
+        NAME test_control_damage_attribution
+        SOURCES
+            test_control_damage_attribution.cpp
+            ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+        LINK_LIBS MuClient
+    )
+
+    mu_add_test(
+        NAME test_control_halt
+        SOURCES
+            test_control_halt.cpp
+            ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+        LINK_LIBS MuClient
+    )
+
     mu_add_test(
         NAME test_control_protocol
         SOURCES

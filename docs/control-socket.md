@@ -96,6 +96,40 @@ Error codes: `bad_request`, `unknown_command`, `wrong_scene`, `busy`,
 | `trade` (`action`, `target`) | `request` a trade with another player at most one tile away (`not_allowed` otherwise), or `cancel` the open one; the partner accepts with the Enter key, and items go in with `click-ui` |
 | `halt` | stop the walk or repeated attack in progress |
 
+For a quest dialog, `ui.npc_quest_page` reports the page applied to the visible RmlUi
+document, or null while it is hidden. Wait until it matches `state.npc_quest.page`
+before clicking an answer; game state can advance before layout updates.
+
+`move` finishes within one tile of its destination after the current path has
+finished, so the next action does not run while the character is still walking.
+A map change or teleport interrupts `move`, `attack` and `skill`; start a new command after arriving.
+
+`attack` issues up to `times` swings (one by default), respecting both the
+character's animation and the minimum `interval` in milliseconds. It leaves no
+automatic repeat queued between swings. `halt`, a superseding world command,
+connection loss or the 60-second deadline cancels the remaining attack and its
+pending approach; a blow already sent still completes.
+
+`skill` attempts one cast, including when the player's AutoAttack option is on;
+it leaves that option unchanged. A pending approach is cancelled on `halt`, a
+superseding command, connection loss or the 15-second deadline. `halt` also
+stops a queued normal attack or skill repeat when no control command is active.
+An action already sent to the server can still resolve after `halt`.
+
+Targeted attacks and skills walk into their weapon or skill range. The MU
+Helper's hunting distance selects targets; it does not widen that stopping range.
+
+`teleport` accepts the server's upper Devil Square map index 32. As in normal
+world loading, the client reports this shared map as index 9 after arrival.
+Arrival waits for the server's teleport response, including when the destination
+uses the current map's shared state and coordinates.
+
+Before sending a `teleport`, the client checks that the destination's core map,
+attributes, objects, height and light files exist. A missing file returns
+`not_allowed` with its path and leaves the character in place. Restore the
+matching map files before retrying. This check covers file presence; it does not
+validate their contents or optional textures and sounds.
+
 `state` reports the scene and account on every screen, and in the world adds:
 character name, class, level, experience, zen, HP/mana/SD/AG with their
 maxima, map number and name, position, alive flag, safe-zone flag, current
@@ -189,7 +223,8 @@ strictly increasing `seq`, a UTC `time` and its own fields:
 
 | Event | Fields |
 |---|---|
-| `hit` | `direction` (`dealt`/`received`), `attacker`/`target` `{id,name,kind}`, `damage`, `shield_damage`, `critical`, `missed` |
+| `hit` | `direction` (`dealt`/`received`), `attacker`/`target` `{id,name,kind}`, `damage`, `shield_damage`, `critical`, `missed`; received attacker is `{id:-1,name:"",kind:"unknown"}` because the damage packet names only its target; dealt hero attribution is inferred from the action/swing context, not an authenticated attacker field |
+| `damage_observed` | one observation per decoded damage receive, even without combat attribution: `target` `{id,name,kind,known}` and `position` when known; numeric `damage`, `shield_damage`, `damage_type`; `health_status` / `shield_status` are the received 1/250 status bytes (255 means unknown), or null when that packet variant supplies none; `attacker` is `{id:-1,name:"",kind:"unknown"}` and `cause` is `unknown` |
 | `killed` | `victim`, `killer` |
 | `stat` | `stat` (`life`, `mana`, `sd`, `ag`, `level`, `experience_gained` — the experience of one kill, and `damage_dealt` with it — the cumulative total is `state.experience`), `value`, `max` |
 | `chat` | `sender`, `text`, `kind` (`public`, `whisper`, `party`, `guild`, `union`, `gens`, `gm`) |
@@ -205,6 +240,11 @@ strictly increasing `seq`, a UTC `time` and its own fields:
 
 The last 2,048 events are kept. Names and fields are plain lower snake case,
 so a test script can parse them next to a server-side event stream.
+`damage_observed` is available only while control recording is enabled. It is
+an observation of a received packet, not proof of its attacker, a particular
+skill request, or a successful hit. Zero damage remains zero; `hit` retains
+its existing conservative ownership rules. Target details describe the
+client's current resolver result, without a target generation guarantee.
 
 ## Security posture
 

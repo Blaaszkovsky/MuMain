@@ -58,3 +58,11 @@ mu_add_test(
     NAME ferea_monster_profile_tests
     SOURCES test_ferea_monster_profile.cpp
 )
+
+mu_add_test(
+    NAME test_attack_wall
+    SOURCES
+        test_attack_wall.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    LINK_LIBS MuClient
+)

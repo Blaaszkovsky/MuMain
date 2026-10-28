@@ -21,10 +21,13 @@
 
 namespace App::Control::Events
 {
-// A damage packet: `attackerIndex` is the client's own character slot of
-// the attacker (the `AttackPlayer` global), `targetKey` the server id that
-// took the hit.
+// A damage packet identifies targetKey, not its attacker. attackerIndex is
+// the potentially stale AttackPlayer hint. Incoming attacker is unknown;
+// outgoing hero attribution remains inferred from the action/swing context.
 void RecordAttackDamage(int attackerIndex, int targetKey, int damage, int shieldDamage, int damageType);
+// Extended damage values stay unsigned until recorded, preserving the full DWORD.
+void RecordAttackDamageExtended(int attackerIndex, int targetKey, std::uint32_t damage, std::uint32_t shieldDamage,
+                               int damageType, std::uint8_t healthStatus, std::uint8_t shieldStatus);
 
 // A death packet. `killerKey` may be -1 when the packet does not name one.
 void RecordDeathOf(int victimKey, int killerKey);
@@ -106,6 +109,7 @@ void RecordWorldCamera();
 namespace App::Control::Events
 {
 inline void RecordAttackDamage(int, int, int, int, int) {}
+inline void RecordAttackDamageExtended(int, int, std::uint32_t, std::uint32_t, int, std::uint8_t, std::uint8_t) {}
 inline void RecordDeathOf(int, int) {}
 inline void RecordExperienceGain(std::uint64_t, int) {}
 inline void RecordLevelUp(int) {}
