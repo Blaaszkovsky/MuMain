@@ -280,12 +280,12 @@ TEST_CASE("Real target failures preserve the next attack slot [helper_rotation]"
     for (const auto expected : {Primary, ExtraOne, ExtraTwo})
     {
         CHECK(fixture.Select() == expected);
-        const auto result = GameLogic::Automation::CastSkill(expected, true, target.Key, true, 6);
+        const auto result = GameLogic::Automation::CastSkill(expected, true, target.Key, true);
         CHECK(result == SkillResult::NotAttackable);
         fixture.rotation.Complete(result);
         CHECK(fixture.Select() == expected);
         target.Object.Live = false;
-        const auto gone = GameLogic::Automation::CastSkill(expected, true, target.Key, true, 6);
+        const auto gone = GameLogic::Automation::CastSkill(expected, true, target.Key, true);
         CHECK(gone == SkillResult::NotInView);
         fixture.rotation.Complete(gone);
         CHECK(fixture.Select() == expected);
@@ -308,7 +308,7 @@ TEST_CASE("Long execution animations retain their selected turn [helper_rotation
             REQUIRE(fixture.Select() == Primary);
             g_MovementSkill.m_iSkill = ExtraTwo;
             g_MovementSkill.m_bMagic = false;
-            const auto result = GameLogic::Automation::CastSkill(Primary, false, -1, true, 6);
+            const auto result = GameLogic::Automation::CastSkill(Primary, false, -1, true);
             CHECK(result == SkillResult::Busy);
             CHECK(g_MovementSkill.m_iSkill == ExtraTwo);
             CHECK_FALSE(g_MovementSkill.m_bMagic);
@@ -328,7 +328,7 @@ TEST_CASE("Ready skills that repeatedly produce no action yield a bounded turn [
     {
         REQUIRE(fixture.Select() == Primary);
         CharacterAttribute->Skill[0] = AT_SKILL_UNDEFINED;
-        const auto result = GameLogic::Automation::CastSkill(Primary, false, -1, true, 6);
+        const auto result = GameLogic::Automation::CastSkill(Primary, false, -1, true);
         CHECK(result == SkillResult::NotReady);
         fixture.rotation.Complete(result);
         CharacterAttribute->Skill[0] = Primary;
