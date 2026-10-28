@@ -743,3 +743,45 @@ TEST_CASE("Custom class wings retain their stock third tier rules [data][items][
         }
     }
 }
+
+TEST_CASE("All five sphere grades and their crafting results have usable inventory data [data][items][rules]")
+{
+    ShippedItemsScope items;
+    for (int itemType = ITEM_SPHERE_MONO; itemType <= ITEM_SPHERE_5; ++itemType)
+    {
+        CAPTURE(itemType);
+        const ItemDefinition* definition = g_ItemDatabase.Find(itemType);
+        REQUIRE(definition != nullptr);
+        CHECK(definition->width == 1);
+        CHECK(definition->height == 1);
+        CHECK(definition->slot == ItemSlot::None);
+        const ITEM sphere = MakeItem(itemType);
+        CHECK(IsSocketSphere(&sphere));
+        CHECK(IsSocketSphereModel(MODEL_ITEM + itemType));
+        CHECK(IsSocketSeedOrSphereType(itemType));
+        if (itemType >= ITEM_SPHERE_4)
+        {
+            CHECK(definition->level == 0);
+            CHECK(definition->durability == 1);
+            CHECK(definition->buyPrice == 0);
+            CHECK_FALSE(TradeBan(itemType));
+            CHECK_FALSE(StoreBan(itemType));
+        }
+        constexpr int SeedTypes = 6;
+        const int grade = itemType - ITEM_SPHERE_MONO;
+        for (int element = 0; element < SeedTypes; ++element)
+        {
+            const int resultType = ITEM_SEED_SPHERE_FIRE_1 + grade * SeedTypes + element;
+            CAPTURE(resultType);
+            const ItemDefinition* result = g_ItemDatabase.Find(resultType);
+            REQUIRE(result != nullptr);
+            CHECK(result->width == 1);
+            CHECK(result->height == 1);
+            CHECK(result->slot == ItemSlot::None);
+            const ITEM seedSphere = MakeItem(resultType);
+            CHECK(IsSocketSeedSphere(&seedSphere));
+            if (grade >= 3)
+                CHECK(result->durability == 1);
+        }
+    }
+}

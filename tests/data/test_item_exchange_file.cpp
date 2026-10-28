@@ -70,7 +70,7 @@ TEST_CASE(
 {
     ShippedItems items;
     const ItemExchangeFile built = BuildItemExchange(g_ItemDatabase.GetAllSlots(), g_ItemDataHandler.GetStatFile());
-    REQUIRE(built.items.size() == 914);
+    REQUIRE(built.items.size() == 916);
     REQUIRE(built.formulas);
     CHECK(built.formulas->profileRules.empty());
     CHECK(built.formulas->profiles == g_ItemDataHandler.GetStatFile().profiles);

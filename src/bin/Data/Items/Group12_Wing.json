@@ -2139,6 +2139,44 @@
       }
     },
     {
+      "number": 73,
+      "name": {
+        "en": "Sphere (4)",
+        "de": "Sphäre (4)"
+      },
+      "tags": ["socketSphere"],
+      "nameLines": [
+        {
+          "text": {
+            "en": "{name}"
+          },
+          "color": "violet"
+        }
+      ],
+      "width": 1,
+      "height": 1,
+      "durability": 1
+    },
+    {
+      "number": 74,
+      "name": {
+        "en": "Sphere (5)",
+        "de": "Sphäre (5)"
+      },
+      "tags": ["socketSphere"],
+      "nameLines": [
+        {
+          "text": {
+            "en": "{name}"
+          },
+          "color": "violet"
+        }
+      ],
+      "width": 1,
+      "height": 1,
+      "durability": 1
+    },
+    {
       "number": 100,
       "name": {
         "en": "Seed Sphere (Fire)",
@@ -2713,7 +2751,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 119,
@@ -2732,7 +2772,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 120,
@@ -2751,7 +2793,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 121,
@@ -2770,7 +2814,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 122,
@@ -2789,7 +2835,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 123,
@@ -2808,7 +2856,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 124,
@@ -2827,7 +2877,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 125,
@@ -2846,7 +2898,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 126,
@@ -2865,7 +2919,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 127,
@@ -2884,7 +2940,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 128,
@@ -2903,7 +2961,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 129,
@@ -2922,7 +2982,9 @@
           "color": "violet"
         }
       ],
-      "slot": "mainHand"
+      "width": 1,
+      "height": 1,
+      "durability": 1
     },
     {
       "number": 130,

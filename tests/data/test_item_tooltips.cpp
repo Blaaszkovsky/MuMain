@@ -275,7 +275,7 @@ TEST_CASE("Every item's tooltip is as recorded [data][items][tooltip]")
                     changedTooltips.emplace_back(key, text);
                 }
             });
-        CHECK(tooltips == 914 * 11 * 16);
+        CHECK(tooltips == 916 * 11 * 16);
     }
     SetItemTooltipTextMeasure(nullptr);
 

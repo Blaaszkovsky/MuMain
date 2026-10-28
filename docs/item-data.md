@@ -207,6 +207,16 @@ The JSON entry does not add crafting recipes, drops, or server combat rules.
 Servers must implement those separately and use the extended appearance protocol to show the custom item to
 other players; the original Season 6 appearance encoding cannot identify it.
 
+### Socket sphere grades
+
+The client recognizes all five socket sphere grades, including Sphere (4) `(12,73)` and
+Sphere (5) `(12,74)`, using the existing sphere models and socket interfaces. The two higher
+grades use the server's 1 by 1 inventory size and durability 1. They have no monster drops in
+the default server configuration; the server controls their availability and accepts them in
+seed-sphere crafting when supplied. Their fourth- and fifth-grade crafting results retain the
+server's 1 by 1 size and durability 1 and occupy no equipment slot. Adding this client data
+does not create a drop or recipe.
+
 ### Custom class wings
 
 Fearless Wings (Knight) `(12,248)` and Arcane Wings (Wizard) `(12,249)` retain the server's
