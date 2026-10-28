@@ -340,6 +340,24 @@ TEST_CASE("A tooltip's durability, count and expiry lines follow the item [data]
         CHECK(HasLine(lines, Formatted(L"Durability: [%d/%d]", durability, maxDurability)));
     }
 
+    // Data-defined third-tier wings show the same full, worn and broken durability as stock wings and capes.
+    for (const int number : {36, 37, 49, 50, 245, 248, 249})
+    {
+        CAPTURE(number);
+        ItemCreationParams wing = Engine::Items::TooltipSnapshot::FullItemParameters(12, number);
+        const int maximum = Engine::Items::TooltipSnapshot::FullDurability(wing);
+        REQUIRE(maximum > 1);
+        if (number >= 245)
+            CHECK(maximum == 220);
+        for (const int durability : {maximum, 1, 0})
+        {
+            CAPTURE(durability);
+            wing.Durability = static_cast<BYTE>(durability);
+            CHECK(HasLine(Engine::Items::TooltipSnapshot::TooltipOfParameters(wing),
+                          Formatted(L"Durability: [%d/%d]", durability, maximum)));
+        }
+    }
+
     // A stack's count.
     ItemCreationParams apples = Engine::Items::TooltipSnapshot::FullItemParameters(14, 0);
     apples.Durability = 3;

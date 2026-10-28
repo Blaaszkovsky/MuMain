@@ -154,7 +154,8 @@ ItemTooltipValues ComputeItemTooltipValues(const ITEM& item)
                             (type < ITEM_WING || type >= ITEM_HELPER) && type < ITEM_POTION) ||
                            (type >= ITEM_WING && type <= ITEM_WINGS_OF_DARKNESS) ||
                            (type >= ITEM_WING_OF_STORM && type <= ITEM_WING_OF_DIMENSION) ||
-                           (type >= ITEM_CAPE_OF_FIGHTER && type <= ITEM_CAPE_OF_OVERRULE);
+                           (type >= ITEM_CAPE_OF_FIGHTER && type <= ITEM_CAPE_OF_OVERRULE) ||
+                           GameLogic::Items::IsThirdTierWing(&item);
     values.timed = item.bPeriodItem;
     values.hasOptions = item.SpecialNum > 0;
     // No hero yet (the character screen, a tooltip built before the world loads): level 0.
