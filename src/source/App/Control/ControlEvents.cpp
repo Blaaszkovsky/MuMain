@@ -67,7 +67,7 @@ std::string UtcTimestamp()
     return stamp;
 }
 
-// {id, name, kind} for an object the client knows, or a placeholder for one
+// {id, name, kind, monster} for an object the client knows, or a placeholder for one
 // it does not (out of view, already deleted, or no resolver installed).
 json DescribeObject(int key, bool includeKnown = false)
 {
@@ -89,6 +89,7 @@ json DescribeObject(int key, bool includeKnown = false)
     {
         described["known"] = description.known;
     }
+    described["monster"] = description.monster ? json(*description.monster) : json(nullptr);
     if (description.known)
     {
         described["position"] = json::array({description.x, description.y});

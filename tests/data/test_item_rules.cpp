@@ -68,10 +68,10 @@ public:
         mu::log::Init();
         const ItemDataLoadResult result =
             LoadItemDataDirectory(std::filesystem::path(MU_TEST_DATA_DIR) / "Items");
-        REQUIRE_FALSE(HasErrors(result.issues));
+        REQUIRE_FALSE(HasFatal(result.issues));
         const ItemStatsLoadResult stats =
             LoadItemStatsFile(std::filesystem::path(MU_TEST_DATA_DIR).parent_path() / GetItemStatsFile());
-        REQUIRE_FALSE(HasErrors(stats.issues));
+        REQUIRE_FALSE(HasFatal(stats.issues));
         g_ItemDatabase.SetStatProfiles(ItemStatProfiles(stats.file));
         g_ItemDatabase.Build(result.items);
         for (const ItemDefinition& definition : result.items)

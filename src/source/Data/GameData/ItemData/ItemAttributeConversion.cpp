@@ -110,6 +110,8 @@ void CopyFieldsNotInItemAttribute(const ItemDefinition& source, ItemDefinition& 
 {
     target.tags = source.tags;
     target.description = source.description;
+    target.nameLines = source.nameLines;
+    target.levelValues = source.levelValues;
     target.wingTier = source.wingTier;
     target.additionalOptionProfile = source.additionalOptionProfile;
     target.weaponKind = source.weaponKind;

@@ -44,10 +44,6 @@ void ReadServerListJson(std::string_view text, const std::string& source, std::v
 // The text of the file with these groups, in their order.
 std::string WriteServerListJson(std::span<const ServerGroup> groups);
 
-// Cuts UTF-8 text to at most maxUnits UTF-16 units, never inside a
-// character; false when it is not longer.
-bool CutToUtf16Length(std::string& text, size_t maxUnits);
-
 struct ServerListLoadResult
 {
     std::vector<ServerGroup> groups;
@@ -57,7 +53,7 @@ struct ServerListLoadResult
 // Reads the file; one that cannot be read is an error.
 ServerListLoadResult LoadServerListFile(const std::filesystem::path& file);
 
-// Writes the groups to the file when they read back without errors; the
+// Writes the groups to the file when they read back without fatal problems; the
 // problems found are added to `issues`. The old file stays when the new one
 // cannot be written whole.
 bool SaveServerListFile(const std::filesystem::path& file, std::span<const ServerGroup> groups,

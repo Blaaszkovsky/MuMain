@@ -2,16 +2,18 @@
 
 #include "doctest.h"
 
+#include "Core/Text/Utf8.h"
 #include "Data/GameData/ItemData/ItemJsonCommon.h"
 #include "Data/GameData/ServerListData/ServerListJson.h"
 
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
 #include <optional>
 #include <string>
 #include <vector>
 
-using Data::Items::HasErrors;
+using Data::Items::HasFatal;
 using Data::Items::ItemDataIssue;
 using Data::Items::ItemDataIssueSeverity;
 using Data::ServerList::ChannelType;
@@ -122,9 +124,9 @@ TEST_CASE("ServerListJson: an empty list is a valid file")
 
 TEST_CASE("ServerListJson: the file needs its version and a list of groups")
 {
-    CHECK(HasErrors(Read("not json").issues));
-    CHECK(HasErrors(Read(R"({ "groups": [] })").issues));
-    CHECK(HasErrors(Read(R"({ "formatVersion": 2, "groups": [] })").issues));
+    CHECK(HasFatal(Read("not json").issues));
+    CHECK(HasFatal(Read(R"({ "groups": [] })").issues));
+    CHECK(HasFatal(Read(R"({ "formatVersion": 2, "groups": [] })").issues));
 
     const ReadResult noList = Read(R"({ "formatVersion": 1, "groups": {} })");
     CHECK(HasIssueAbout(noList.issues, "groups", "not a list"));
@@ -140,7 +142,7 @@ TEST_CASE("ServerListJson: a group needs an id and a name")
     CHECK(HasIssueAbout(badId.issues, "groups[0].id", "from 0 to 3276"));
 
     const ReadResult negativeId = Read(GroupFile(R"({ "id": -1, "name": "Valhalla" })"));
-    CHECK(HasErrors(negativeId.issues));
+    CHECK(HasFatal(negativeId.issues));
 
     const ReadResult noName = Read(GroupFile(R"({ "id": 0 })"));
     CHECK(HasIssueAbout(noName.issues, "groups[0].name", "missing or empty"));
@@ -171,7 +173,7 @@ TEST_CASE("ServerListJson: channels are numbered 1 to 20 and have a known type")
     CHECK(HasIssueAbout(tooHigh.issues, "groups[0].channels.21", "1 to 20"));
 
     const ReadResult notANumber = Read(GroupFile(R"({ "id": 0, "name": "A", "channels": {"1a": "gold"} })"));
-    CHECK(HasErrors(notANumber.issues));
+    CHECK(HasFatal(notANumber.issues));
 
     const ReadResult unknownType = Read(GroupFile(R"({ "id": 0, "name": "A", "channels": {"1": "silver"} })"));
     CHECK(HasIssueAbout(unknownType.issues, "groups[0].channels.1", "normal, nonPvp, goldPvp or gold"));
@@ -187,7 +189,7 @@ TEST_CASE("ServerListJson: a name or description that is too long is cut")
     const ReadResult read =
         Read(GroupFile(R"({ "id": 0, "name": ")" + longName + R"(", "description": ")" + longDescription + R"(" })"));
 
-    CHECK_FALSE(HasErrors(read.issues));
+    CHECK_FALSE(HasFatal(read.issues));
     CHECK(HasIssueAbout(read.issues, "groups[0].name", "longer than 32 characters"));
     CHECK(HasIssueAbout(read.issues, "groups[0].description", "longer than 254 characters"));
     REQUIRE(read.groups.size() == 1);
@@ -230,7 +232,7 @@ TEST_CASE("ServerListJson: an emoji counts as two UTF-16 units")
 
     // 30 letters and an emoji are exactly 32.
     std::string fits = std::string(30, 'x') + emoji;
-    CHECK_FALSE(Data::ServerList::CutToUtf16Length(fits, Data::ServerList::MaxServerGroupNameLength));
+    CHECK_FALSE(Core::Text::CutToUtf16Length(fits, Data::ServerList::MaxServerGroupNameLength));
     CHECK(fits == std::string(30, 'x') + emoji);
 }
 
@@ -240,7 +242,7 @@ TEST_CASE("ServerListJson: unknown fields and a second test server are warnings"
         { "id": 0, "name": "A", "testServer": true, "order": 3 },
         { "id": 1, "name": "B", "testServer": true } ] })");
 
-    CHECK_FALSE(HasErrors(read.issues));
+    CHECK_FALSE(HasFatal(read.issues));
     CHECK(HasWarnings(read.issues));
     CHECK(HasIssueAbout(read.issues, "color", "unknown field"));
     CHECK(HasIssueAbout(read.issues, "groups[0].order", "unknown field"));
@@ -316,6 +318,37 @@ TEST_CASE("ServerListJson: save writes the file and refuses a list with errors")
     // The file stays as it was.
     CHECK(Data::ServerList::LoadServerListFile(file).groups == read.groups);
     CHECK_FALSE(std::filesystem::exists(file.string() + ".tmp"));
+
+    std::filesystem::remove_all(folder);
+}
+
+TEST_CASE("ServerListJson: a save that cannot write or replace the file names it and leaves no temporary file")
+{
+    const std::filesystem::path folder = std::filesystem::temp_directory_path() / "mu_server_list_blocked_test";
+    std::filesystem::remove_all(folder);
+    std::filesystem::create_directories(folder);
+    const std::vector<ServerGroup> groups = Read(ValidFile).groups;
+
+    // A file where the Local folder should be: nothing can be written there.
+    const std::filesystem::path blocked = folder / "Local";
+    std::ofstream(blocked) << "not a folder";
+    const std::filesystem::path unwritable = blocked / "ServerList.json";
+    std::vector<ItemDataIssue> issues;
+    CHECK_FALSE(Data::ServerList::SaveServerListFile(unwritable, groups, issues));
+    REQUIRE(issues.size() == 1);
+    CHECK(issues[0].source == unwritable.generic_string());
+    CHECK(issues[0].message == "could not be written");
+    CHECK_FALSE(std::filesystem::exists(unwritable.string() + ".tmp"));
+
+    // A folder with the file's name: the written file cannot take its place.
+    const std::filesystem::path irreplaceable = folder / "ServerList.json";
+    std::filesystem::create_directories(irreplaceable / "inside");
+    issues.clear();
+    CHECK_FALSE(Data::ServerList::SaveServerListFile(irreplaceable, groups, issues));
+    REQUIRE(issues.size() == 1);
+    CHECK(issues[0].source == irreplaceable.generic_string());
+    CHECK(issues[0].message.starts_with("could not be replaced: "));
+    CHECK_FALSE(std::filesystem::exists(irreplaceable.string() + ".tmp"));
 
     std::filesystem::remove_all(folder);
 }

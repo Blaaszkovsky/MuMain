@@ -2,6 +2,7 @@
 #include "LegacyMarsDecryption.h"
 
 #include <cryptopp/3way.h>
+#include <cryptopp/cryptlib.h>
 #include <cryptopp/cast.h>
 #include <cryptopp/gost.h>
 #include <cryptopp/idea.h>
@@ -82,10 +83,15 @@ void DecryptBlocks(const CryptoPP::BlockTransformation& cipher, std::uint8_t* da
     }
 }
 
-// The first stage restores the second stage's key, among a few chunks of the model data.
-void DecryptFirstStage(std::uint8_t* payload, std::size_t size, bool legacyMars)
+// The first stage restores the second stage's key, among a few chunks of the model data; false when its cipher
+// can't be made, as the second stage fails then.
+bool DecryptFirstStage(std::uint8_t* payload, std::size_t size, bool legacyMars)
 {
     const auto cipher = CreateDecryption(payload[1], FirstStageKey, legacyMars);
+    if (cipher == nullptr)
+    {
+        return false;
+    }
     const std::size_t dataSize = size - Render::Models::BmdModulusCipher::BodyOffset;
     const std::size_t chunkSize = FirstStageChunkSize - FirstStageChunkSize % cipher->BlockSize();
     if (dataSize > MiddleChunkThreshold * chunkSize)
@@ -98,18 +104,35 @@ void DecryptFirstStage(std::uint8_t* payload, std::size_t size, bool legacyMars)
         DecryptBlocks(*cipher, payload + size - chunkSize, chunkSize);
         DecryptBlocks(*cipher, payload + SecondKeyOffset, chunkSize);
     }
+    return true;
 }
 } // namespace
 
 bool Render::Models::BmdModulusCipher::DecryptInPlace(std::uint8_t* payload, std::size_t size, bool legacyMars)
 {
-    if (payload == nullptr || size <= BodyOffset)
+    if (payload == nullptr || size < BodyOffset + ModelHeaderSize)
     {
         return false;
     }
 
-    DecryptFirstStage(payload, size, legacyMars);
-    const auto cipher = CreateDecryption(payload[0], payload + SecondKeyOffset, legacyMars);
-    DecryptBlocks(*cipher, payload + BodyOffset, size - BodyOffset);
+    // The file picks the ciphers and gives the second key, so a corrupt file must not throw out of model loading:
+    // Crypto++ reports a bad key or state with an exception.
+    try
+    {
+        if (!DecryptFirstStage(payload, size, legacyMars))
+        {
+            return false;
+        }
+        const auto cipher = CreateDecryption(payload[0], payload + SecondKeyOffset, legacyMars);
+        if (cipher == nullptr)
+        {
+            return false;
+        }
+        DecryptBlocks(*cipher, payload + BodyOffset, size - BodyOffset);
+    }
+    catch (const CryptoPP::Exception&)
+    {
+        return false;
+    }
     return true;
 }

@@ -6,9 +6,9 @@
 
 namespace MuEditor
 {
-// A tool with an undo history of its own (the item tools, the Server List
-// window). The editor bar's Undo and Redo act on the tool the user worked in
-// last.
+// A tool with an undo history of its own (the item tools, the monster tools,
+// the Server List window). The editor bar's Undo and Redo act on the tool the
+// user worked in last.
 class UndoTarget
 {
 public:
@@ -37,6 +37,10 @@ void Activate(UndoTarget& target);
 // `fallback` before any was or while that tool is closed. A click does not take
 // the focus from the tool.
 void RenderBarButtons(UndoTarget& fallback);
+
+// The target the bar's buttons act on: the tool worked in last while it is
+// open, else `fallback`.
+UndoTarget& GetCurrent(UndoTarget& fallback);
 } // namespace UndoTargets
 } // namespace MuEditor
 

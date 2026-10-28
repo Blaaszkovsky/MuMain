@@ -2,12 +2,13 @@
 
 #include "ServerListJson.h"
 
+#include "Core/Text/Utf8.h"
+#include "Data/DataHandler/TextFile.h"
 #include "Data/GameData/ItemData/ItemJsonCommon.h"
 
 #include <algorithm>
 #include <array>
 #include <charconv>
-#include <fstream>
 #include <set>
 
 namespace Data::ServerList
@@ -24,27 +25,16 @@ constexpr const char* NameKey = "name";
 constexpr const char* DescriptionKey = "description";
 constexpr const char* TestServerKey = "testServer";
 constexpr const char* ChannelsKey = "channels";
-// A save writes this file first, then puts it in the old one's place.
-constexpr const char* TemporaryExtension = ".tmp";
 
 // In the order of the ChannelType values.
 constexpr std::array<const char*, ChannelTypeCount> ChannelTypeNames = {"normal", "nonPvp", "goldPvp", "gold"};
-
-// The bits of a UTF-8 byte that tell whether it continues a character, and
-// whether it starts one of four bytes.
-constexpr unsigned char Utf8ContinuationMask = 0xC0;
-constexpr unsigned char Utf8ContinuationBits = 0x80;
-constexpr unsigned char Utf8FourByteMask = 0xF8;
-constexpr unsigned char Utf8FourByteBits = 0xF0;
-// A character outside the Basic Multilingual Plane takes two UTF-16 units.
-constexpr size_t SurrogatePairUnits = 2;
 
 class IssueList
 {
 public:
     IssueList(const std::string& source, std::vector<ItemDataIssue>& issues) : m_source(source), m_issues(issues) {}
 
-    void Error(const std::string& field, const std::string& message)
+    void Fatal(const std::string& field, const std::string& message)
     {
         Items::Json::AddFileIssue(m_issues, m_source, ItemDataIssue::NoItem, field, message);
     }
@@ -70,18 +60,6 @@ std::string Field(const std::string& object, const char* key)
     return object + "." + key;
 }
 
-bool IsContinuationByte(char byte)
-{
-    return (static_cast<unsigned char>(byte) & Utf8ContinuationMask) == Utf8ContinuationBits;
-}
-
-// The UTF-16 units of the character a UTF-8 lead byte starts: a four-byte
-// character (most emoji) is outside the Basic Multilingual Plane.
-size_t Utf16UnitsOf(char leadByte)
-{
-    return (static_cast<unsigned char>(leadByte) & Utf8FourByteMask) == Utf8FourByteBits ? SurrogatePairUnits : 1;
-}
-
 bool ReadId(const OrderedJson& json, const std::string& field, int& id, IssueList& issues)
 {
     const auto value = json.find(IdKey);
@@ -89,7 +67,7 @@ bool ReadId(const OrderedJson& json, const std::string& field, int& id, IssueLis
     if (value == json.end() || !value->is_number_integer() || !Items::Json::ReadWholeNumber(*value, number) ||
         number < 0 || number > MaxServerGroupId)
     {
-        issues.Error(Field(field, IdKey),
+        issues.Fatal(Field(field, IdKey),
                      "missing or not a whole number from 0 to " + std::to_string(MaxServerGroupId));
         return false;
     }
@@ -108,11 +86,11 @@ bool ReadText(const OrderedJson& json, const std::string& field, const char* key
     }
     if (!value->is_string())
     {
-        issues.Error(Field(field, key), "must be a text");
+        issues.Fatal(Field(field, key), "must be a text");
         return false;
     }
     text = value->get<std::string>();
-    if (CutToUtf16Length(text, maxUnits))
+    if (Core::Text::CutToUtf16Length(text, maxUnits))
     {
         issues.Warning(Field(field, key),
                        "longer than " + std::to_string(maxUnits) + " characters (an emoji counts as two), cut");
@@ -128,7 +106,7 @@ bool ReadName(const OrderedJson& json, const std::string& field, std::string& na
     }
     if (name.empty())
     {
-        issues.Error(Field(field, NameKey), "missing or empty");
+        issues.Fatal(Field(field, NameKey), "missing or empty");
         return false;
     }
     return true;
@@ -143,7 +121,7 @@ bool ReadTestServer(const OrderedJson& json, const std::string& field, bool& tes
     }
     if (!value->is_boolean())
     {
-        issues.Error(Field(field, TestServerKey), "must be true or false");
+        issues.Fatal(Field(field, TestServerKey), "must be true or false");
         return false;
     }
     testServer = value->get<bool>();
@@ -169,14 +147,14 @@ bool ReadChannel(const std::string& key, const OrderedJson& value, const std::st
     const std::optional<int> number = ParseChannelNumber(key);
     if (!number)
     {
-        issues.Error(field, "a channel number is 1 to " + std::to_string(MaxChannelsPerGroup));
+        issues.Fatal(field, "a channel number is 1 to " + std::to_string(MaxChannelsPerGroup));
         return false;
     }
     const std::optional<ChannelType> type =
         value.is_string() ? FindChannelType(value.get<std::string>()) : std::nullopt;
     if (!type)
     {
-        issues.Error(field, "must be normal, nonPvp, goldPvp or gold");
+        issues.Fatal(field, "must be normal, nonPvp, goldPvp or gold");
         return false;
     }
     group.channels[*number - 1] = *type;
@@ -192,7 +170,7 @@ bool ReadChannels(const OrderedJson& json, const std::string& field, ServerGroup
     }
     if (!channels->is_object())
     {
-        issues.Error(Field(field, ChannelsKey), "must be an object of channel numbers and types");
+        issues.Fatal(Field(field, ChannelsKey), "must be an object of channel numbers and types");
         return false;
     }
     bool valid = true;
@@ -207,7 +185,7 @@ std::optional<ServerGroup> ReadGroup(const OrderedJson& json, const std::string&
 {
     if (!json.is_object())
     {
-        issues.Error(field, "must be an object");
+        issues.Fatal(field, "must be an object");
         return std::nullopt;
     }
     ServerGroup group;
@@ -277,25 +255,6 @@ OrderedJson WriteGroup(const ServerGroup& group)
 }
 } // namespace
 
-bool CutToUtf16Length(std::string& text, size_t maxUnits)
-{
-    size_t units = 0;
-    for (size_t i = 0; i < text.size(); ++i)
-    {
-        if (IsContinuationByte(text[i]))
-        {
-            continue;
-        }
-        units += Utf16UnitsOf(text[i]);
-        if (units > maxUnits)
-        {
-            text.resize(i);
-            return true;
-        }
-    }
-    return false;
-}
-
 const char* GetChannelTypeName(ChannelType type)
 {
     return ChannelTypeNames[static_cast<size_t>(type)];
@@ -326,7 +285,7 @@ void ReadServerListJson(std::string_view text, const std::string& source, std::v
     const auto entries = root.find(GroupsKey);
     if (entries == root.end() || !entries->is_array())
     {
-        list.Error(GroupsKey, "missing or not a list of server groups");
+        list.Fatal(GroupsKey, "missing or not a list of server groups");
         return;
     }
     std::set<int> ids;
@@ -340,7 +299,7 @@ void ReadServerListJson(std::string_view text, const std::string& source, std::v
         }
         if (!ids.insert(group->id).second)
         {
-            list.Error(Field(field, IdKey), "group " + std::to_string(group->id) + " is in the list more than once");
+            list.Fatal(Field(field, IdKey), "group " + std::to_string(group->id) + " is in the list more than once");
             continue;
         }
         groups.push_back(std::move(*group));
@@ -369,7 +328,7 @@ ServerListLoadResult LoadServerListFile(const std::filesystem::path& file)
     const std::optional<std::string> text = Items::Json::ReadTextFile(file);
     if (!text)
     {
-        IssueList(source, result.issues).Error("", "could not be read");
+        IssueList(source, result.issues).Fatal("", "could not be read");
         return result;
     }
     ReadServerListJson(*text, source, result.groups, result.issues);
@@ -383,30 +342,15 @@ bool SaveServerListFile(const std::filesystem::path& file, std::span<const Serve
     const std::string text = WriteServerListJson(groups);
     std::vector<ServerGroup> readBack;
     ReadServerListJson(text, source, readBack, issues);
-    if (Items::HasErrors(issues))
+    if (Items::HasFatal(issues))
     {
         return false;
     }
 
-    std::filesystem::path temporaryFile = file;
-    temporaryFile += TemporaryExtension;
-    std::error_code error;
-    std::filesystem::create_directories(file.parent_path(), error);
-    std::ofstream stream(temporaryFile, std::ios::binary | std::ios::trunc);
-    stream << text;
-    // Closing flushes; checking only afterwards also catches a failing final write.
-    stream.close();
-    if (!stream)
+    std::string error;
+    if (!WriteTextFile(file, text, error))
     {
-        IssueList(source, issues).Error("", "could not be written");
-        std::filesystem::remove(temporaryFile, error);
-        return false;
-    }
-    std::filesystem::rename(temporaryFile, file, error);
-    if (error)
-    {
-        IssueList(source, issues).Error("", "could not be replaced: " + error.message());
-        std::filesystem::remove(temporaryFile, error);
+        IssueList(source, issues).Fatal("", error);
         return false;
     }
     return true;

@@ -12,6 +12,7 @@
 #include "Data/DataHandler/ItemData/ItemBmdImport.h"
 #include "Data/DataHandler/ItemData/ItemJsonStorage.h"
 #include "Data/DataHandler/ItemData/ItemModelLoader.h"
+#include "Data/GameData/ItemData/ItemAttributeConversion.h"
 #include "Data/GameData/ItemData/ItemDataIssue.h"
 #include "Data/GameData/ItemData/ItemDataValidation.h"
 
@@ -41,13 +42,13 @@ public:
     static std::wstring GetItemFilePath(const std::wstring& language);
 
     // Loads and validates Data/Items, builds the item database and fills
-    // ItemAttribute[]. On errors nothing is changed, false is returned and
-    // errorMessage describes the errors for the player.
+    // ItemAttribute[]. On fatal problems nothing is changed, false is returned and
+    // errorMessage describes the fatal problems for the player.
     bool Load(std::string& errorMessage);
 
     // Loads and validates the item models (Data/Items/Models) into the item
-    // model database. On errors nothing is changed, false is returned and
-    // errorMessage describes the errors for the player.
+    // model database. On fatal problems nothing is changed, false is returned and
+    // errorMessage describes the fatal problems for the player.
     bool LoadModels(std::string& errorMessage);
 
 #ifdef _EDITOR
@@ -58,8 +59,10 @@ public:
     // unless the definition changes them itself: then they are the user's pick.
     // An empty stat profile is no pick: it follows the data.
     void SetItem(const Data::Items::ItemDefinition& definition);
-    // Like SetItem for several items, with the database lists built once.
-    void SetItems(std::span<const Data::Items::ItemDefinition> definitions);
+    // Like SetItem for several items, with the database lists built once; AsGiven keeps the stat
+    // profile each item names as a pick.
+    void SetItems(std::span<const Data::Items::ItemDefinition> definitions,
+                  Data::Items::StatProfileStore profiles = Data::Items::StatProfileStore::Follow);
     // Stores the definitions exactly as they are, nothing derived (the undo of
     // the item tools puts back what an edit stored), and refills their rows of
     // ItemAttribute[].
@@ -164,8 +167,8 @@ public:
     // Validates the item database and the item models (Validate) and writes Data/Items,
     // with the model files of Data/Items/Models whose models changed (moved,
     // edited) since they were loaded, SharedModels.json when a shared model
-    // changed and Stats/ItemStats.json when the item stat file changed. Nothing is written when the data has errors,
-    // and no file is replaced when one of them cannot be written.
+    // changed and Stats/ItemStats.json when the item stat file changed. Nothing is written when the data has fatal
+    // problems, and no file is replaced when one of them cannot be written.
     Data::Items::ItemDataSaveResult Save(std::vector<Data::Items::ItemDataIssue>& issues);
 
     // Replaces all items with the legacy Item_<language>.bmd files. Items the
@@ -184,8 +187,9 @@ public:
     bool ExportAsBmd(std::string& changeLog);
 
     // Writes the S6E3 legacy file, with the item names of the UI locale, also while translated item names are off;
-    // an item with a value the file cannot hold is named in `problems` instead.
-    bool ExportAsS6E3(wchar_t* fileName, std::string& problems);
+    // an item with a value the file cannot hold is named in `problems` instead. `notes` gets a line for each
+    // requirement the bmd cannot hold exactly (ToBmdRequirementWeights); so does ExportAsBmd's change log.
+    bool ExportAsS6E3(wchar_t* fileName, std::string& problems, std::string& notes);
     bool ExportToCsv(wchar_t* fileName);
 #endif
 
@@ -239,9 +243,11 @@ private:
     void TakeBackModelMoves();
     // The definition SetItem stores: the weapon kind and the stat profile
     // follow the data unless `definition` changes them from `previous` (the
-    // item as it is, or the one a new item copies; nullptr: none).
-    static Data::Items::ItemDefinition WithDerivedFields(const Data::Items::ItemDefinition& definition,
-                                                         const Data::Items::ItemDefinition* previous);
+    // item as it is, or the one a new item copies; nullptr: none), or the
+    // profile is AsGiven.
+    static Data::Items::ItemDefinition
+    WithDerivedFields(const Data::Items::ItemDefinition& definition, const Data::Items::ItemDefinition* previous,
+                      Data::Items::StatProfileStore profiles = Data::Items::StatProfileStore::Follow);
     // ItemAttribute[itemType] from the item database: the item, or all zero.
     static void RefillItemAttribute(int itemType);
 
