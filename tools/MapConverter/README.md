@@ -54,6 +54,10 @@ a valid map. A converter success is **parser evidence**, not visual, collision,
 gameplay or original ENG-client acceptance. Models, textures, terrain height
 selection, per-world object behavior and server integration remain separate gates.
 
+The client omits a terrain layer if its texture is missing or has invalid dimensions,
+so missing assets cannot generate infinite texture coordinates. Restore the original
+texture before accepting that world visually; a successful map load alone is insufficient.
+
 Before using a new world, run an isolated visual A/B against a trusted reference
 with matching camera, time/light conditions and object placement. Compare shadows,
 lighting, texture layers and alpha, height, clipping and collision paths. For OBJ

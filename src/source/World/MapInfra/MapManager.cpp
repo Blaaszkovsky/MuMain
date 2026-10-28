@@ -1,6 +1,8 @@
 
 #include "stdafx.h"
 #include "World/MapInfra/MapManager.h"
+#include "World/MapInfra/MapAssets.h"
+#include "World/MapInfra/MapNumber.h"
 #include "Camera/CameraMove.h"
 #include "GameLogic/Events/Cinematic/CDirection.h"
 #include "Audio/DSPlaySound.h"
@@ -49,6 +51,34 @@ void LoadGenericWorldModels(int world, int assetWorld)
     {
         gLoadData.OpenTexture(slot, directory);
     });
+}
+
+void LoadCastleSounds()
+{
+    LoadWaveFile(SOUND_BC_AMBIENT, L"Data\\Sound\\BattleCastle\\aSiegeAmbi.wav", 1, true);
+    LoadWaveFile(SOUND_BC_AMBIENT_BATTLE1, L"Data\\Sound\\BattleCastle\\RanAmbi1.wav", 1, true);
+    LoadWaveFile(SOUND_BC_AMBIENT_BATTLE2, L"Data\\Sound\\BattleCastle\\RanAmbi2.wav", 1, true);
+    LoadWaveFile(SOUND_BC_AMBIENT_BATTLE3, L"Data\\Sound\\BattleCastle\\RanAmbi3.wav", 1, true);
+    LoadWaveFile(SOUND_BC_AMBIENT_BATTLE4, L"Data\\Sound\\BattleCastle\\RanAmbi4.wav", 1, true);
+    LoadWaveFile(SOUND_BC_AMBIENT_BATTLE5, L"Data\\Sound\\BattleCastle\\RanAmbi5.wav", 1, true);
+    LoadWaveFile(SOUND_BC_GUARD_STONE_DIS, L"Data\\Sound\\BattleCastle\\oGuardStoneDis.wav", 1, true);
+    LoadWaveFile(SOUND_BC_CATAPULT_ATTACK, L"Data\\Sound\\BattleCastle\\oSWFire.wav", 1, true);
+    LoadWaveFile(SOUND_BC_CATAPULT_HIT, L"Data\\Sound\\BattleCastle\\oSWHitG.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BC_WALL_HIT, L"Data\\Sound\\BattleCastle\\oSWHit.wav", MAX_CHANNEL, true);
+
+    LoadWaveFile(SOUND_BC_GATE_OPEN, L"Data\\Sound\\BattleCastle\\oCDoorMove.wav", 1, true);
+    LoadWaveFile(SOUND_BMS_STUN, L"Data\\Sound\\BattleCastle\\sDStun.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BMS_STUN_REMOVAL, L"Data\\Sound\\BattleCastle\\sDStunCancel.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BMS_MANA, L"Data\\Sound\\BattleCastle\\sDSwellMana.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BMS_INVISIBLE, L"Data\\Sound\\BattleCastle\\sDTrans.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BMS_MAGIC_REMOVAL, L"Data\\Sound\\BattleCastle\\sDMagicCancel.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BCS_RUSH, L"Data\\Sound\\BattleCastle\\sCHaveyBlow.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BCS_JAVELIN, L"Data\\Sound\\BattleCastle\\sCShockWave.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BCS_DEEP_IMPACT, L"Data\\Sound\\BattleCastle\\sCFireArrow.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BCS_DEATH_CANON, L"Data\\Sound\\BattleCastle\\sCMW.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BCS_ONE_FLASH, L"Data\\Sound\\BattleCastle\\sCColdAttack.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BCS_SPACE_SPLIT, L"Data\\Sound\\BattleCastle\\sCDarkAttack.wav", MAX_CHANNEL, true);
+    LoadWaveFile(SOUND_BCS_BRAND_OF_SKILL, L"Data\\Sound\\BattleCastle\\sCDarkAssist.wav", 1, true);
 }
 }
 
@@ -273,33 +303,7 @@ void CMapManager::Load() // OK
         LoadBitmap(L"World31\\Map1.jpg", BITMAP_INTERFACE_MAP + 1, GL_LINEAR, GL_CLAMP_TO_EDGE);
         LoadBitmap(L"World31\\Map2.jpg", BITMAP_INTERFACE_MAP + 2, GL_LINEAR, GL_CLAMP_TO_EDGE);
 
-        LoadWaveFile(SOUND_BC_AMBIENT, L"Data\\Sound\\BattleCastle\\aSiegeAmbi.wav", 1, true);
-        LoadWaveFile(SOUND_BC_AMBIENT_BATTLE1, L"Data\\Sound\\BattleCastle\\RanAmbi1.wav", 1, true);
-        LoadWaveFile(SOUND_BC_AMBIENT_BATTLE2, L"Data\\Sound\\BattleCastle\\RanAmbi2.wav", 1, true);
-        LoadWaveFile(SOUND_BC_AMBIENT_BATTLE3, L"Data\\Sound\\BattleCastle\\RanAmbi3.wav", 1, true);
-        LoadWaveFile(SOUND_BC_AMBIENT_BATTLE4, L"Data\\Sound\\BattleCastle\\RanAmbi4.wav", 1, true);
-        LoadWaveFile(SOUND_BC_AMBIENT_BATTLE5, L"Data\\Sound\\BattleCastle\\RanAmbi5.wav", 1, true);
-        LoadWaveFile(SOUND_BC_GUARD_STONE_DIS, L"Data\\Sound\\BattleCastle\\oGuardStoneDis.wav", 1, true);
-        LoadWaveFile(SOUND_BC_SHIELD_SPACE_DIS, L"Data\\Sound\\BattleCastle\\oProtectionDis.wav", 1, true);
-        LoadWaveFile(SOUND_BC_CATAPULT_ATTACK, L"Data\\Sound\\BattleCastle\\oSWFire.wav", 1, true);
-        LoadWaveFile(SOUND_BC_CATAPULT_HIT, L"Data\\Sound\\BattleCastle\\oSWHitG.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BC_WALL_HIT, L"Data\\Sound\\BattleCastle\\oSWHit.wav", MAX_CHANNEL, true);
-
-        LoadWaveFile(SOUND_BC_GATE_OPEN, L"Data\\Sound\\BattleCastle\\oCDoorMove.wav", 1, true);
-        LoadWaveFile(SOUND_BC_GUARDIAN_ATTACK, L"Data\\Sound\\BattleCastle\\mGMercAttack.wav", 1, true);
-        LoadWaveFile(SOUND_BMS_STUN, L"Data\\Sound\\BattleCastle\\sDStun.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BMS_STUN_REMOVAL, L"Data\\Sound\\BattleCastle\\sDStunCancel.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BMS_MANA, L"Data\\Sound\\BattleCastle\\sDSwllMana.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BMS_INVISIBLE, L"Data\\Sound\\BattleCastle\\sDTrans.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BMS_VISIBLE, L"Data\\Sound\\BattleCastle\\sDStunCancel.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BMS_MAGIC_REMOVAL, L"Data\\Sound\\BattleCastle\\sDMagicCancel.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BCS_RUSH, L"Data\\Sound\\BattleCastle\\sCHaveyBlow.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BCS_JAVELIN, L"Data\\Sound\\BattleCastle\\sCShockWave.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BCS_DEEP_IMPACT, L"Data\\Sound\\BattleCastle\\sCFireArrow.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BCS_DEATH_CANON, L"Data\\Sound\\BattleCastle\\sCMW.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BCS_ONE_FLASH, L"Data\\Sound\\BattleCastle\\sCColdAttack.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BCS_SPACE_SPLIT, L"Data\\Sound\\BattleCastle\\sCDarkAttack.wav", MAX_CHANNEL, true);
-        LoadWaveFile(SOUND_BCS_BRAND_OF_SKILL, L"Data\\Sound\\BattleCastle\\sCDarkAssist.wav", 1, true);
+        LoadCastleSounds();
         break;
 
     case WD_31HUNTING_GROUND:
@@ -360,7 +364,7 @@ void CMapManager::Load() // OK
         LoadWaveFile(SOUND_AIDA_BLUEGOLEM_ATTACK1, L"Data\\Sound\\w34\\bg_attack1.wav", 1);
         LoadWaveFile(SOUND_AIDA_BLUEGOLEM_ATTACK2, L"Data\\Sound\\w34\\bg_attack2.wav", 1);
         LoadWaveFile(SOUND_AIDA_BLUEGOLEM_DIE, L"Data\\Sound\\w34\\bg_death.wav", 1);
-        LoadWaveFile(SOUND_AIDA_DEATHRAIDER_MOVE1, L"Data\\Sound\\w34\\dr_idle1.wav", 1);
+        LoadWaveFile(SOUND_AIDA_DEATHRAIDER_MOVE1, L"Data\\Sound\\w34\\dr_idle01.wav", 1);
         LoadWaveFile(SOUND_AIDA_DEATHRAIDER_MOVE2, L"Data\\Sound\\w34\\dr_idle2.wav", 1);
         LoadWaveFile(SOUND_AIDA_DEATHRAIDER_ATTACK1, L"Data\\Sound\\w34\\dr_attack1.wav", 1);
         LoadWaveFile(SOUND_AIDA_DEATHRAIDER_ATTACK2, L"Data\\Sound\\w34\\dr_attack2.wav", 1);
@@ -514,9 +518,9 @@ void CMapManager::Load() // OK
         LoadWaveFile(SOUND_KANTURU_3RD_MAYAHAND_ATTACK2, L"Data\\Sound\\w39\\maya_hand_attack-02.wav", 1);
         LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_INTRO, L"Data\\Sound\\w39\\nightmare_intro.wav", 1);
         LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_ATT1, L"Data\\Sound\\w39\\nightmare_attack-01.wav", 1);
-        LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_ATT2, L"Data\\Sound\\w39\\nightmare_skill-01", 1);
-        LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_ATT3, L"Data\\Sound\\w39\\nightmare_skill-02", 1);
-        LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_ATT4, L"Data\\Sound\\w39\\nightmare_skill-03", 1);
+        LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_ATT2, L"Data\\Sound\\w39\\nightmare_skill-01.wav", 1);
+        LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_ATT3, L"Data\\Sound\\w39\\nightmare_skill-02.wav", 1);
+        LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_ATT4, L"Data\\Sound\\w39\\nightmare_skill-03.wav", 1);
         LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_DIE, L"Data\\Sound\\w39\\nightmare_death.wav", 1);
         LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_IDLE1, L"Data\\Sound\\w39\\nightmare_idle-01.wav", 1);
         LoadWaveFile(SOUND_KANTURU_3RD_NIGHTMARE_IDLE2, L"Data\\Sound\\w39\\nightmare_idle-02.wav", 1);
@@ -1117,24 +1121,7 @@ void CMapManager::Load() // OK
     }
     else
     {
-        int iMapWorld = this->WorldActive + 1;
-
-        if (this->InBloodCastle() == true)
-        {
-            iMapWorld = WD_11BLOODCASTLE1 + 1;
-        }
-        else if (this->InChaosCastle() == true)
-        {
-            iMapWorld = WD_18CHAOS_CASTLE + 1;
-        }
-        else if (this->InHellas() == true)
-        {
-            iMapWorld = WD_24HELLAS + 1;
-        }
-        else if (gMapManager.IsCursedTemple())
-        {
-            iMapWorld = WD_45CURSEDTEMPLE_LV1 + 2;
-        }
+        const int iMapWorld = World::Maps::AssetWorldNumber(this->WorldActive);
 
         LoadGenericWorldModels(this->WorldActive, iMapWorld);
 
@@ -1185,9 +1172,9 @@ void CMapManager::Load() // OK
 
 void CMapManager::LoadWorld(int Map)
 {
-    if (Map == 32 && this->WorldActive == 32)
+    if (Map == this->WorldActive)
     {
-        Map = this->WorldActive = 9;
+        Map = this->WorldActive = World::Maps::ClientMapNumber(Map);
     }
 
     this->DeleteObjects();
@@ -1212,24 +1199,7 @@ void CMapManager::LoadWorld(int Map)
 
     wchar_t FileName[64];
     wchar_t WorldName[32];
-    int  iMapWorld = this->WorldActive + 1;
-
-    if (InBloodCastle(Map) == true)
-    {
-        iMapWorld = WD_11BLOODCASTLE1 + 1;
-    }
-    else if (gMapManager.InHellas(Map) == true)
-    {
-        iMapWorld = WD_24HELLAS + 1;
-    }
-    else if (InChaosCastle(Map) == true)
-    {
-        iMapWorld = WD_18CHAOS_CASTLE + 1;
-    }
-    else if (gMapManager.IsCursedTemple())
-    {
-        iMapWorld = WD_45CURSEDTEMPLE_LV1 + 2;
-    }
+    const int iMapWorld = World::Maps::AssetWorldNumber(this->WorldActive);
 
     battleCastle::Init();
 

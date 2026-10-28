@@ -21,7 +21,8 @@ int ReadUInt16(std::span<const std::uint8_t> file, std::size_t offset)
 
 bool IsReadableFormat(const Header& header, int maxWidth, int maxHeight)
 {
-    return header.bitsPerPixel == ReadableBitsPerPixel && IsReadableTextureSize(header.width, header.height) &&
+    return header.bitsPerPixel == ReadableBitsPerPixel && header.width > 0 && header.height > 0 &&
+           header.width <= MaxUpscaledTextureDimension && header.height <= MaxUpscaledTextureDimension &&
            header.width <= maxWidth && header.height <= maxHeight;
 }
 
@@ -41,11 +42,11 @@ bool HasReadableLayout(std::span<const std::uint8_t> file)
 bool CanCopyPixels(std::span<const std::uint8_t> file, const Header& header,
                    std::span<std::uint8_t> texture, int textureWidth)
 {
-    const Header checked = ReadHeader(file, MaxTextureDimension, MaxTextureDimension);
+    const Header checked = ReadHeader(file, MaxUpscaledTextureDimension, MaxUpscaledTextureDimension);
     if (header.status != Status::Valid || checked.status != Status::Valid ||
         header.width != checked.width || header.height != checked.height ||
         header.bitsPerPixel != checked.bitsPerPixel || textureWidth < header.width ||
-        textureWidth > MaxTextureDimension)
+        textureWidth > MaxUpscaledTextureDimension)
     {
         return false;
     }

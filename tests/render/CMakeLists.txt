@@ -88,6 +88,11 @@ mu_add_test(
 )
 
 mu_add_test(
+    NAME terrain_texture_scale_tests
+    SOURCES test_terrain_texture_scale.cpp
+)
+
+mu_add_test(
     NAME sdl_gpu_replay_state_tests
     SOURCES
         test_sdl_gpu_replay_state.cpp

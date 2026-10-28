@@ -69,6 +69,7 @@ void WriteTga(const std::filesystem::path& path, std::uint8_t shade = 0)
 {
     // OZT has sixteen prefix bytes followed by width/height, depth and pixels.
     std::array<std::uint8_t, 22 + 16> bytes{};
+    bytes[6] = 2; // Uncompressed true-color TGA, after the four-byte OZT prefix.
     bytes[16] = 2;
     bytes[18] = 2;
     bytes[20] = 32;

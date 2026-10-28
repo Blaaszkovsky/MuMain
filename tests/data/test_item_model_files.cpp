@@ -31,6 +31,8 @@
 #ifdef _EDITOR
 #include "UI/ItemTools/ItemHeldByCharacter.h"
 #endif
+#include "Data/DataHandler/LoadData.h"
+#include "Core/Utilities/Log/MuLogger.h"
 
 #include <algorithm>
 #include <array>
@@ -47,6 +49,44 @@
 #include <vector>
 
 using namespace Data::Items;
+
+TEST_CASE("sparse model probes skip absence but preserve required and corrupt file diagnostics")
+{
+    TestModelSlots slots;
+    CLoadData loader;
+    const auto directory = std::filesystem::temp_directory_path() /
+        ("mu_model_probe_" + std::to_string(GetCurrentProcessId()));
+    std::filesystem::create_directories(directory);
+    const std::wstring folder = directory.wstring() + L'/';
+    mu::log::Init(directory);
+    const auto logger = mu::log::Get("core");
+    // Capture through the real file sink so ErrorReport's shared logger is covered too.
+    REQUIRE_FALSE(loader.AccessModel(0, folder.c_str(), L"Object", 1, true));
+    {
+        constexpr std::array<unsigned char, 42> placeholder{'B', 'M', 'D'};
+        std::ofstream file(directory / "Empty.bmd", std::ios::binary);
+        file.write(reinterpret_cast<const char*>(placeholder.data()), placeholder.size());
+    }
+    REQUIRE_FALSE(loader.AccessModel(1, folder.c_str(), L"Empty", -1, true));
+    logger->flush();
+    std::ifstream optionalLog(directory / "MuError.log");
+    const std::string optionalContents{std::istreambuf_iterator<char>(optionalLog), {}};
+    CHECK(optionalContents.find("AccessModel failed") == std::string::npos);
+    REQUIRE_FALSE(loader.AccessModel(0, folder.c_str(), L"Required"));
+    {
+        std::ofstream corrupt(directory / "Corrupt.bmd", std::ios::binary);
+        corrupt << "bad";
+    }
+    REQUIRE_FALSE(loader.AccessModel(1, folder.c_str(), L"Corrupt", -1, true));
+    mu::log::Shutdown();
+    std::ifstream log(directory / "MuError.log");
+    const std::string contents{std::istreambuf_iterator<char>(log), {}};
+    CHECK(contents.find("Required.bmd") != std::string::npos);
+    CHECK(contents.find("Corrupt.bmd") != std::string::npos);
+    log.close();
+    optionalLog.close();
+    std::filesystem::remove_all(directory);
+}
 
 // These tests read the item models shipped in src/bin/Data, so broken model
 // data is caught before it is merged.

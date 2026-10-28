@@ -185,7 +185,7 @@ TEST_CASE("nothing is copied from an OZT file that is too small [render][ozt_fil
 TEST_CASE("OZT rejects dimensions above the resource cap even with a larger caller limit [render][ozt_file]")
 {
     auto file = MakeOzt(1, 1);
-    WriteUInt16(file, WidthOffset, 2049);
+    WriteUInt16(file, WidthOffset, 4097);
     CHECK(Ozt::ReadHeader(file, 65535, 65535).status == Ozt::Status::InvalidFormat);
 }
 
@@ -222,6 +222,19 @@ TEST_CASE("texture dimensions bound allocation before multiplication [render][oz
     CHECK_FALSE(IsReadableTextureSize(1, 2049));
     CHECK_FALSE(IsReadableTextureSize(-1, 1));
     CHECK_FALSE(IsReadableTextureSize(std::numeric_limits<int>::max(), 1));
+}
+
+TEST_CASE("marked texture packs can decode and copy wide upscaled OZT files [render][ozt_file]")
+{
+    const auto file = MakeOzt(4096, 2);
+    CHECK(Ozt::ReadHeader(file, 2048, 2048).status == Ozt::Status::InvalidFormat);
+    const auto header = Ozt::ReadHeader(file, 4096, 4096);
+    REQUIRE(header.status == Ozt::Status::Valid);
+    std::vector<std::uint8_t> target(4096u * 2u * Ozt::BytesPerPixel, 0xAA);
+    Ozt::CopyPixels(file, header, target, 4096);
+    CHECK(target[0] == file[Ozt::HeaderSize + 4096u * Ozt::BytesPerPixel + 2u]);
+    CHECK(target[3] == file[Ozt::HeaderSize + 4096u * Ozt::BytesPerPixel + 3u]);
+    CHECK(Ozt::ReadHeader(MakeOzt(4097, 1), 8192, 8192).status == Ozt::Status::InvalidFormat);
 }
 
 TEST_CASE("texture file input is bounded before its buffer allocation [render][ozt_file]")

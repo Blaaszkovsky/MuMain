@@ -28,8 +28,9 @@ cube/volume maps, extra/truncated surfaces and other compression are refused.
 Images over MuMain's 2048x2048 texture limit, animated images, and higher precision
 PNG are refused rather than resized, flattened, or quantized.
 
-The matching client reader caps file input at 32 MiB before allocation and each
-image at 2048x2048 (at most 16 MiB RGBA). The tool uses the same limits. Older
+The tool caps file input at 32 MiB and each output image at 2048x2048
+(at most 16 MiB RGBA). The client also accepts marked texture-pack images up to
+4096x4096 and caps file input at 72 MiB before allocation. Older
 clients with a 1024x1024 cap still reject larger outputs; deploy a matching client
 only after its loader and actual GPU upload have been verified. RLE TGA is
 normalized offline; the runtime reader accepts only raw bottom-first 32-bit TGA

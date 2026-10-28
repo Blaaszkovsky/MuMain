@@ -4,6 +4,9 @@
 #include <fstream>
 #include <iterator>
 #include <cstdio>
+#include <chrono>
+#include <cstdlib>
+#include <thread>
 
 #ifdef _WIN32
 #include <io.h>
@@ -180,4 +183,32 @@ TEST_CASE("SDL bridge writes named diagnostics to MuError.log")
     CHECK(logContents.find("[sdl] [info] video: SDL log bridge self-check") != std::string::npos);
     CHECK(logContents.find("[sdl] [info] video: SDL log bridge survives a nested guard") != std::string::npos);
     std::filesystem::remove_all(directory);
+}
+
+TEST_CASE("rotating logger retains recent records")
+{
+    const char* sharedDirectory = std::getenv("MU_TEST_LOG_DIRECTORY");
+    const auto directory = sharedDirectory ? std::filesystem::path(sharedDirectory) : TestDirectory("mu_logger_rotate");
+    if (!sharedDirectory)
+        std::filesystem::remove_all(directory);
+    mu::log::Init(directory);
+    // The multiprocess regression runner starts peers during this ownership window.
+    if (sharedDirectory)
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    const auto logger = mu::log::Get("core");
+    int errors = 0;
+    logger->set_error_handler([&](const std::string&) { ++errors; });
+    const std::string payload(100000, 'x');
+    for (int record = 0; record < 220; ++record)
+        logger->info("writer={} record={} {}", GetCurrentProcessId(), record, payload);
+    logger->info("rotation-complete={}", GetCurrentProcessId());
+    mu::log::Shutdown();
+    CHECK(errors == 0);
+    if (!sharedDirectory)
+    {
+        CHECK(ReadFile(directory / "MuError.log").find("rotation-complete=") != std::string::npos);
+        CHECK(std::filesystem::exists(directory / "MuError.3.log"));
+        CHECK_FALSE(std::filesystem::exists(directory / "MuError.4.log"));
+        std::filesystem::remove_all(directory);
+    }
 }

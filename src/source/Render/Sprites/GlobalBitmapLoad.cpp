@@ -575,8 +575,10 @@ bool CGlobalBitmap::LoadJpegFile(GLuint uiBitmapIndex, const std::wstring& filen
 
     // A marked file holds an image up to its scale times the largest original.
     const int markedScale = Render::Textures::Upscale::ReadMarkedScale(jpegBuf);
-    const int maxWidth = Render::Sprites::kBitmapMaximumWidth * markedScale;
-    const int maxHeight = Render::Sprites::kBitmapMaximumHeight * markedScale;
+    const int maxWidth = std::max(Render::Textures::MaxTextureDimension,
+                                  Render::Sprites::kBitmapMaximumWidth * markedScale);
+    const int maxHeight = std::max(Render::Textures::MaxTextureDimension,
+                                   Render::Sprites::kBitmapMaximumHeight * markedScale);
 
     // Skip first 24 bytes (OZJ header)
     const unsigned char* jpegData = jpegBuf.data() + 24;
@@ -709,8 +711,10 @@ bool CGlobalBitmap::LoadTgaFile(GLuint uiBitmapIndex, const std::wstring& filena
 
     // A marked file holds an image up to its scale times the largest original.
     const int markedScale = Render::Textures::Upscale::ReadMarkedScale(pakBuffer);
-    const int maxWidth = Render::Sprites::kBitmapMaximumWidth * markedScale;
-    const int maxHeight = Render::Sprites::kBitmapMaximumHeight * markedScale;
+    const int maxWidth = std::max(Render::Textures::MaxTextureDimension,
+                                  Render::Sprites::kBitmapMaximumWidth * markedScale);
+    const int maxHeight = std::max(Render::Textures::MaxTextureDimension,
+                                   Render::Sprites::kBitmapMaximumHeight * markedScale);
 
     // A file cut off in its header or its pixels is too small.
     const Ozt::Header header = Ozt::ReadHeader(pakBuffer, maxWidth, maxHeight);

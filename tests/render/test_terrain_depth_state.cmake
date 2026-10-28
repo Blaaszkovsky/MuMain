@@ -21,7 +21,7 @@ function(isolate out_var start end)
 endfunction()
 
 isolate(layer_draw "static void RenderLayerFaces()" "void RenderFaceAlpha(")
-isolate(layer_faces "void RenderFaceAlpha(" "void FaceTexture(")
+isolate(layer_faces "void RenderFaceAlpha(" "bool FaceTexture(")
 isolate(terrain_pass "void RenderTerrain(bool EditFlag)" "void RenderTerrain_After(")
 
 foreach(forbidden IN ITEMS "DisableDepthTest()" "SetDepthTest(false)")

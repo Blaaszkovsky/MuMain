@@ -17,6 +17,7 @@
 #include "Render/Models/ZzzBMD.h"
 #include "ZzzLodTerrain.h"
 #include "TerrainHeightSamples.h"
+#include "TerrainTextureScale.h"
 #include "Engine/Pathing/ZzzPath.h"
 #include "Render/Textures/ZzzTexture.h"
 #include "Engine/Object/ZzzInfomation.h"
@@ -1534,22 +1535,17 @@ void RenderFaceBlend(int Texture, int mx, int my)
     s_layerFaces.push_back({Texture, true, {v0, v1, v2, v3}});
 }
 
-void FaceTexture(int Texture, float xf, float yf, bool Water, bool Scale)
+bool FaceTexture(int Texture, float xf, float yf, bool Water, bool Scale)
 {
+    const BITMAP_t* b = Bitmaps.FindTexture(BITMAP_MAPTILE + Texture);
+    float Width, Height;
+    if (b == nullptr || !Render::Terrain::CalculateTextureScale(b->Width, b->Height, Scale, Width, Height))
+    {
+        return false;
+    }
+
     vec3_t Light, Pos;
     Vector(0.30f, 0.40f, 0.20f, Light);
-    BITMAP_t* b = &Bitmaps[BITMAP_MAPTILE + Texture];
-    float Width, Height;
-    if (Scale)
-    {
-        Width = 16.f / b->Width;
-        Height = 16.f / b->Height;
-    }
-    else
-    {
-        Width = 64.f / b->Width;
-        Height = 64.f / b->Height;
-    }
     float suf = xf * Width;
     float svf = yf * Height;
     if (!Water)
@@ -1597,6 +1593,7 @@ void FaceTexture(int Texture, float xf, float yf, bool Water, bool Scale)
         TEXCOORD(TerrainTextureCoord[2], suf + Width + Water2, svf + Height + Water4);
         TEXCOORD(TerrainTextureCoord[3], suf + Water1, svf + Height + Water3);
     }
+    return true;
 }
 
 int WaterTextureNumber = 0;
@@ -1626,8 +1623,8 @@ void RenderTerrainFace(float xf, float yf, int xi, int yi, float lodf)
             if (Texture == 11 && (gMapManager.IsPKField() || IsDoppelGanger2()))
                 Water = true;
         }
-        FaceTexture(Texture, xf, yf, Water, false);
-        RenderFace(Texture, xi, yi);
+        if (FaceTexture(Texture, xf, yf, Water, false))
+            RenderFace(Texture, xi, yi);
 
         if (TerrainMappingAlpha[TerrainIndex1] > 0.f
             || TerrainMappingAlpha[TerrainIndex2] > 0.f
@@ -1637,8 +1634,8 @@ void RenderTerrainFace(float xf, float yf, int xi, int yi, float lodf)
             if ((gMapManager.WorldActive == WD_7ATLANSE || IsDoppelGanger3()) && TerrainMappingLayer2[TerrainIndex1] == 5)
             {
                 Texture = BITMAP_WATER - BITMAP_MAPTILE + WaterTextureNumber;
-                FaceTexture(Texture, xf, yf, false, true);
-                RenderFaceBlend(Texture, xi, yi);
+                if (FaceTexture(Texture, xf, yf, false, true))
+                    RenderFaceBlend(Texture, xi, yi);
             }
             else if (Alpha)
             {
@@ -1647,8 +1644,8 @@ void RenderTerrainFace(float xf, float yf, int xi, int yi, float lodf)
                     Water = false;
                 if (Texture != 255)
                 {
-                    FaceTexture(Texture, xf, yf, Water, false);
-                    RenderFaceAlpha(Texture, xi, yi);
+                    if (FaceTexture(Texture, xf, yf, Water, false))
+                        RenderFaceAlpha(Texture, xi, yi);
                 }
             }
         }
@@ -1741,8 +1738,8 @@ void RenderTerrainFace_After(float xf, float yf, int xi, int yi, float lodf)
                 Water = 1;
         }
 
-        FaceTexture(Texture, xf, yf, Water, false);
-        RenderFace_After(Texture, xi, yi);
+        if (FaceTexture(Texture, xf, yf, Water, false))
+            RenderFace_After(Texture, xi, yi);
     }
 }
 

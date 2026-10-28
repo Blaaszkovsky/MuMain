@@ -9,8 +9,10 @@ namespace Render::Textures
 {
 // Covers the imported 2048-square images with at most 16 MiB of RGBA pixels.
 inline constexpr int MaxTextureDimension = 2048;
-// Covers 4x upscaled raw images and metadata while bounding file allocation separately.
-inline constexpr std::size_t MaxTextureFileBytes = 272u * 1024u * 1024u;
+// The renderer accepts marked texture-pack images up to 4096, streamed through fixed staging slots.
+inline constexpr int MaxUpscaledTextureDimension = 4096;
+// Covers those raw images and metadata while bounding file allocation separately.
+inline constexpr std::size_t MaxTextureFileBytes = 72u * 1024u * 1024u;
 
 constexpr bool IsReadableTextureSize(int width, int height)
 {

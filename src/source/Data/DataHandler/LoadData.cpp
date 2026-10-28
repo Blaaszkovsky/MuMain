@@ -19,6 +19,9 @@
 #include <algorithm>
 #include <string>
 #include <utility>
+#include <algorithm>
+#include <array>
+#include <cerrno>
 
 CLoadData gLoadData;
 
@@ -48,11 +51,33 @@ std::wstring GetModelFileName(const wchar_t* FileName, int i)
     }
     return name + L".bmd";
 }
+
+bool IsUnusedModelCandidate(const std::wstring& path)
+{
+    FILE* file = _wfopen(path.c_str(), L"rb");
+    if (file == nullptr)
+        return errno == ENOENT;
+    // Original S6 world catalogues also contain this exact empty BMD0 placeholder.
+    constexpr std::array<unsigned char, 42> EmptyWorldModelFile{'B', 'M', 'D'};
+    std::array<unsigned char, EmptyWorldModelFile.size() + 1> data{};
+    const auto size = std::fread(data.data(), 1, data.size(), file);
+    std::fclose(file);
+    return size == EmptyWorldModelFile.size() &&
+           std::equal(EmptyWorldModelFile.begin(), EmptyWorldModelFile.end(), data.begin());
+}
 } // namespace
 
 bool CLoadData::AccessModel(int Type, const wchar_t* Dir, const wchar_t* FileName, int i, bool optional)
 {
     const std::wstring Name = GetModelFileName(FileName, i);
+
+    // Sparse catalogues skip missing/empty candidates, never unreadable or corrupt models.
+    if (optional && IsUnusedModelCandidate(std::wstring(Dir) + Name))
+    {
+        Models[Type].Release();
+        RememberModelFile(Type, {});
+        return false;
+    }
 
     bool Success = false;
 
@@ -64,15 +89,6 @@ bool CLoadData::AccessModel(int Type, const wchar_t* Dir, const wchar_t* FileNam
 
     if (Success == false)
     {
-        // An optional slot may have no file; only one that is there and fails to load is reported.
-        if (optional)
-        {
-            FILE* fp = _wfopen((std::wstring(Dir) + Name).c_str(), L"rb");
-            if (!fp)
-                return false;
-            fclose(fp);
-        }
-
         MU_LOG_ERROR(mu::log::Get("data"), "AccessModel failed: {}{} (Type={})", mu_wchar_to_utf8(Dir),
                      mu_wchar_to_utf8(Name.c_str()), Type);
 
