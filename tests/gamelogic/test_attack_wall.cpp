@@ -130,4 +130,3 @@ TEST_CASE("Attack wall checks preserve their passable terrain flags [combat][wal
         CHECK(CheckWall(10, 10, 12, 10));
     }
 }
-

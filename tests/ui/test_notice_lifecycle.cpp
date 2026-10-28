@@ -200,4 +200,3 @@ TEST_CASE("Local slide help resumes after the server notice fades away [ui][noti
     CHECK(display.text == help.text);
     CHECK(help.alpha > 0);
 }
-

@@ -110,7 +110,7 @@ TEST_CASE("Additional option profiles survive JSON and legacy import [data][item
 
     const ReadResult invalid = Read(GroupFile(12,
         R"({"number":245,"name":{"en":"Wings of Unity"},"additionalOptionProfile":"typo"})"));
-    CHECK(HasIssue(invalid.issues, ItemDataIssueSeverity::Error, "additionalOptionProfile"));
+    CHECK(HasIssue(invalid.issues, ItemDataIssueSeverity::Fatal, "additionalOptionProfile"));
 }
 
 TEST_CASE("Extended weapon damage survives JSON and runtime conversion [data][items]")
@@ -139,7 +139,7 @@ TEST_CASE("Weapon damage beyond the runtime word range is rejected [data][items]
 {
     const ReadResult result = Read(GroupFile(0,
         R"({"number": 0, "name": "Kris", "damageMin": 65536})"));
-    CHECK(HasIssue(result.issues, ItemDataIssueSeverity::Error, "damageMin"));
+    CHECK(HasIssue(result.issues, ItemDataIssueSeverity::Fatal, "damageMin"));
 }
 
 TEST_CASE("Item JSON leaves out default values [data][items]")
