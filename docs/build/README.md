@@ -235,7 +235,7 @@ special characters (e.g. umlauts break the AOT compiler `ilc`). Override with
 
 ### Locally versioned packet packages
 
-The Ferea client uses packet version `0.9.11-integration.20261028.1` in both
+The Ferea client uses packet version `0.9.11-integration.20261028.2` in both
 `ClientLibrary/MUnique.Client.Library.csproj` and `OPENMU_PACKETS_VERSION`.
 Restore that exact version from the matching release's local NuGet feed before
 configuring CMake. Keep the feed immutable and use a separate package cache;
@@ -243,19 +243,24 @@ do not replace the public `0.9.11` package in an existing cache.
 
 For example, from a Windows developer PowerShell, set `$packetCache` to a new
 cache directory and `$packetConfig` to the release's private `NuGet.Config`.
-That configuration must list the local release feed and NuGet.org as package
-sources; it must not replace the user's global NuGet configuration:
+That configuration lists the immutable local release feed, with verified existing
+package caches as fallback folders. Add NuGet.org only if a pinned dependency is
+unavailable there; do not replace the user's global NuGet configuration.
 
 ```powershell
 $env:NUGET_PACKAGES = $packetCache
-dotnet restore ClientLibrary/MUnique.Client.Library.csproj `
-    --packages "$packetCache" --configfile "$packetConfig"
-dotnet msbuild ClientLibrary/MUnique.Client.Library.csproj -t:PreBuild `
-    -p:Configuration=Release -p:PlatformTarget=x64 -m:2 -nodeReuse:false
+$env:RestoreConfigFile = $packetConfig
+$clientDotnet = Join-Path $env:LOCALAPPDATA "MU-S6/toolchains/dotnet-10.0.402/dotnet.exe"
+if ((& $clientDotnet --version) -ne "10.0.402") { throw "Expected .NET SDK 10.0.402." }
+& $clientDotnet restore ClientLibrary/MUnique.Client.Library.csproj `
+    --runtime win-x64 --packages "$packetCache" --configfile "$packetConfig" --disable-parallel
+
+& $clientDotnet msbuild ClientLibrary/MUnique.Client.Library.csproj -t:PreBuild `
+    -p:Configuration=Release -p:PlatformTarget=x64 -p:UseSharedCompilation=false -m:1 -nodeReuse:false
 cmake --preset windows-x64-mueditor `
-    "-DOPENMU_PACKETS_VERSION:STRING=0.9.11-integration.20261028.1" `
+    "-DOPENMU_PACKETS_VERSION:STRING=0.9.11-integration.20261028.2" `
     "-DMU_NUGET_CACHE_DIR:PATH=$packetCache"
-cmake --build --preset windows-x64-mueditor-release --parallel 2
+cmake --build --preset windows-x64-mueditor-release --parallel 1
 ```
 
 The existing XSLT target generates the managed senders, C++ wrappers and native
