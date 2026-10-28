@@ -950,7 +950,7 @@
       "slot": "helm",
       "statProfile": "armor",
       "level": 116,
-      "durability": 86,
+      "durability": 80,
       "defense": 35,
       "requirements": {
         "level": 380,

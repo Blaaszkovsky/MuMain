@@ -1010,6 +1010,13 @@ TEST_CASE("An item's full durability follows its level, options and magic durabi
     // The Skull Staff (5/0) and the Storm Blitz Stick (5/19) have no durability of their own, only a magic one.
     CHECK(full(5, 0, 0, 0, 0) == 20);
     CHECK(full(5, 19, 0, 0, 0) == 95);
+    // The Lilium/Eternal Wing set uses the current server's base durability for each equipment slot.
+    constexpr int SetDurability[] = {80, 84, 82, 80, 85};
+    for (int group = 7; group <= 11; ++group)
+    {
+        CAPTURE(group);
+        CHECK(full(group, 44, 0, 0, 0) == SetDurability[group - 7]);
+    }
     // The Dark Horse (13/4) is at 255 already; its excellent option's 15 more don't fit the byte.
     CHECK(full(13, 4, 0, 1, 0) == 255);
 }
