@@ -80,7 +80,7 @@ bladeMaster 10/40 ac8c91954418350c
 bladeMaster 10/41 c1c15f069b72e454
 bladeMaster 10/42 1f114f545e506eab
 bladeMaster 10/43 18b253171c33a967
-bladeMaster 10/44 23e25261a84af77f
+bladeMaster 10/44 85b85bac0c522cb3
 bladeMaster 10/45 7a07d338c452dfcf
 bladeMaster 10/46 9cd2be263a7258e3
 bladeMaster 10/47 9550063f729a8c06
@@ -143,7 +143,7 @@ bladeMaster 11/40 a42507e8754a14da
 bladeMaster 11/41 0f03498aa9a0bff8
 bladeMaster 11/42 9db3069c4e1abc1a
 bladeMaster 11/43 495a6e230e4e8277
-bladeMaster 11/44 8849fde98e4eb5cc
+bladeMaster 11/44 8e67d31a656a3005
 bladeMaster 11/45 a8d3eae1818b47b4
 bladeMaster 11/46 01b79c1ef9ee3c3d
 bladeMaster 11/47 43e18a009beeeb78
@@ -233,6 +233,9 @@ bladeMaster 12/21 22e19ed6d808e57a
 bladeMaster 12/22 38749b8804294a7c
 bladeMaster 12/23 1299975281754cee
 bladeMaster 12/24 b97487b9125d6a06
+bladeMaster 12/245 a6d0e4ebb891920e
+bladeMaster 12/248 e2df0241842b100c
+bladeMaster 12/249 0c64ace257debc63
 bladeMaster 12/26 19045843768c04f4
 bladeMaster 12/3 f4689563599f849d
 bladeMaster 12/30 f2535180cb906ec3
@@ -269,6 +272,8 @@ bladeMaster 12/7 6858dc16f8677350
 bladeMaster 12/70 942d31d890d20797
 bladeMaster 12/71 58ee955d99e9f9d3
 bladeMaster 12/72 86ec90ba24afdee1
+bladeMaster 12/73 9b909b91c4a964a3
+bladeMaster 12/74 295217d3a95b1ce5
 bladeMaster 12/8 910bb9619a037d2c
 bladeMaster 12/9 3611b12caafa251e
 bladeMaster 13/0 2481521267a81819
@@ -747,7 +752,7 @@ bladeMaster 7/40 a87de0198ec0349a
 bladeMaster 7/41 9cd268c347c46206
 bladeMaster 7/42 6f7ed608f9bd8d20
 bladeMaster 7/43 85f035c052b20406
-bladeMaster 7/44 9856877f488cc5ef
+bladeMaster 7/44 b99bdf26f2740843
 bladeMaster 7/45 d9e5b78fd64714c4
 bladeMaster 7/46 6bcf6fd7d84d01a9
 bladeMaster 7/49 c8432cfd388c4ee2
@@ -812,7 +817,7 @@ bladeMaster 8/40 91f9e82dcac91f3e
 bladeMaster 8/41 3cd8b2544a26ecd9
 bladeMaster 8/42 7968f6c47512dbf9
 bladeMaster 8/43 621c237874356a15
-bladeMaster 8/44 e3253196d716485b
+bladeMaster 8/44 95166a6d64d12aee
 bladeMaster 8/45 9beebd494c884258
 bladeMaster 8/46 6f23290c1d1f49f5
 bladeMaster 8/47 4b4a8840948863de
@@ -880,7 +885,7 @@ bladeMaster 9/40 97db3f83f132e193
 bladeMaster 9/41 3b313a8b5af24d1f
 bladeMaster 9/42 40e0b2765efa3859
 bladeMaster 9/43 fadc672029c941bd
-bladeMaster 9/44 aec41192ea02a785
+bladeMaster 9/44 c88a22808c746ae3
 bladeMaster 9/45 f97cacbad2ab17ac
 bladeMaster 9/46 6136082507011343
 bladeMaster 9/47 c9072acf2ce641b6
@@ -991,7 +996,7 @@ newDarkWizard 10/40 8dabfe83ed27df42
 newDarkWizard 10/41 9c92dde0d019091e
 newDarkWizard 10/42 0d0e60e42da33dd4
 newDarkWizard 10/43 76aa099e6cbc9445
-newDarkWizard 10/44 1ed9ca54ee5a217b
+newDarkWizard 10/44 9a067ece622c89b7
 newDarkWizard 10/45 af5e5d4b8dd27f8f
 newDarkWizard 10/46 1cd1e1233afeb2f2
 newDarkWizard 10/47 3a06fb516c954f81
@@ -1054,7 +1059,7 @@ newDarkWizard 11/40 50a591138c0dfdea
 newDarkWizard 11/41 201b3f1121e221ce
 newDarkWizard 11/42 2258be7b5c596974
 newDarkWizard 11/43 1bd2184ee26e5b21
-newDarkWizard 11/44 44bf4fad87de1ae3
+newDarkWizard 11/44 d0ac57ab669c35f6
 newDarkWizard 11/45 d1b11bdf7e7b3038
 newDarkWizard 11/46 fd895de67b73a687
 newDarkWizard 11/47 430111a9925ade2a
@@ -1144,6 +1149,9 @@ newDarkWizard 12/21 8f2a888145fb635a
 newDarkWizard 12/22 e415d5b832d15030
 newDarkWizard 12/23 d2beff6c1a13cba2
 newDarkWizard 12/24 568aa1287c24926a
+newDarkWizard 12/245 13ea01141d228596
+newDarkWizard 12/248 8d2cfd6ca8556698
+newDarkWizard 12/249 f667fb5a357f56f9
 newDarkWizard 12/26 19045843768c04f4
 newDarkWizard 12/3 6b766a9ca0010b49
 newDarkWizard 12/30 f2535180cb906ec3
@@ -1180,6 +1188,8 @@ newDarkWizard 12/7 2d65b91bddb11894
 newDarkWizard 12/70 942d31d890d20797
 newDarkWizard 12/71 58ee955d99e9f9d3
 newDarkWizard 12/72 86ec90ba24afdee1
+newDarkWizard 12/73 9b909b91c4a964a3
+newDarkWizard 12/74 295217d3a95b1ce5
 newDarkWizard 12/8 3ffb69216fe2dcd4
 newDarkWizard 12/9 b008a2738a761026
 newDarkWizard 13/0 1cd6e144457aab72
@@ -1658,7 +1668,7 @@ newDarkWizard 7/40 a613a1ea24121905
 newDarkWizard 7/41 f5c0802d7b08b670
 newDarkWizard 7/42 dee3fb07304d6aa2
 newDarkWizard 7/43 9dd8063a825e34c7
-newDarkWizard 7/44 ec90bbd3a1a9d868
+newDarkWizard 7/44 e8fb120f45dd5c4c
 newDarkWizard 7/45 1423f371c9d8df54
 newDarkWizard 7/46 a8e833a181d2ad7d
 newDarkWizard 7/49 41fff927def82ea9
@@ -1723,7 +1733,7 @@ newDarkWizard 8/40 99916ee6576c32fb
 newDarkWizard 8/41 8629ce9836c4b2de
 newDarkWizard 8/42 4dd155bfd2f4f179
 newDarkWizard 8/43 cd634729166a843f
-newDarkWizard 8/44 931eb6e5f79b5f66
+newDarkWizard 8/44 cc6d8753feb00a99
 newDarkWizard 8/45 6715eadcd0a44285
 newDarkWizard 8/46 79aabb0edfee7f62
 newDarkWizard 8/47 6710d1ab43718cc6
@@ -1791,7 +1801,7 @@ newDarkWizard 9/40 dd8292199072f412
 newDarkWizard 9/41 08a3b791690021f8
 newDarkWizard 9/42 9a6cdb03f54e5084
 newDarkWizard 9/43 47204b27c1aedde3
-newDarkWizard 9/44 4608875db99e73fc
+newDarkWizard 9/44 bbbb1e120dbd3654
 newDarkWizard 9/45 c4ebc57f3c5527f1
 newDarkWizard 9/46 5fe15d3f51e40994
 newDarkWizard 9/47 e6b139f9ede6ff0a
