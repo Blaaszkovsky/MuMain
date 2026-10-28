@@ -32,15 +32,16 @@ public:
     void Render();
 
 protected:
-    // RmlUi owns this presentation, including recovery after a missing document.
-    // There is no native/per-map bitmap fallback.
+    // An unavailable RmlUi document hides the banner; there is no native/bitmap fallback.
     void BuildRmlUi();
     void SyncView();
     void RefreshName();
+    void RefreshIcon();
     static void OnLocaleChanged(void* context) noexcept;
 
     void BindRmlModel(Rml::DataModelConstructor& c, UI::MapName::MapNameRmlModel& model);
-    UI::RmlBridge::ThemedView<UI::MapName::MapNameRmlModel> m_RmlView{"map_name",
+    UI::RmlBridge::ThemedView<UI::MapName::MapNameRmlModel> m_RmlView{
+        "map_name",
         [this](Rml::DataModelConstructor& c, UI::MapName::MapNameRmlModel& model) { BindRmlModel(c, model); },
         {{"Data/Interface/RmlUi/map_name.rml"}}};
 };

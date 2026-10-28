@@ -11,6 +11,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <filesystem>
+#include <string_view>
 #include <unordered_set>
 
 namespace UI::RmlBridge
@@ -80,7 +81,7 @@ std::optional<std::string> ExpandEnvironment(const std::string& source)
     return result;
 }
 
-bool FamilyAvailable(std::string family)
+bool FamilyAvailable(std::string family, Rml::Style::FontStyle style = Rml::Style::FontStyle::Normal)
 {
     auto* fonts = Rml::GetFontEngineInterface();
     if (!fonts)
@@ -88,8 +89,53 @@ bool FamilyAvailable(std::string family)
     std::transform(family.begin(), family.end(), family.begin(),
         [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     constexpr int probeSize = 16;
-    return fonts->GetFontFaceHandle(family, Rml::Style::FontStyle::Normal,
-                                    Rml::Style::FontWeight::Normal, probeSize) != 0;
+    return fonts->GetFontFaceHandle(family, style, Rml::Style::FontWeight::Normal, probeSize) != 0;
+}
+
+struct ResolvedFont
+{
+    std::string family;
+    Rml::Style::FontStyle style = Rml::Style::FontStyle::Normal;
+};
+
+std::optional<Rml::Style::FontStyle> ConfiguredStyle(const ThemeInheritance& theme, const std::string& familyToken)
+{
+    const auto setting = theme.GetSetting("Tokens", familyToken + "-style");
+    if (!setting)
+        return std::nullopt;
+    if (setting->value == "italic")
+        return Rml::Style::FontStyle::Italic;
+    if (setting->value == "normal")
+        return Rml::Style::FontStyle::Normal;
+    return std::nullopt;
+}
+
+std::optional<ResolvedFont> ResolveFont(const ThemeInheritance& theme, const std::string& familyToken)
+{
+    const auto configured = ConfiguredStyle(theme, familyToken);
+    const bool allowItalicOnly = familyToken == "font-map-name" || configured.has_value();
+    for (const auto& directory : theme.Directories())
+    {
+        const auto family = ThemeInheritance::ReadSetting(directory, "Tokens", familyToken);
+        if (!family)
+            continue;
+        if (configured && FamilyAvailable(*family, *configured))
+            return ResolvedFont{*family, *configured};
+        if (FamilyAvailable(*family))
+            return ResolvedFont{*family, Rml::Style::FontStyle::Normal};
+        if (allowItalicOnly && FamilyAvailable(*family, Rml::Style::FontStyle::Italic))
+            return ResolvedFont{*family, Rml::Style::FontStyle::Italic};
+    }
+    return std::nullopt;
+}
+
+std::optional<ResolvedFont> ResolveMapNameFallback(const ThemeInheritance& theme)
+{
+    const auto family = ResolveThemeFontToken(theme, "font-title");
+    if (!family)
+        return std::nullopt;
+    const auto style = ResolveThemeFontToken(theme, "font-title-style");
+    return ResolvedFont{*family, style == "italic" ? Rml::Style::FontStyle::Italic : Rml::Style::FontStyle::Normal};
 }
 } // namespace
 
@@ -145,13 +191,32 @@ std::optional<std::string> ResolveThemeFontToken(const ThemeInheritance& theme, 
     {
         return selected;
     }
-    for (const auto& directory : theme.Directories())
+
+    constexpr std::string_view styleSuffix = "-style";
+    const bool isStyle = token.ends_with(styleSuffix);
+    const std::string familyToken = isStyle ? token.substr(0, token.size() - styleSuffix.size()) : token;
+    if (isStyle && FollowsSelectedFont(familyToken) && !selected.empty() && FamilyAvailable(selected))
     {
-        const auto family = ThemeInheritance::ReadSetting(directory, "Tokens", token);
-        if (family && FamilyAvailable(*family))
-            return family;
+        const auto configured = ConfiguredStyle(theme, familyToken);
+        if (configured && FamilyAvailable(selected, *configured))
+            return *configured == Rml::Style::FontStyle::Italic ? "italic" : "normal";
+        for (const auto style : {Rml::Style::FontStyle::Normal, Rml::Style::FontStyle::Italic})
+            if (FamilyAvailable(selected, style))
+                return style == Rml::Style::FontStyle::Italic ? "italic" : "normal";
     }
+    auto resolved = ResolveFont(theme, familyToken);
+    if (!resolved && familyToken == "font-map-name")
+        resolved = ResolveMapNameFallback(theme);
+    if (resolved)
+    {
+        if (isStyle)
+            return resolved->style == Rml::Style::FontStyle::Italic ? "italic" : "normal";
+        return resolved->family;
+    }
+
     constexpr const char* bundledFamily = "Liberation Sans";
+    if (isStyle)
+        return "normal";
     return FamilyAvailable(bundledFamily) ? std::optional<std::string>(bundledFamily) : std::nullopt;
 }
 } // namespace UI::RmlBridge

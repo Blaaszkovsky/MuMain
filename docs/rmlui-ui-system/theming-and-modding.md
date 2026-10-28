@@ -139,13 +139,46 @@ and inheritance cycles make a theme unavailable for selection.
 
 ## Map-name banner
 
-The world-entry map banner uses localized text and shared decoration in both maintained themes.
-Adding a map name no longer needs an individual name image. Map names come from the game's
-localization resources; an unrecognized map displays “Unknown map”. The Gens warning still appears
-on eligible battle maps. Font, color, width, wrapping and placement are editable in each theme's
-`map_name.rcss`; longer names grow the space between the ornaments. The shared reference atlas
-`Data/Interface/RmlUi/assets/MapName_I2.OZT` is a private, locally supplied asset and is not
-redistributed with the source. Without it, the localized title remains usable without decoration.
+The world-entry banner shows localized map names in both maintained themes. Its original
+166 x 90 ornament uses a swirl on each side and the map's own icon between them. Text has a
+separate, wider field (up to 384dp and 90% of the viewport) so long names keep their proportions.
+Adding a map name no longer needs an individual name image. Unrecognized maps and the GM area do
+not show a banner; other map-name displays use “Unknown map” when no name is defined. The Gens
+warning still appears at its original readable size on eligible battle maps.
+
+The pieces are in `Data/Interface/MapNameOrnament`, cut out of the original images by
+`tools/MapNameFont/ornament.py`:
+
+- `SwirlLeft.OZT`, `SwirlRight.OZT` and one icon per original image (`lorencia.OZT`, ...).
+- `Layout.json`: where each piece sat in the 166 x 90 image, in its pixels; the banner places
+  each map's icon there.
+- `MapIcons.json`: which icon each map shows, by map number. Give a new map an icon by adding
+  `{ "map": <number>, "icon": "<icon file name>" }`; a map without an entry shows only the swirls.
+
+Edit a theme's `map_name.rcss` to change the font size, colors, swirl places or the banner's
+placement. A name wider than the text field is reduced by changing its font size, preserving
+the letters' aspect ratio. Text is rasterized at its final screen size with a thin dark outline,
+without a glow or a transform that stretches a smaller glyph bitmap. The silver gradient follows
+the fitted font size. The banner uses `dp` layout directly; icon coordinates in `Layout.json`
+are reference pixels interpreted as `dp`.
+
+The map banner uses MU Map Name, a font bundled in `fonts/MuMapName-Italic.otf` and generated
+from the original client's map-name images (`tools/MapNameFont`), so any name in Latin, Polish
+or Cyrillic is written in the original lettering. It is italic only, at normal weight. The banner
+uses the bundled Noto fallback faces for Chinese and Japanese; Noto Sans JP supplies Japanese
+characters missing from the TC subset, including 帯, 廃 and 闘 in map names. A theme
+whose `font-map-name`
+family isn't available gets the theme's title font, including the player's selected title
+font. Liberation Sans is the final fallback if no title face is available. An unavailable
+RmlUi document leaves the banner hidden; there is no bitmap fallback.
+
+Change the family with `font-map-name` in the theme's `tokens.ini`, keeping the paired
+`font-family` and `font-style` token references in `map_name.rcss`. The matching style is
+detected automatically; set `font-map-name-style=normal` or `italic` in `tokens.ini` to
+prefer a face. A theme can name a locally installed font such as Monotype Corsiva after loading
+its file in `theme.ini`'s `[Fonts]` section (see Optional system fonts). If that style is unavailable, an available style is used so the
+name remains visible. The same paired `<font-token>-style` convention works for other
+theme font tokens. Other UI fonts retain their existing selection settings.
 
 ## Switching themes without relaunching
 

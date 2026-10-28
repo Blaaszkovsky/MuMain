@@ -91,6 +91,8 @@ void LoadBundledFonts()
     // keeps its own glyphs and punctuation, as in the native text renderer's fallback order.
     Rml::LoadFontFace("fonts/NotoSansTC-Regular.otf", true);
     Rml::LoadFontFace("fonts/NotoSansTC-Bold.otf");
+    // The TC subset lacks Japanese forms used by map names, including 帯, 廃 and 闘.
+    Rml::LoadFontFace("fonts/NotoSansJP-Regular.otf", true);
     Rml::LoadFontFace("fonts/NanumGothic-Regular.ttf", true);
 
     // Third, explicitly-named face -- already bundled for the legacy GDI text shim's own font
@@ -104,6 +106,10 @@ void LoadBundledFonts()
     // The native fixed-width face (kBundledFixedFont, BundledFonts.h), for text the original drew
     // with g_hFixFont -- the character list's server messages (server_msg.rcss).
     Rml::LoadFontFace("fonts/Cousine-Regular.ttf");
+
+    // The map banner's lettering ("MU Map Name", italic only), generated from the original
+    // client's map-name images by tools/MapNameFont. The themes name it as font-map-name.
+    Rml::LoadFontFace("fonts/MuMapName-Italic.otf");
 }
 } // namespace
 

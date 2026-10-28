@@ -20,10 +20,12 @@ mu_add_test(
     NAME map_name_tests
     SOURCES
         test_map_name.cpp
+        test_map_name_ornament.cpp
+        test_text_fit.cpp
         RmlLayoutFixture.cpp
         ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
     PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/bin"
-    LINK_LIBS MuClient
+    LINK_LIBS MuClient Freetype::Freetype
 )
 
 mu_add_test(

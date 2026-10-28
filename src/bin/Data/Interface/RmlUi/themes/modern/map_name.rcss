@@ -1,25 +1,19 @@
-/* Keep the entry HUD centered at its original 220/480 viewport-height anchor.
-   Normalize the 1024x768 OZG stage to the 480-high dp root at 0.625:
-   a 204px ornament and a 262px text field have separate widths.
-   Shared ornaments retain their proportions; the open middle grows for wrapped names.
-   The private MapName_I2 atlas is prepared offline from the reference OZD. */
-@spritesheet map-name-decoration
-{
-    src: "../../assets/MapName_I2.tga";
-    map-name-top: 0px 0px 204px 38px;
-    map-name-bottom: 0px 80px 204px 36px;
-}
-
+/* Layout and text use dp directly: glyphs rasterize at their final screen size.
+   Long names have room to retain the face's proportions; text-fit changes font size only. */
 body { pointer-events: none; }
-#banner { top: 45.8333%; width: 163.75dp; max-width: 90%; pointer-events: none; }
-#ornament_top { display: block; width: 127.5dp; max-width: 100%; margin: 0 auto; height: 23.75dp; decorator: image(map-name-top); }
-#ornament_bottom { display: block; width: 127.5dp; max-width: 100%; margin: 0 auto; height: 22.5dp; decorator: image(map-name-bottom); }
-#name {
-    min-height: 26.25dp;
-    display: flex; align-items: center; justify-content: center;
-    font-family: token(font-title); font-size: 15dp; font-weight: bold; line-height: 1.1;
-    color: #b8b6aa; font-effect: shadow(0.625dp 0.625dp #000000);
-    text-align: center;
+#banner { position: absolute; left: 0; right: 0; margin-left: auto; margin-right: auto; top: 45.8333%; width: 384dp; max-width: 90%; height: 90dp; pointer-events: none; }
+#ornaments { width: 166dp; height: 90dp; }
+.ornament { position: absolute; }
+#swirl_left { left: 2dp; top: 46dp; width: 54dp; height: 26dp; }
+#swirl_right { left: 109dp; top: 46dp; width: 55dp; height: 27dp; }
+#name_room {
+    position: absolute; left: 0; right: 0; top: -2dp; height: 50dp;
+    font-family: token(font-map-name); font-size: 50dp; font-weight: normal; font-style: token(font-map-name-style);
 }
-#name_text { max-width: 100%; word-break: break-word; }
-#strife { position: absolute; top: -14dp; width: 83dp; height: 14dp; }
+.name-layer { position: absolute; left: 0; right: 0; bottom: 0; }
+.text-fit { display: block; width: 100%; line-height: 1; text-align: center; white-space: nowrap; }
+/* A single thin screen-pixel edge preserves contrast without a blurred halo. */
+#name { color: #8e8b86; font-effect: outline(2px #100f0e); }
+/* em keeps the silver gradient aligned when the shared fitter reduces the font size. */
+#name_shine { color: #fafafa; mask-image: linear-gradient(to bottom, #ffffff 0.415em, #ffffff00 0.81em); }
+#strife { top: -28dp; width: 166dp; height: 28dp; }
