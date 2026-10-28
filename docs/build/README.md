@@ -235,7 +235,7 @@ special characters (e.g. umlauts break the AOT compiler `ilc`). Override with
 
 ### Locally versioned packet packages
 
-The Ferea client uses packet version `0.9.11-ferea.20261024.1` in both
+The Ferea client uses packet version `0.9.11-integration.20261028.1` in both
 `ClientLibrary/MUnique.Client.Library.csproj` and `OPENMU_PACKETS_VERSION`.
 Restore that exact version from the matching release's local NuGet feed before
 configuring CMake. Keep the feed immutable and use a separate package cache;
@@ -253,7 +253,7 @@ dotnet restore ClientLibrary/MUnique.Client.Library.csproj `
 dotnet msbuild ClientLibrary/MUnique.Client.Library.csproj -t:PreBuild `
     -p:Configuration=Release -p:PlatformTarget=x64 -m:2 -nodeReuse:false
 cmake --preset windows-x64-mueditor `
-    "-DOPENMU_PACKETS_VERSION:STRING=0.9.11-ferea.20261024.1" `
+    "-DOPENMU_PACKETS_VERSION:STRING=0.9.11-integration.20261028.1" `
     "-DMU_NUGET_CACHE_DIR:PATH=$packetCache"
 cmake --build --preset windows-x64-mueditor-release --parallel 2
 ```

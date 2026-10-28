@@ -15,7 +15,7 @@
     <WarningsAsErrors>nullable;CS4014;VSTHRD110;VSTHRD100</WarningsAsErrors>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <!-- The version of the packet definitions this client is built against. -->
-    <OpenMuPacketsVersion>0.9.11-ferea.20261024.1</OpenMuPacketsVersion>
+    <OpenMuPacketsVersion>0.9.11-integration.20261028.1</OpenMuPacketsVersion>
   </PropertyGroup>
 
   <ItemGroup>
