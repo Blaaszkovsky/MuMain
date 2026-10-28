@@ -1679,7 +1679,7 @@ void PacketFunctions_ClientToServer::SendIllusionTempleEnterRequest(BYTE mapNumb
     dotnet_SendIllusionTempleEnterRequest(this->GetHandle(), mapNumber, itemSlot);
 }
 
-void PacketFunctions_ClientToServer::SendIllusionTempleSkillRequest(uint16_t skillNumber, BYTE targetObjectIndex, BYTE distance)
+void PacketFunctions_ClientToServer::SendIllusionTempleSkillRequest(uint16_t skillNumber, uint16_t targetObjectIndex, BYTE distance)
 {
     static const auto dotnet_SendIllusionTempleSkillRequest = LoadManagedSymbol<::SendIllusionTempleSkillRequest>("SendIllusionTempleSkillRequest");
     if (!dotnet_SendIllusionTempleSkillRequest)
@@ -2139,4 +2139,37 @@ void PacketFunctions_ClientToServer::SendChatCommandListRequest()
     }
 
     dotnet_SendChatCommandListRequest(this->GetHandle());
+}
+
+void PacketFunctions_ClientToServer::SendDiscordIntegrationInfoRequest()
+{
+    static const auto dotnet_SendDiscordIntegrationInfoRequest = LoadManagedSymbol<::SendDiscordIntegrationInfoRequest>("SendDiscordIntegrationInfoRequest");
+    if (!dotnet_SendDiscordIntegrationInfoRequest)
+    {
+        return;
+    }
+
+    dotnet_SendDiscordIntegrationInfoRequest(this->GetHandle());
+}
+
+void PacketFunctions_ClientToServer::SendDiscordLinkCodeRequest()
+{
+    static const auto dotnet_SendDiscordLinkCodeRequest = LoadManagedSymbol<::SendDiscordLinkCodeRequest>("SendDiscordLinkCodeRequest");
+    if (!dotnet_SendDiscordLinkCodeRequest)
+    {
+        return;
+    }
+
+    dotnet_SendDiscordLinkCodeRequest(this->GetHandle());
+}
+
+void PacketFunctions_ClientToServer::SendDiscordUnlinkRequest()
+{
+    static const auto dotnet_SendDiscordUnlinkRequest = LoadManagedSymbol<::SendDiscordUnlinkRequest>("SendDiscordUnlinkRequest");
+    if (!dotnet_SendDiscordUnlinkRequest)
+    {
+        return;
+    }
+
+    dotnet_SendDiscordUnlinkRequest(this->GetHandle());
 }

@@ -205,6 +205,12 @@ that track silent for the rest of the audio session. Scene changes do not repeat
 retry it. After restoring or replacing a file under `Data/Music/`, restart the client
 to load it again.
 
+The runnable package also needs the original Season 6 `Data/Sound/` assets (including
+subfolders). Keep them alongside the matching game data; the source checkout and a
+compile-only build do not supply proprietary sounds. Missing required sounds and corrupt
+models remain errors. World model catalogue scans skip absent numbered candidates because
+maps have sparse model sets and effect-only placements; this does not substitute another model.
+
 ### Build without copying data
 
 Local builds copy `Data/` and `fonts/` by default. Packaging or compile-only
@@ -226,6 +232,37 @@ Defaults to `<repo>/.nuget` on all platforms (kept in-repo, already
 `.gitignore`d), which avoids failures when the user profile path contains
 special characters (e.g. umlauts break the AOT compiler `ilc`). Override with
 `-DMU_NUGET_CACHE_DIR=<path>`.
+
+### Locally versioned packet packages
+
+The Ferea client uses packet version `0.9.11-ferea.20261024.1` in both
+`ClientLibrary/MUnique.Client.Library.csproj` and `OPENMU_PACKETS_VERSION`.
+Restore that exact version from the matching release's local NuGet feed before
+configuring CMake. Keep the feed immutable and use a separate package cache;
+do not replace the public `0.9.11` package in an existing cache.
+
+For example, from a Windows developer PowerShell, set `$packetCache` to a new
+cache directory and `$packetConfig` to the release's private `NuGet.Config`.
+That configuration must list the local release feed and NuGet.org as package
+sources; it must not replace the user's global NuGet configuration:
+
+```powershell
+$env:NUGET_PACKAGES = $packetCache
+dotnet restore ClientLibrary/MUnique.Client.Library.csproj `
+    --packages "$packetCache" --configfile "$packetConfig"
+dotnet msbuild ClientLibrary/MUnique.Client.Library.csproj -t:PreBuild `
+    -p:Configuration=Release -p:PlatformTarget=x64 -m:2 -nodeReuse:false
+cmake --preset windows-x64-mueditor `
+    "-DOPENMU_PACKETS_VERSION:STRING=0.9.11-ferea.20261024.1" `
+    "-DMU_NUGET_CACHE_DIR:PATH=$packetCache"
+cmake --build --preset windows-x64-mueditor-release --parallel 2
+```
+
+The existing XSLT target generates the managed senders, C++ wrappers and native
+delegate declarations from the restored package XML. Build and package the
+matching NativeAOT library with `Main`; an older library can export the same
+function name while using a different parameter width. This workflow uses
+NuGet packages rather than assemblies from a running server checkout.
 
 ### How dotnet is found
 

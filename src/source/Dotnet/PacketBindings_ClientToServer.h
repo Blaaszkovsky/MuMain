@@ -322,7 +322,7 @@ typedef void(CORECLR_DELEGATE_CALLTYPE* SendPetInfoRequest)(int32_t, PetType , S
 
 typedef void(CORECLR_DELEGATE_CALLTYPE* SendIllusionTempleEnterRequest)(int32_t, BYTE , BYTE );
 
-typedef void(CORECLR_DELEGATE_CALLTYPE* SendIllusionTempleSkillRequest)(int32_t, uint16_t , BYTE , BYTE );
+typedef void(CORECLR_DELEGATE_CALLTYPE* SendIllusionTempleSkillRequest)(int32_t, uint16_t , uint16_t , BYTE );
 
 typedef void(CORECLR_DELEGATE_CALLTYPE* SendIllusionTempleRewardRequest)(int32_t);
 
@@ -405,3 +405,9 @@ typedef void(CORECLR_DELEGATE_CALLTYPE* SendDuelChannelJoinRequest)(int32_t, BYT
 typedef void(CORECLR_DELEGATE_CALLTYPE* SendDuelChannelQuitRequest)(int32_t);
 
 typedef void(CORECLR_DELEGATE_CALLTYPE* SendChatCommandListRequest)(int32_t);
+
+typedef void(CORECLR_DELEGATE_CALLTYPE* SendDiscordIntegrationInfoRequest)(int32_t);
+
+typedef void(CORECLR_DELEGATE_CALLTYPE* SendDiscordLinkCodeRequest)(int32_t);
+
+typedef void(CORECLR_DELEGATE_CALLTYPE* SendDiscordUnlinkRequest)(int32_t);

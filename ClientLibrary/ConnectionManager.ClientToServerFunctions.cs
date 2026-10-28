@@ -5381,7 +5381,7 @@ public unsafe partial class ConnectionManager
     /// Causes reaction on server side: The server checks if the player is inside the event etc. and performs the skills accordingly.
     /// </remarks>
     [UnmanagedCallersOnly(EntryPoint = "SendIllusionTempleSkillRequest")]
-    public static void SendIllusionTempleSkillRequest(int handle, ushort @skillNumber, byte @targetObjectIndex, byte @distance)
+    public static void SendIllusionTempleSkillRequest(int handle, ushort @skillNumber, ushort @targetObjectIndex, byte @distance)
     {
         if (!Connections.TryGetValue(handle, out var connection))
         {
@@ -6786,6 +6786,99 @@ public unsafe partial class ConnectionManager
             {
                 var length = ChatCommandListRequestRef.Length;
                 var packet = new ChatCommandListRequestRef(pipeWriter.GetSpan(length)[..length]);
+                return length;
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+        }
+    }
+
+    /// <summary>
+    /// Sends a <see cref="DiscordIntegrationInfoRequest" /> to this connection.
+    /// </summary>
+    /// <param name="handle">The handle of the connection.</param>
+    /// <remarks>
+    /// Is sent by the client when: A client which supports the Discord integration requests how the server is connected to Discord. It's usually sent after the character entered the game world, and again when the player opens a Discord dialog. By sending it, the client also announces that it understands the ExternalChatMessage.
+    /// Causes reaction on server side: The server sends a DiscordIntegrationInfo message, and from then on sends messages which were written in Discord as ExternalChatMessage.
+    /// </remarks>
+    [UnmanagedCallersOnly(EntryPoint = "SendDiscordIntegrationInfoRequest")]
+    public static void SendDiscordIntegrationInfoRequest(int handle)
+    {
+        if (!Connections.TryGetValue(handle, out var connection))
+        {
+            return;
+        }
+
+        try
+        {
+            connection.CreateAndSend(pipeWriter =>
+            {
+                var length = DiscordIntegrationInfoRequestRef.Length;
+                var packet = new DiscordIntegrationInfoRequestRef(pipeWriter.GetSpan(length)[..length]);
+                return length;
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+        }
+    }
+
+    /// <summary>
+    /// Sends a <see cref="DiscordLinkCodeRequest" /> to this connection.
+    /// </summary>
+    /// <param name="handle">The handle of the connection.</param>
+    /// <remarks>
+    /// Is sent by the client when: The player wants to link the account to a Discord user, e.g. with a button of a Discord dialog.
+    /// Causes reaction on server side: The server creates a one-time code and sends it with a DiscordLinkCode message. The player enters the code in Discord to complete the link.
+    /// </remarks>
+    [UnmanagedCallersOnly(EntryPoint = "SendDiscordLinkCodeRequest")]
+    public static void SendDiscordLinkCodeRequest(int handle)
+    {
+        if (!Connections.TryGetValue(handle, out var connection))
+        {
+            return;
+        }
+
+        try
+        {
+            connection.CreateAndSend(pipeWriter =>
+            {
+                var length = DiscordLinkCodeRequestRef.Length;
+                var packet = new DiscordLinkCodeRequestRef(pipeWriter.GetSpan(length)[..length]);
+                return length;
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+        }
+    }
+
+    /// <summary>
+    /// Sends a <see cref="DiscordUnlinkRequest" /> to this connection.
+    /// </summary>
+    /// <param name="handle">The handle of the connection.</param>
+    /// <remarks>
+    /// Is sent by the client when: The player wants to remove the link of the account to a Discord user.
+    /// Causes reaction on server side: The server removes the link and sends an updated DiscordIntegrationInfo message.
+    /// </remarks>
+    [UnmanagedCallersOnly(EntryPoint = "SendDiscordUnlinkRequest")]
+    public static void SendDiscordUnlinkRequest(int handle)
+    {
+        if (!Connections.TryGetValue(handle, out var connection))
+        {
+            return;
+        }
+
+        try
+        {
+            connection.CreateAndSend(pipeWriter =>
+            {
+                var length = DiscordUnlinkRequestRef.Length;
+                var packet = new DiscordUnlinkRequestRef(pipeWriter.GetSpan(length)[..length]);
                 return length;
             });
         }
