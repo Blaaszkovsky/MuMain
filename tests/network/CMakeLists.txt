@@ -50,6 +50,18 @@ mu_add_test(
         MuClient
 )
 
+if(WIN32 AND TARGET ClientLibrary)
+    mu_add_test(
+        NAME test_connection_lifetime
+        SOURCES
+            test_connection_lifetime.cpp
+            ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+        LINK_LIBS MuClient ws2_32
+        PROPERTIES WORKING_DIRECTORY "$<TARGET_FILE_DIR:Main>"
+    )
+    add_dependencies(test_connection_lifetime ClientLibrary)
+endif()
+
 mu_add_test(
     NAME test_siege_guild_list_packet
     SOURCES test_siege_guild_list_packet.cpp

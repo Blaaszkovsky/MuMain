@@ -7,6 +7,7 @@
 // Story: 3.2.1 - char16_t Encoding at .NET Interop Boundary
 
 #include <coreclr_delegates.h>
+#include <atomic>
 #include <filesystem>
 
 #include "Core/Platform/PlatformLibrary.h"
@@ -94,7 +95,7 @@ private:
     PacketFunctions_ConnectServer* _connectServer = {};
     PacketFunctions_ClientToServer* _gameServer = {};
 
-    int32_t _handle;
+    std::atomic<int32_t> _handle{};
     void (*_packetHandler)(int32_t, const BYTE*, int32_t);
     bool _firstPacketLogged = false;
 
@@ -112,7 +113,7 @@ public:
 
     int32_t GetHandle() const
     {
-        return _handle;
+        return _handle.load();
     }
 
     PacketFunctions_ChatServer* ToChatServer() const

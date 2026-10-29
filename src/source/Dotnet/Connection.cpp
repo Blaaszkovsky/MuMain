@@ -8,6 +8,7 @@
 
 #include "stdafx.h"
 #include <map>
+#include <mutex>
 
 #include "Connection.h"
 #include "DotNetMessageFormat.h"
@@ -86,7 +87,12 @@ void InitializeDotNetBridge()
     }
 }
 
+namespace
+{
+// Keep the target alive throughout dispatch; callbacks may close their own connection.
+std::recursive_mutex connectionsMutex;
 std::map<int32_t, Connection*> connections;
+}
 
 namespace DotNetBridge
 {
@@ -188,6 +194,7 @@ Send GetSend()
 
 void Connection::OnPacketReceivedS(const int32_t handle, const int32_t size, BYTE* data)
 {
+    const std::lock_guard lock(connectionsMutex);
     const auto it = connections.find(handle);
     if (it == connections.end())
     {
@@ -202,6 +209,7 @@ void Connection::OnPacketReceivedS(const int32_t handle, const int32_t size, BYT
 
 void Connection::OnDisconnectedS(const int32_t handle)
 {
+    const std::lock_guard lock(connectionsMutex);
     const auto it = connections.find(handle);
     if (it == connections.end())
     {
@@ -225,41 +233,51 @@ Connection::Connection(const char16_t* host, int32_t port, bool isEncrypted,
         return;
     }
 
-    this->_handle = connect(host, port, isEncrypted ? 1 : 0, &OnPacketReceivedS, &OnDisconnectedS);
+    const auto handle = connect(host, port, isEncrypted ? 1 : 0, &OnPacketReceivedS, &OnDisconnectedS);
+    this->_handle = handle;
 
     mu::log::Get("dotnet")->info("NET: dotnet_connect returned handle={} (encrypted={})",
-                                this->_handle, isEncrypted ? 1 : 0);
+                                handle, isEncrypted ? 1 : 0);
 
-    if (IsConnected())
+    if (handle > 0)
     {
-        connections[this->_handle] = this;
-        if (const auto beginReceive = GetBeginReceive())
-        {
-            beginReceive(this->_handle);
-            mu::log::Get("dotnet")->info("NET: BeginReceive started for handle={}", this->_handle);
-        }
-
         // cppcheck-suppress [noCopyConstructor, noOperatorEq]
         _chatServer = new PacketFunctions_ChatServer();
         _connectServer = new PacketFunctions_ConnectServer();
         _gameServer = new PacketFunctions_ClientToServer();
 
-        _chatServer->SetHandle(this->_handle);
-        _connectServer->SetHandle(this->_handle);
-        _gameServer->SetHandle(this->_handle);
+        _chatServer->SetHandle(handle);
+        _connectServer->SetHandle(handle);
+        _gameServer->SetHandle(handle);
+
+        {
+            const std::lock_guard lock(connectionsMutex);
+            connections[handle] = this;
+        }
+        if (const auto beginReceive = GetBeginReceive())
+        {
+            beginReceive(handle);
+            mu::log::Get("dotnet")->info("NET: BeginReceive started for handle={}", handle);
+        }
     }
 }
 
 Connection::~Connection()
 {
-    if (!IsConnected())
+    int32_t handle;
     {
-        return;
+        const std::lock_guard lock(connectionsMutex);
+        handle = this->_handle.exchange(0);
+        const auto it = connections.find(handle);
+        if (it != connections.end() && it->second == this)
+            connections.erase(it);
     }
 
-    if (const auto disconnect = GetDisconnect())
+    // Managed shutdown is asynchronous. Detach the callback target before requesting it.
+    if (handle > 0)
     {
-        disconnect(_handle);
+        if (const auto disconnect = GetDisconnect())
+            disconnect(handle);
     }
 
     SAFE_DELETE(_chatServer);
@@ -269,12 +287,13 @@ Connection::~Connection()
 
 bool Connection::IsConnected()
 {
-    return this->_handle > 0;
+    return GetHandle() > 0;
 }
 
 void Connection::Send(const BYTE* data, const int32_t size)
 {
-    if (!IsConnected())
+    const auto handle = GetHandle();
+    if (handle <= 0)
     {
         return;
     }
@@ -285,42 +304,49 @@ void Connection::Send(const BYTE* data, const int32_t size)
         return;
     }
 
-    send(this->_handle, data, size);
+    send(handle, data, size);
 }
 
 void Connection::Close()
 {
-    if (!IsConnected())
+    const auto handle = GetHandle();
+    if (handle <= 0)
     {
         return;
     }
 
     if (const auto disconnect = GetDisconnect())
     {
-        disconnect(this->_handle);
+        disconnect(handle);
     }
 }
 
 void Connection::OnDisconnected()
 {
-    if (!IsConnected())
+    const std::lock_guard lock(connectionsMutex);
+    const auto handle = this->_handle.exchange(0);
+    if (handle <= 0)
     {
         mu::log::Get("dotnet")->info("NET: OnDisconnected called but already disconnected");
         return;
     }
 
-    mu::log::Get("dotnet")->info("NET: OnDisconnected -- handle={}, erasing from connection map", this->_handle);
-    connections.erase(this->_handle);
-    this->_handle = 0;
+    mu::log::Get("dotnet")->info("NET: OnDisconnected -- handle={}, erasing from connection map", handle);
+    const auto it = connections.find(handle);
+    if (it != connections.end() && it->second == this)
+        connections.erase(it);
 }
 
 void Connection::OnPacketReceived(const BYTE* data, const int32_t size)
 {
+    const auto handle = GetHandle();
+    const auto packetHandler = this->_packetHandler;
     if (!this->_firstPacketLogged)
     {
         mu::log::Get("dotnet")->info("NET: First packet received -- handle={} size={} (callback path working)",
-                                    this->_handle, size);
+                                    handle, size);
         this->_firstPacketLogged = true;
     }
-    this->_packetHandler(this->_handle, data, size);
+    if (packetHandler)
+        packetHandler(handle, data, size);
 }
