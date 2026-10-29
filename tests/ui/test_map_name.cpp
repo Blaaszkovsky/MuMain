@@ -98,7 +98,7 @@ public:
         UI::RmlBridge::ClearThemeFontCache();
         UI::RmlBridge::SetContextResolver([this](std::string_view) { return context; });
         REQUIRE(Rml::LoadFontFace(std::string(MU_FONT_DIR) + "/NotoSansTC-Regular.otf", true));
-        REQUIRE(Rml::LoadFontFace(std::string(MU_FONT_DIR) + "/NotoSansJP-Regular.otf", true));
+        REQUIRE(Rml::LoadFontFace(std::string(MU_FONT_DIR) + "/NotoSansJP-Regular.otf"));
         I18N::SetLocale("en");
         g_ServerListManager->m_byNonPvP = 0;
     }
@@ -143,7 +143,9 @@ void CheckTextEffects(Rml::Element& text)
     CHECK(dimensions == Rml::Vector2i(14, 14));
 }
 
-void CheckSharpText(Rml::Element& text)
+// The width of the name's glyphs as drawn. The text-fit span always spans the room, so its own box
+// says nothing about whether the name fits.
+float GlyphRunWidth(Rml::Element& text)
 {
     auto* node = rmlui_dynamic_cast<Rml::ElementText*>(text.GetFirstChild());
     REQUIRE(node != nullptr);
@@ -151,8 +153,12 @@ void CheckSharpText(Rml::Element& text)
     const Rml::TextShapingContext shaping{values.language(), values.direction(), values.font_kerning(),
                                           values.letter_spacing()};
     REQUIRE(text.GetFontFaceHandle() != 0);
-    const int width = Rml::GetFontEngineInterface()->GetStringWidth(text.GetFontFaceHandle(), node->GetText(), shaping);
-    CHECK(width <= text.GetOffsetWidth() + PixelTolerance);
+    return static_cast<float>(
+        Rml::GetFontEngineInterface()->GetStringWidth(text.GetFontFaceHandle(), node->GetText(), shaping));
+}
+
+void CheckSharpText(Rml::Element& text)
+{
     Rml::Vector2f position, size;
     REQUIRE(UI::RmlBridge::DrawnBox(text, Rml::BoxArea::Border, position, size));
     const auto layout = text.GetBox().GetSize(Rml::BoxArea::Border);
@@ -171,6 +177,16 @@ void CheckShine(Rml::Element& shine, Rml::Element& text)
     const auto* mask = shine.GetProperty(Rml::PropertyId::MaskImage);
     REQUIRE(mask != nullptr);
     CHECK(mask->ToString().find("linear-gradient") != Rml::String::npos);
+}
+
+// Where the name's glyphs stand: the baseline of its one line, in drawn pixels.
+float DrawnBaseline(Rml::Element& text)
+{
+    Rml::Vector2f position, size;
+    REQUIRE(UI::RmlBridge::DrawnBox(text, Rml::BoxArea::Content, position, size));
+    REQUIRE(text.GetFontFaceHandle() != 0);
+    const auto& metrics = Rml::GetFontEngineInterface()->GetFontMetrics(text.GetFontFaceHandle());
+    return position.y + (text.GetLineHeight() - (metrics.ascent + metrics.descent)) * 0.5f + metrics.ascent;
 }
 
 void CheckBounds(Rml::Element& child, Rml::Element& parent)
@@ -367,6 +383,8 @@ TEST_CASE("map-name text uses final-size rasters without deformation across them
                                            {2560, 1440},
                                            {3440, 1440},
                                            {3840, 2160}})
+            {
+                float fullSizeBaseline = 0.f; // Lorencia's, the first name: it is never shrunk
                 for (const char* name :
                      {"Lorencia", "Balgass' Resting Place", "The Extremely Long Forgotten Refinery Tower",
                       "Żółć Привет", "冰風谷", "AnExceptionallyLongUnbrokenMapNameForWrapping"})
@@ -406,9 +424,14 @@ TEST_CASE("map-name text uses final-size rasters without deformation across them
                         // Fitting changes the raster font size; the drawn glyph geometry stays at 1:1.
                         Rml::Vector2f textPosition, textSize;
                         REQUIRE(UI::RmlBridge::DrawnBox(*text, Rml::BoxArea::Border, textPosition, textSize));
-                        CHECK(textSize.x <= document->GetElementById("name_room")->GetOffsetWidth() + PixelTolerance);
+                        CHECK(GlyphRunWidth(*text) <=
+                              document->GetElementById("name_room")->GetOffsetWidth() + PixelTolerance);
                         CHECK(textPosition.x + textSize.x / 2.f == doctest::Approx(viewport.x / 2.f).epsilon(0.002));
                         CHECK(textPosition.y + textSize.y <= position.y + size.y);
+                        // A shrunk name stays on the full-size baseline instead of sinking toward the swirls.
+                        if (std::string_view(name) == "Lorencia")
+                            fullSizeBaseline = DrawnBaseline(*text);
+                        CHECK(std::abs(DrawnBaseline(*text) - fullSizeBaseline) <= PixelTolerance);
                         if (warning)
                         {
                             Rml::Vector2f warningPosition, warningSize;
@@ -435,6 +458,7 @@ TEST_CASE("map-name text uses final-size rasters without deformation across them
                         REQUIRE(document->GetElementById("name_shine") != nullptr);
                         CheckShine(*document->GetElementById("name_shine"), *text);
                     }
+            }
     }
 }
 
@@ -468,15 +492,13 @@ TEST_CASE("map-name fitting follows same-name typography and room changes [ui][m
     CheckSharpText(*text);
     Rml::Vector2f position, size;
     REQUIRE(UI::RmlBridge::DrawnBox(*text, Rml::BoxArea::Border, position, size));
-    CHECK(size.x <=
-          room->GetOffsetWidth() * UI::RmlBridge::DrawnScale(*document->GetElementById("banner")) + PixelTolerance);
+    CHECK(GlyphRunWidth(*text) <= room->GetOffsetWidth() + PixelTolerance);
     REQUIRE(room->SetProperty("right", "40px"));
     fixture.Refresh();
     UI::RmlBridge::FitNativeTextToBoxes(fixture.context);
     fixture.context->Render(); // RmlUi resolves transform matrices when drawing.
     REQUIRE(UI::RmlBridge::DrawnBox(*text, Rml::BoxArea::Border, position, size));
-    CHECK(size.x <=
-          room->GetOffsetWidth() * UI::RmlBridge::DrawnScale(*document->GetElementById("banner")) + PixelTolerance);
+    CHECK(GlyphRunWidth(*text) <= room->GetOffsetWidth() + PixelTolerance);
     banner.SetText("A");
     fixture.Refresh();
     UI::RmlBridge::FitNativeTextToBoxes(fixture.context);
@@ -558,7 +580,7 @@ TEST_CASE("map-name bundled file is the italic MU Map Name face at normal weight
     CHECK(face(Rml::Style::FontStyle::Normal) == 0);
 }
 
-TEST_CASE("map-name Japanese fallback covers every named map [ui][map-name]")
+TEST_CASE("map-name Japanese face covers every Japanese map name [ui][map-name]")
 {
     MapNameFixture fixture;
     I18N::SetLocale("ja");
@@ -595,4 +617,42 @@ TEST_CASE("map-name banner retains the Ferea map after upstream integration [ui]
     CHECK(banner.Document()->IsVisible());
     CHECK(banner.Model().mapName == "Ferea");
     CHECK_FALSE(banner.Model().icon);
+}
+
+TEST_CASE("Japanese map names use the Japanese face on the full-size baseline [ui][map-name]")
+{
+    MapNameFixture fixture;
+    REQUIRE(Rml::LoadFontFace(std::string(MU_FONT_DIR) + "/MuMapName-Italic.otf"));
+    MapNameProbe banner;
+    banner.Init();
+    gMapManager.WorldActive = WD_0LORENCIA;
+    const auto show = [&](const char* locale)
+    {
+        I18N::SetLocale(locale);
+        banner.ShowMapName();
+        banner.Render();
+        fixture.Refresh();
+        UI::RmlBridge::FitNativeTextToBoxes(fixture.context);
+        fixture.Refresh();
+        Rml::Element* text = banner.Document()->GetElementById("name_text");
+        REQUIRE(text != nullptr);
+        return text;
+    };
+    for (const char* theme : {"legacy", "modern"})
+    {
+        CAPTURE(theme);
+        UI::RmlBridge::SetActiveThemeName(theme);
+        UI::RmlBridge::ReloadAllThemedDocuments();
+        Rml::Element* text = show("en");
+        CHECK(text->GetComputedValues().font_family() == "mu map name");
+        const float baseline = DrawnBaseline(*text);
+
+        text = show("ja");
+        CHECK(text->GetComputedValues().font_family() == "noto sans jp");
+        CHECK(text->GetComputedValues().font_style() == Rml::Style::FontStyle::Normal);
+        CHECK(std::abs(DrawnBaseline(*text) - baseline) <= PixelTolerance);
+
+        text = show("zh-TW");
+        CHECK(text->GetComputedValues().font_family() == "mu map name");
+    }
 }
