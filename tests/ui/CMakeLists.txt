@@ -38,13 +38,18 @@ mu_add_test(
     LINK_LIBS MuClient
 )
 
+set(event_entry_working_directory "${CMAKE_SOURCE_DIR}/src/bin")
+if(WIN32 AND TARGET ClientLibrary)
+    set(event_entry_working_directory "$<TARGET_FILE_DIR:Main>")
+endif()
+
 mu_add_test(
     NAME event_entry_dialog_tests
     SOURCES
         test_event_entry_dialog.cpp
         RmlLayoutFixture.cpp
         ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
-    PROPERTIES WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/src/bin"
+    PROPERTIES WORKING_DIRECTORY "${event_entry_working_directory}"
     LINK_LIBS MuClient
 )
 
@@ -87,6 +92,11 @@ target_compile_definitions(event_entry_dialog_tests PRIVATE
     MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
     MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
 )
+
+if(WIN32 AND TARGET ClientLibrary)
+    target_compile_definitions(event_entry_dialog_tests PRIVATE MU_TEST_NPC_AOT_TRANSPORT=1)
+    add_dependencies(event_entry_dialog_tests ClientLibrary)
+endif()
 target_compile_definitions(notice_lifecycle_tests PRIVATE
     MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
     MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"

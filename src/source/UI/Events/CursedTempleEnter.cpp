@@ -44,6 +44,12 @@ namespace
     const int EnterMinLevel[EnterLevelCount] = { 220, 271, 321, 351, 381 };
     const int EnterMaxLevel[EnterLevelCount] = { 270, 320, 350, 380, 400 };
 
+    void CloseEntryFromUser()
+    {
+        SocketClient->ToGameServer()->SendCloseNpcRequest();
+        g_pNewUISystem->Hide(mu::ui::window::INTERFACE_CURSEDTEMPLE_NPC);
+    }
+
     // RenderText() shrinks a text wider than its box to fit it: the size it drew `text` at.
     float TextPxInBox(UI::Scaling::FontRole role, const wchar_t* text, float boxWidth)
     {
@@ -169,7 +175,7 @@ bool mu::ui::window::CCursedTempleEnter::UpdateKeyEvent()
     {
         if (mu::ui::window::IsPress(VK_ESCAPE) == true)
         {
-            g_pNewUISystem->Hide(mu::ui::window::INTERFACE_CURSEDTEMPLE_NPC);
+            CloseEntryFromUser();
             return false;
         }
     }
@@ -202,7 +208,7 @@ bool mu::ui::window::CCursedTempleEnter::Update()
         return true;
     }
     if (close)
-        g_pNewUISystem->Hide(mu::ui::window::INTERFACE_CURSEDTEMPLE_NPC);
+        CloseEntryFromUser();
     return true;
 }
 
