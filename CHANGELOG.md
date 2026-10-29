@@ -1,3 +1,10 @@
+## Unreleased
+
+### Bug Fixes
+
+* **castle siege:** show the Senior's gate and statue status and purchase quotes from the server's NPC list.
+* **castle siege:** apply gate and statue purchase, repair and upgrade responses without misreading their NPC identifiers.
+
 ## [1.2.5](https://github.com/yesid-bocanegra/MuMain/compare/v1.2.4...v1.2.5) (2026-09-02)
 
 ### Bug Fixes

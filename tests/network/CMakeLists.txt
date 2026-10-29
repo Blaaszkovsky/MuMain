@@ -56,6 +56,14 @@ mu_add_test(
 )
 
 mu_add_test(
+    NAME test_siege_npc_list_packet
+    SOURCES
+        test_siege_npc_list_packet.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    LINK_LIBS MuClient
+)
+
+mu_add_test(
     NAME test_crown_access_state_packet
     SOURCES test_crown_access_state_packet.cpp
 )

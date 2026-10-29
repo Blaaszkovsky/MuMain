@@ -70,6 +70,8 @@
 #include "GameLogic/Events/SenatusInfo.h"
 #include "GameLogic/Events/SiegeRegistration.h"
 #include "Network/Server/SiegeGuildListPacket.h"
+#include "Network/Server/SiegeNpcListPacket.h"
+#include "Network/Server/SiegeNpcReplyPacket.h"
 #include "UI/Dialogs/ConfirmRequest.h"
 #include "UI/Inventory/TradeUpdates.h"
 #include "UI/Inventory/StorageUpdates.h"
@@ -10975,16 +10977,50 @@ void ReceiveBCRegMark(const BYTE* ReceiveBuffer)
     }
 }
 
-void ReceiveBCNPCBuy(const BYTE* ReceiveBuffer)
+namespace
 {
-    auto Data = (LPPMSG_ANS_NPCBUY)ReceiveBuffer;
-    switch (Data->btResult)
+PMSG_NPCDBLIST* FindSiegeNpcInfo(const Network::Packets::SiegeNpcReply& packet)
+{
+    constexpr std::uint32_t gateNumber = 277;
+    constexpr std::uint32_t statueNumber = 283;
+    constexpr std::uint32_t gateCount = 6;
+    constexpr std::uint32_t statueCount = 4;
+    const bool gate = packet.npcNumber == gateNumber && packet.npcIndex <= gateCount;
+    const bool statue = packet.npcNumber == statueNumber && packet.npcIndex <= statueCount;
+    if (packet.npcIndex == 0 || (!gate && !statue))
+        return nullptr;
+    return g_SenatusInfo.GetNPCInfo(static_cast<int>(packet.npcNumber), static_cast<int>(packet.npcIndex));
+}
+
+void ApplySiegeNpcUpgrade(const Network::Packets::SiegeNpcReply& packet)
+{
+    auto* npc = FindSiegeNpcInfo(packet);
+    if (!npc)
+        return;
+    if (packet.firstValue == 1)
+        npc->iNpcDfLevel = static_cast<int>(packet.secondValue);
+    else if (packet.firstValue == 2)
+        npc->iNpcRgLevel = static_cast<int>(packet.secondValue);
+    else if (packet.firstValue == 3)
+        npc->iNpcHp = npc->iNpcMaxHp = static_cast<int>(packet.secondValue);
+}
+} // namespace
+
+void ReceiveBCNPCBuy(const BYTE* ReceiveBuffer, int Size)
+{
+    if (Size < 0)
+        return;
+    const auto packet = Network::Packets::ReadSiegeNpcReply({ReceiveBuffer, static_cast<std::size_t>(Size)}, 0x05);
+    if (!packet)
+        return;
+    switch (packet->result)
     {
     case 0:
         UI::Chat::PostSystem(I18N::Game::FailedToPurchase, mu::ui::window::TYPE_SYSTEM_MESSAGE);
         break;
     case 1:
-        g_SenatusInfo.BuyNewNPC(Data->iNpcNumber, Data->iNpcIndex);
+        if (FindSiegeNpcInfo(*packet))
+            g_SenatusInfo.BuyNewNPC(static_cast<int>(packet->npcNumber), static_cast<int>(packet->npcIndex));
         break;
     case 2:
         UI::Chat::PostSystem(I18N::Game::NoAuthorization, mu::ui::window::TYPE_SYSTEM_MESSAGE);
@@ -10998,10 +11034,14 @@ void ReceiveBCNPCBuy(const BYTE* ReceiveBuffer)
     }
 }
 
-void ReceiveBCNPCRepair(const BYTE* ReceiveBuffer)
+void ReceiveBCNPCRepair(const BYTE* ReceiveBuffer, int Size)
 {
-    auto Data = (LPPMSG_ANS_NPCREPAIR)ReceiveBuffer;
-    switch (Data->btResult)
+    if (Size < 0)
+        return;
+    const auto packet = Network::Packets::ReadSiegeNpcReply({ReceiveBuffer, static_cast<std::size_t>(Size)}, 0x06);
+    if (!packet)
+        return;
+    switch (packet->result)
     {
     case 0:
     {
@@ -11011,10 +11051,11 @@ void ReceiveBCNPCRepair(const BYTE* ReceiveBuffer)
     break;
     case 1:
     {
-        LPPMSG_NPCDBLIST pNPCInfo = nullptr;
-        pNPCInfo = g_SenatusInfo.GetNPCInfo(Data->iNpcNumber, Data->iNpcIndex);
-        pNPCInfo->iNpcHp = Data->iNpcHP;
-        pNPCInfo->iNpcMaxHp = Data->iNpcMaxHP;
+        auto* npc = FindSiegeNpcInfo(*packet);
+        if (!npc)
+            return;
+        npc->iNpcHp = static_cast<int>(packet->firstValue);
+        npc->iNpcMaxHp = static_cast<int>(packet->secondValue);
     }
     break;
     case 2:
@@ -11026,25 +11067,20 @@ void ReceiveBCNPCRepair(const BYTE* ReceiveBuffer)
     }
 }
 
-void ReceiveBCNPCUpgrade(const BYTE* ReceiveBuffer)
+void ReceiveBCNPCUpgrade(const BYTE* ReceiveBuffer, int Size)
 {
-    auto Data = (LPPMSG_ANS_NPCUPGRADE)ReceiveBuffer;
-    switch (Data->btResult)
+    if (Size < 0)
+        return;
+    const auto packet = Network::Packets::ReadSiegeNpcReply({ReceiveBuffer, static_cast<std::size_t>(Size)}, 0x07);
+    if (!packet)
+        return;
+    switch (packet->result)
     {
     case 0:
         UI::Chat::PostSystem(I18N::Game::FailedToPurchase, mu::ui::window::TYPE_SYSTEM_MESSAGE);
         break;
     case 1:
-    {
-        LPPMSG_NPCDBLIST pNPCInfo = nullptr;
-        pNPCInfo = g_SenatusInfo.GetNPCInfo(Data->iNpcNumber, Data->iNpcIndex);
-        if (Data->iNpcUpType == 1)
-            pNPCInfo->iNpcDfLevel = Data->iNpcUpValue;
-        else if (Data->iNpcUpType == 2)
-            pNPCInfo->iNpcRgLevel = Data->iNpcUpValue;
-        else if (Data->iNpcUpType == 3)
-            pNPCInfo->iNpcHp = pNPCInfo->iNpcMaxHp = Data->iNpcUpValue;
-    }
+        ApplySiegeNpcUpgrade(*packet);
     break;
     case 2:
         UI::Chat::PostSystem(I18N::Game::NoAuthorization, mu::ui::window::TYPE_SYSTEM_MESSAGE);
@@ -11173,24 +11209,41 @@ void ReceiveHuntZoneEnter(const BYTE* ReceiveBuffer)
     }
 }
 
+namespace
+{
+PMSG_NPCDBLIST DecodeSiegeNpcInfo(std::span<const std::uint8_t, Network::Packets::SiegeNpcEntrySize> entry)
+{
+    const auto little32 = [entry](std::size_t offset)
+    {
+        return static_cast<INT>(std::uint32_t(entry[offset]) | (std::uint32_t(entry[offset + 1]) << 8)
+            | (std::uint32_t(entry[offset + 2]) << 16) | (std::uint32_t(entry[offset + 3]) << 24));
+    };
+    return {little32(0), little32(4), little32(8), little32(12), little32(16), little32(20),
+            entry[24], entry[25], entry[26]};
+}
+} // namespace
+
 void ReceiveBCNPCList(const BYTE* ReceiveBuffer, int Size)
 {
-    auto Data = (LPPMSG_ANS_NPCDBLIST)ReceiveBuffer;
-    int Offset = sizeof(PMSG_ANS_NPCDBLIST);
+    if (Size < 0)
+        return;
+    const auto packet = Network::Packets::ReadSiegeNpcList({ReceiveBuffer, static_cast<std::size_t>(Size)});
+    if (!packet)
+        return;
 
-    switch (Data->btResult)
+    switch (packet->result)
     {
     case 0:
         UI::Chat::PostSystem(I18N::Game::RequestHasFailed, mu::ui::window::TYPE_SYSTEM_MESSAGE);
         break;
     case 1:
     {
-        // The count is the server's; never read past the packet.
-        for (int i = 0; i < Data->iCount && Offset + static_cast<int>(sizeof(PMSG_NPCDBLIST)) <= Size; ++i)
+        constexpr auto entrySize = Network::Packets::SiegeNpcEntrySize;
+        for (std::size_t offset = 0; offset < packet->entries.size(); offset += entrySize)
         {
-            auto pNpcInfo = (LPPMSG_NPCDBLIST)(ReceiveBuffer + Offset);
-            g_SenatusInfo.SetNPCInfo(pNpcInfo);
-            Offset += sizeof(PMSG_NPCDBLIST);
+            const auto entry = std::span<const std::uint8_t, entrySize>(packet->entries.data() + offset, entrySize);
+            auto npcInfo = DecodeSiegeNpcInfo(entry);
+            g_SenatusInfo.SetNPCInfo(&npcInfo);
         }
     }
     break;
@@ -14232,13 +14285,13 @@ static void ProcessPacket(const BYTE* ReceiveBuffer, int32_t Size)
             ReceiveBCRegMark(ReceiveBuffer);
             break;
         case 0x05:
-            ReceiveBCNPCBuy(ReceiveBuffer);
+            ReceiveBCNPCBuy(ReceiveBuffer, Size);
             break;
         case 0x06:
-            ReceiveBCNPCRepair(ReceiveBuffer);
+            ReceiveBCNPCRepair(ReceiveBuffer, Size);
             break;
         case 0x07:
-            ReceiveBCNPCUpgrade(ReceiveBuffer);
+            ReceiveBCNPCUpgrade(ReceiveBuffer, Size);
             break;
         case 0x08:
             ReceiveBCGetTaxInfo(ReceiveBuffer);
