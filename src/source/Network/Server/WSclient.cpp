@@ -8062,7 +8062,7 @@ void ReceiveUnionList(const BYTE* ReceiveBuffer)
                     tmp[j] = pData2->GuildMark[j / 2] & 0x0f;
             }
 
-            wchar_t guildName[MAX_GUILDNAME + 1];
+            wchar_t guildName[MAX_GUILDNAME + 1]{};
             CMultiLanguage::ConvertFromUtf8(guildName, pData2->szGuildName, MAX_GUILDNAME);
 
             UI::Guild::AddAllianceGuild(std::span<const std::uint8_t, 64>(tmp), guildName, pData2->byMemberCount);
@@ -11550,7 +11550,7 @@ void ReceiveBattleCastleProcess(const BYTE* ReceiveBuffer)
 {
     auto pData = (LPPRECEIVE_BC_PROCESS)ReceiveBuffer;
 
-    wchar_t guildName[MAX_GUILDNAME + 1];
+    wchar_t guildName[MAX_GUILDNAME + 1]{};
     CMultiLanguage::ConvertFromUtf8(guildName, pData->m_szGuildName, MAX_GUILDNAME);
 
     switch (pData->m_byBasttleCastleState)
