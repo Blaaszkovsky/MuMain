@@ -615,7 +615,7 @@ file(MAKE_DIRECTORY "${MU_NUGET_CACHE_DIR}")
 # same package the .NET ClientLibrary consumes (see MUnique.Client.Library.csproj).
 # Sourcing from NuGet means a single versioned dependency instead of vendoring
 # the entire OpenMU repository as a submodule.
-set(OPENMU_PACKETS_VERSION "0.10.0-integration.20261029.3" CACHE STRING
+set(OPENMU_PACKETS_VERSION "0.10.0-integration.20261029.4" CACHE STRING
     "Version of MUnique.OpenMU.Network.Packets to source packet XML from")
 set(OPENMU_PACKETS_XML
     "${MU_NUGET_CACHE_DIR}/munique.openmu.network.packets/${OPENMU_PACKETS_VERSION}/contentFiles/any/net10.0/ServerToClient/ServerToClientPackets.xml")
