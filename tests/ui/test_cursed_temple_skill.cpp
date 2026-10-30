@@ -7,13 +7,17 @@
 #include "Engine/Object/ZzzCharacter.h"
 #include "Engine/Object/ZzzInfomation.h"
 #include "Engine/Object/ZzzInterface.h"
+#include "GameLogic/Events/w_CursedTemple.h"
+#include "Render/Effects/ZzzEffect.h"
 #include "Render/Models/ZzzBMD.h"
 #include "Render/Sprites/GpuUploadSkip.h"
 #include "Render/Sprites/GlobalBitmap.h"
 #include "Render/Textures/TextureFailure.h"
 #include "Scenes/SceneCore.h"
 #include "UI/Core/WindowSystem.h"
+#include "UI/Dialogs/CustomMessageBox.h"
 #include "UI/Events/CursedTempleSystem.h"
+#include "UI/RmlBridge/RmlTheme.h"
 #include "UI/RmlBridge/RmlThemedView.h"
 #include "World/MapInfra/MapManager.h"
 
@@ -38,6 +42,30 @@ constexpr BYTE SkillRange = 5;
 constexpr BYTE SkillCost = 5;
 constexpr BYTE SkillBudget = 20;
 constexpr DWORD MissingSelection = static_cast<DWORD>(-1);
+constexpr WORD StatueKey = 0x123;
+constexpr DWORD CaptureMilliseconds = 10000;
+
+// Exercise real progress callbacks and the manager's event queue without waiting ten seconds or
+// constructing the unrelated main-frame hotkey UI called by the progress box's per-frame tick.
+class QueuedTempleProgress : public mu::ui::window::CCursedTempleProgressMsgBox
+{
+public:
+    ~QueuedTempleProgress() override { if (destroyed) *destroyed = true; }
+    bool Update() override
+    {
+        if (GetCallbackFunc(mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_COMPLETEPROCESS) == nullptr)
+            return CCursedTempleProgressMsgBox::Update();
+        return true;
+    }
+    bool* destroyed = nullptr;
+};
+
+class QueuedOrdinaryProgress : public mu::ui::window::CProgressMsgBox
+{
+public:
+    bool Update() override { ++updates; return true; }
+    int updates = 0;
+};
 
 // End the real character table at an inaccessible page. Index400 must not silently read padding.
 class GuardedCharacters
@@ -137,18 +165,21 @@ private:
 class TempleSkillFixture : public UI::Tests::RmlLayoutFixture
 {
 public:
-    TempleSkillFixture()
+    explicit TempleSkillFixture(const char* theme = "legacy")
         : m_previousHero(Hero), m_previousCharacters(CharactersClient), m_previousModels(Models),
           m_previousMachine(CharacterMachine), m_previousAttribute(CharacterAttribute), m_previousSkills(SkillAttribute),
           m_previousSocket(SocketClient), m_previousScene(SceneFlag), m_previousWorld(gMapManager.WorldActive),
           m_previousSelection(SelectedCharacter), m_previousTargetX(TargetX), m_previousTargetY(TargetY),
           m_previousMousePush(MouseRButtonPush),
-          m_previousActive(g_bWndActive), m_previousLanguage(g_strSelectedML), m_previousDirectory(std::filesystem::current_path()),
+          m_previousActive(g_bWndActive), m_previousLanguage(g_strSelectedML),
+          m_previousTheme(UI::RmlBridge::GetActiveThemeName()), m_previousGauge(g_CursedTemple->IsGaugebarEnabled()),
+          m_previousDirectory(std::filesystem::current_path()),
           m_previousTextureCollector(Render::Textures::GetTextureErrorCollector()),
           m_models(std::make_unique<BMD[]>(MODEL_PLAYER + 1)), m_skills(std::make_unique<SKILL_ATTRIBUTE[]>(MAX_SKILLS))
     {
         std::filesystem::current_path(MU_BIN_DIR);
         UI::RmlBridge::SetContextResolver([this](std::string_view) { return context; });
+        UI::RmlBridge::SetActiveThemeName(theme);
         Render::Sprites::SetGpuUploadsSkipped(true);
         Render::Textures::SetTextureErrorCollector([](const std::string&) {});
         CharactersClient = m_table.characters;
@@ -197,6 +228,11 @@ public:
 
     ~TempleSkillFixture()
     {
+        for (const int slot : {0, TeamSlot, EnemySlot})
+        {
+            for (const int effect : std::array<int, 4>{MODEL_SKILL_INFERNO, MODEL_SHIELD_CRASH, BITMAP_SHOCK_WAVE, MODEL_FENRIR_THUNDER})
+                DeleteEffect(effect, &CharactersClient[slot].Object);
+        }
         m_window.reset();
         g_pNewUISystem->Release();
         Bitmaps.UnloadAllImages();
@@ -219,7 +255,40 @@ public:
         MouseRButtonPush = m_previousMousePush;
         g_bWndActive = m_previousActive;
         g_strSelectedML = m_previousLanguage;
+        UI::RmlBridge::SetActiveThemeName(m_previousTheme);
+        g_CursedTemple->SetGaugebarEnabled(m_previousGauge);
         std::filesystem::current_path(m_previousDirectory);
+    }
+
+    QueuedTempleProgress* StartProgress(bool& destroyed)
+    {
+        const mu::ui::window::CMessageBoxFactory::TContainer<QueuedTempleProgress> container;
+        auto* progress = g_MessageBox->NewMessageBox(container);
+        REQUIRE(progress != nullptr);
+        progress->destroyed = &destroyed;
+        REQUIRE(progress->Create(CaptureMilliseconds));
+        progress->SetNpcIndex(StatueKey);
+        g_CursedTemple->SetGaugebarEnabled(true);
+        ExpectTalk();
+        return progress;
+    }
+
+    void Resolve(bool succeeded, short target = HeroId, int skill = AT_SKILL_CURSED_TEMPLE_SUBLIMATION)
+    {
+        const std::array<int, 3> slots{0, TeamSlot, EnemySlot};
+        for (std::size_t i = 0; i < slots.size(); ++i)
+        {
+            if (!m_bones[i]) m_bones[i] = std::make_unique<vec34_t[]>(MAX_BONES);
+            CharactersClient[slots[i]].Object.BoneTransform = m_bones[i].get();
+        }
+        m_window->ResolveSkill({static_cast<WORD>(skill), EnemyId, static_cast<WORD>(target), succeeded});
+    }
+
+    void ExpectTalk()
+    {
+        // C3:30, NPC key big-endian, sent by the actual NativeAOT packet writer.
+        const std::vector<BYTE> expected{0xC3, 5, 0x30, static_cast<BYTE>(StatueKey >> 8), static_cast<BYTE>(StatueKey)};
+        CHECK(peer.Collect() == expected);
     }
 
     void Cast(int skill, DWORD selection)
@@ -277,12 +346,15 @@ private:
     bool m_previousMousePush;
     bool m_previousActive;
     std::wstring m_previousLanguage;
+    std::string m_previousTheme;
+    bool m_previousGauge;
     std::filesystem::path m_previousDirectory;
     Render::Textures::TextureErrorCollector m_previousTextureCollector;
     GuardedCharacters m_table;
     CHARACTER_MACHINE m_machine{};
     std::unique_ptr<BMD[]> m_models;
     std::unique_ptr<SKILL_ATTRIBUTE[]> m_skills;
+    std::array<std::unique_ptr<vec34_t[]>, 3> m_bones;
     std::unique_ptr<Connection> m_connection;
     std::unique_ptr<mu::ui::window::CCursedTempleSystem> m_window;
 };
@@ -342,5 +414,109 @@ TEST_CASE("Temple protection and tracking self-target without a selected charact
     {
         CAPTURE(skill);
         fixture.ExpectRequest(skill, MissingSelection, HeroId);
+    }
+}
+
+TEST_CASE("Shield burn interrupts local temple progress before queued completion can retry talk [ui][temple-skill][shield-burn-progress]")
+{
+    for (const char* theme : {"legacy", "modern"})
+    for (const bool completionFirst : {false, true})
+    {
+        CAPTURE(std::string(theme));
+        CAPTURE(completionFirst);
+        bool destroyed = false;
+        TempleSkillFixture fixture(theme);
+        auto* progress = fixture.StartProgress(destroyed);
+        if (completionFirst)
+            g_MessageBox->SendEvent(progress, mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_COMPLETEPROCESS);
+
+        fixture.Resolve(true);
+        CHECK(Hero->Object.CurrentAction == PLAYER_SHOCK);
+        if (!completionFirst)
+            g_MessageBox->SendEvent(progress, mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_COMPLETEPROCESS);
+
+        g_MessageBox->Update();
+        CHECK(destroyed);
+        CHECK(g_MessageBox->IsEmpty());
+        CHECK_FALSE(g_CursedTemple->IsGaugebarEnabled());
+        CHECK(fixture.peer.Collect().empty());
+        g_MessageBox->Update();
+        CHECK(fixture.peer.Collect().empty());
+    }
+}
+
+TEST_CASE("Rejected shield burn other targets and tracking preserve local temple completion [ui][temple-skill][shield-burn-progress]")
+{
+    for (const char* theme : {"legacy", "modern"})
+    for (const int scenario : {0, 1, 2})
+    {
+        CAPTURE(std::string(theme));
+        CAPTURE(scenario);
+        bool destroyed = false;
+        TempleSkillFixture fixture(theme);
+        auto* progress = fixture.StartProgress(destroyed);
+        const bool succeeded = scenario != 0;
+        const short target = scenario == 1 ? TeamId : HeroId;
+        const int skill = scenario == 2 ? AT_SKILL_CURSED_TEMPLE_TELEPORT : AT_SKILL_CURSED_TEMPLE_SUBLIMATION;
+        fixture.Resolve(succeeded, target, skill);
+        CHECK_FALSE(destroyed);
+        CHECK_FALSE(g_MessageBox->IsEmpty());
+        CHECK(g_CursedTemple->IsGaugebarEnabled());
+        g_MessageBox->SendEvent(progress, mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_COMPLETEPROCESS);
+        g_MessageBox->Update();
+        CHECK(destroyed);
+        fixture.ExpectTalk();
+    }
+}
+
+TEST_CASE("Shield burn preserves an unrelated progress notice [ui][temple-skill][shield-burn-progress]")
+{
+    for (const char* theme : {"legacy", "modern"})
+    {
+        CAPTURE(std::string(theme));
+        TempleSkillFixture fixture(theme);
+        const mu::ui::window::CMessageBoxFactory::TContainer<QueuedOrdinaryProgress> container;
+        auto* other = g_MessageBox->NewMessageBox(container);
+        REQUIRE(other != nullptr);
+        REQUIRE(other->Create(CaptureMilliseconds));
+        const auto close = other->GetCallbackFunc(mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_CLOSINGPROCESS);
+        REQUIRE(close != nullptr);
+        g_CursedTemple->SetGaugebarEnabled(true);
+        fixture.Resolve(true);
+        g_MessageBox->Update();
+        CHECK_FALSE(g_MessageBox->IsEmpty());
+        CHECK(other->GetCallbackFunc(mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_CLOSINGPROCESS) == close);
+        CHECK(g_CursedTemple->IsGaugebarEnabled());
+        CHECK(Hero->Object.CurrentAction == PLAYER_SHOCK);
+        CHECK(fixture.peer.Collect().empty());
+    }
+}
+
+TEST_CASE("Interrupted temple progress closes after an unrelated foreground notice [ui][temple-skill][shield-burn-progress][shield-burn-background]")
+{
+    for (const char* theme : {"legacy", "modern"})
+    {
+        CAPTURE(std::string(theme));
+        bool destroyed = false;
+        TempleSkillFixture fixture(theme);
+        const mu::ui::window::CMessageBoxFactory::TContainer<QueuedOrdinaryProgress> container;
+        auto* other = g_MessageBox->NewMessageBox(container);
+        REQUIRE(other != nullptr);
+        REQUIRE(other->Create(CaptureMilliseconds));
+        auto* progress = fixture.StartProgress(destroyed);
+        fixture.Resolve(true);
+        g_MessageBox->Update();
+        REQUIRE(other->updates == 1); // The unrelated notice really owned this manager tick.
+        CHECK_FALSE(destroyed);
+        CHECK_FALSE(g_MessageBox->IsEmpty());
+        CHECK(fixture.peer.Collect().empty());
+
+        g_MessageBox->SendEvent(other, mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_CLOSINGPROCESS);
+        g_MessageBox->Update();
+        g_MessageBox->Update(); // Temple progress becomes foreground after the ordinary close.
+        CHECK(destroyed);
+        CHECK(g_MessageBox->IsEmpty());
+        CHECK_FALSE(g_CursedTemple->IsGaugebarEnabled());
+        CHECK(fixture.peer.Collect().empty());
     }
 }

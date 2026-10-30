@@ -56,6 +56,17 @@ namespace
             || skill == AT_SKILL_CURSED_TEMPLE_SUBLIMATION;
     }
 
+    void InterruptTempleProgress()
+    {
+        auto* progress = g_MessageBox->FindMessageBox<mu::ui::window::CCursedTempleProgressMsgBox>();
+        if (progress == nullptr)
+            return;
+
+        // A completion already queued for this box must not start another server channel.
+        progress->RemoveCallbackFunc(mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_COMPLETEPROCESS);
+        g_MessageBox->SendEvent(progress, mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_CLOSINGPROCESS);
+    }
+
     const int HolyItemNpc = 380;
     const int AlliedNpc = 381;
     const int IllusionNpc = 382;
@@ -1247,6 +1258,9 @@ void mu::ui::window::CCursedTempleSystem::ResolveSkill(const UI::CursedTemple::S
     break;
     case AT_SKILL_CURSED_TEMPLE_SUBLIMATION:
     {
+        if (tc == Hero)
+            InterruptTempleProgress();
+
         SetAction(tco, PLAYER_SHOCK);
         effectresult = CreateCursedTempleSkillEffect(tc, AT_SKILL_CURSED_TEMPLE_SUBLIMATION, 0);
 

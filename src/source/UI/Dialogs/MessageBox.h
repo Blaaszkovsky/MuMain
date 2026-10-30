@@ -294,6 +294,17 @@ namespace mu::ui::window
             return pMsgBox;
         }
 
+        template <class T>
+        T* FindMessageBox() const
+        {
+            for (auto* box : m_vecMsgBoxes)
+            {
+                if (auto* match = dynamic_cast<T*>(box))
+                    return match;
+            }
+            return nullptr;
+        }
+
         void DeleteMessageBox(const CMessageBoxBase* pObj);
         void PopMessageBox();
         void PopAllMessageBoxes();

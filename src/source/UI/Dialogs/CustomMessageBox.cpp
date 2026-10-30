@@ -900,6 +900,14 @@ int mu::ui::window::CCursedTempleProgressMsgBox::SeparateText(const type_string&
 
 bool mu::ui::window::CCursedTempleProgressMsgBox::Update()
 {
+    if (GetCallbackFunc(MSGBOX_EVENT_USER_CUSTOM_PROGRESS_COMPLETEPROCESS) == nullptr)
+    {
+        // A close queued behind another notice can be discarded by the manager. Retry when this
+        // cancelled progress becomes foreground, without ever scheduling completion again.
+        g_MessageBox->SendEvent(this, MSGBOX_EVENT_USER_CUSTOM_PROGRESS_CLOSINGPROCESS);
+        return true;
+    }
+
     g_pMainFrame->UpdateItemHotKey();
 
     DWORD dwTime = timeGetTime();
