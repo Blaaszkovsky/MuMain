@@ -817,7 +817,7 @@ void CMapManager::Load() // OK
         LoadWaveFile(SOUND_GREAT_SHIELD, L"Data\\Sound\\eGreatShield.wav", 1);
     }
 
-    Data::Monsters::ModelLoader::OpenMapParts(this->WorldActive);
+    Data::Monsters::ModelLoader::OpenMapParts(GetServerMap(), GetServerStage());
 
     if (this->WorldActive != WD_7ATLANSE)
     {
@@ -959,12 +959,47 @@ void CMapManager::Load() // OK
     }
 }
 
+void CMapManager::SetServerMap(int serverMap)
+{
+    m_serverMap = serverMap;
+    WorldActive = GetLoadedWorld(serverMap);
+    m_serverMapWorld = WorldActive;
+}
+
+int CMapManager::GetServerMap() const
+{
+    return m_serverMapWorld == WorldActive ? m_serverMap : WorldActive;
+}
+
+bool CMapManager::IsServerMapLoaded(int serverMap) const
+{
+    return GetServerMap() == serverMap;
+}
+
+void CMapManager::SetServerStage(int stage)
+{
+    m_serverStage = stage;
+}
+
+int CMapManager::GetServerStage() const
+{
+    return m_serverMapWorld == WorldActive ? m_serverStage : 0;
+}
+
+int CMapManager::GetLoadedWorld(int serverMap)
+{
+    return World::Maps::ClientMapNumber(serverMap);
+}
+
+int CMapManager::GetFilesFolder(int serverMap)
+{
+    return World::Maps::AssetWorldNumber(serverMap);
+}
+
 void CMapManager::LoadWorld(int Map)
 {
-    if (Map == this->WorldActive)
-    {
-        Map = this->WorldActive = World::Maps::ClientMapNumber(Map);
-    }
+    SetServerMap(Map);
+    Map = this->WorldActive;
 
     this->DeleteObjects();
     DeleteNpcs();
@@ -988,7 +1023,7 @@ void CMapManager::LoadWorld(int Map)
 
     wchar_t FileName[64];
     wchar_t WorldName[32];
-    const int iMapWorld = World::Maps::AssetWorldNumber(this->WorldActive);
+    const int iMapWorld = GetFilesFolder(Map);
 
     battleCastle::Init();
 
@@ -1397,9 +1432,13 @@ bool CMapManager::IsPKField()
     return (this->WorldActive == WD_63PK_FIELD) ? true : false;
 }
 
-bool CMapManager::IsCursedTemple()
+bool CMapManager::IsCursedTemple(int iMap)
 {
-    return (this->WorldActive >= WD_45CURSEDTEMPLE_LV1 && this->WorldActive <= WD_45CURSEDTEMPLE_LV6) ? true : false;
+    if (iMap == -1)
+    {
+        iMap = this->WorldActive;
+    }
+    return iMap >= WD_45CURSEDTEMPLE_LV1 && iMap <= WD_45CURSEDTEMPLE_LV6;
 }
 
 bool CMapManager::IsEmpireGuardian1()
@@ -1452,7 +1491,6 @@ bool CMapManager::InBattleCastle(int iMap)
 namespace
 {
 constexpr int FereaMapId = 112;
-constexpr int SecondDevilSquareMapId = 32;
 
 const wchar_t* EventMapName(CMapManager& maps, int mapId)
 {
@@ -1462,7 +1500,7 @@ const wchar_t* EventMapName(CMapManager& maps, int mapId)
         return I18N::Game::ChaosCastle;
     if (maps.InHellas(mapId))
         return maps.InHiddenHellas(mapId) ? I18N::Game::LostKalima : I18N::Game::Kalima;
-    if (mapId >= WD_45CURSEDTEMPLE_LV1 && mapId <= WD_45CURSEDTEMPLE_LV6)
+    if (maps.IsCursedTemple(mapId))
         return I18N::Game::IllusionTemple;
     if (mapId >= WD_65DOPPLEGANGER1 && mapId <= WD_68DOPPLEGANGER4)
         return I18N::Game::Doppelganger;

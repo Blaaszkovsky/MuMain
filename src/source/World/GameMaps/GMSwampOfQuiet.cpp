@@ -2,7 +2,6 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "GameLogic/Monsters/MonsterAttackPlay.h"
 #include "Render/Textures/ZzzOpenglUtil.h"
 #include "Render/Textures/ZzzTexture.h"
 #include "Render/Models/ZzzBMD.h"
@@ -1242,22 +1241,4 @@ bool GMSwampOfQuiet::AttackEffectMonster(CHARACTER* pCharacter, OBJECT* pObject,
         return false;
 
     return false;
-}
-
-bool GMSwampOfQuiet::SetCurrentActionMonster(CHARACTER* pCharacter, OBJECT* pObject)
-{
-    if (!IsCurrentMap())
-        return false;
-
-    switch (pObject->Type)
-    {
-    case MODEL_MEDUSA:
-    case MODEL_SAPI_QUEEN:
-    case MODEL_WOLF_STATUS:
-    case MODEL_ICE_NAPIN:
-    case MODEL_SHADOW_MASTER:
-        return GameLogic::Monsters::Attacks::Play(*pCharacter, *pObject);
-    default:
-        return false;
-    }
 }
