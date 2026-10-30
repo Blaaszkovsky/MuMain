@@ -96,6 +96,26 @@ target_compile_definitions(event_entry_dialog_tests PRIVATE
 if(WIN32 AND TARGET ClientLibrary)
     target_compile_definitions(event_entry_dialog_tests PRIVATE MU_TEST_NPC_AOT_TRANSPORT=1)
     add_dependencies(event_entry_dialog_tests ClientLibrary)
+
+    mu_add_test(
+        NAME cursed_temple_skill_tests
+        SOURCES
+            test_cursed_temple_skill.cpp
+            RmlLayoutFixture.cpp
+            ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+        LINK_LIBS MuClient ws2_32
+        PROPERTIES WORKING_DIRECTORY "$<TARGET_FILE_DIR:Main>"
+    )
+    target_compile_definitions(cursed_temple_skill_tests PRIVATE
+        MU_BIN_DIR="${CMAKE_SOURCE_DIR}/src/bin"
+        MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
+        MU_FONT_DIR="${CMAKE_SOURCE_DIR}/src/bin/fonts"
+    )
+    add_dependencies(cursed_temple_skill_tests ClientLibrary)
+    if(MSVC)
+        target_compile_options(cursed_temple_skill_tests PRIVATE /Z7)
+        target_link_options(cursed_temple_skill_tests PRIVATE /DEBUG)
+    endif()
 endif()
 target_compile_definitions(notice_lifecycle_tests PRIVATE
     MU_RMLUI_DIR="${CMAKE_SOURCE_DIR}/src/bin/Data/Interface/RmlUi"
