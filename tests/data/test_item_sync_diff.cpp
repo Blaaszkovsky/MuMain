@@ -601,13 +601,18 @@ TEST_CASE("Item Sync applies a file from the server [data][items][editor]")
     g_ItemEdits.GetHistory().Clear();
 }
 
-// Sphere 4 and 5: the client has their numbers as entries without a name (models, no item), the
-// server has the items. Neither side has an item where the server has nothing.
+// Shipped model-only entries may become real items, so create the unnamed fixture explicitly.
 TEST_CASE("Update from server fills the client's entry without a name [data][items][editor]")
 {
     Sides sides;
     g_ItemEdits.GetHistory().Clear();
     const int sphere4Type = MakeItemType(12, 73);
+    ItemDefinition placeholder = g_ItemDatabase.GetAllSlots()[sphere4Type];
+    placeholder.names = {};
+    placeholder.entryWithoutName = true;
+    g_ItemDataHandler.SetItem(placeholder);
+    std::erase_if(sides.file.items,
+                  [=](const ItemDefinition& item) { return MakeItemType(item.group, item.number) == sphere4Type; });
     const ItemDefinition before = g_ItemDatabase.GetAllSlots()[sphere4Type];
     REQUIRE(before.entryWithoutName);
     ItemDefinition sphere4;
