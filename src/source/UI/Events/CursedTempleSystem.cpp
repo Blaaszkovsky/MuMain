@@ -1142,19 +1142,21 @@ void mu::ui::window::CCursedTempleSystem::SetCursedTempleSkill(CHARACTER* c, OBJ
 
     float Distance = gSkillManager.GetSkillDistance(CursedTempleCurSkillType, c);
 
+    const bool targetedSkill = IsTargetedTempleSkill(CursedTempleCurSkillType);
     bool checktile = true;
 
-    if (IsTargetedTempleSkill(CursedTempleCurSkillType))
+    if (targetedSkill)
     {
         checktile = CheckTile(c, o, Distance);
     }
 
     if (checktile)
     {
-        CHARACTER* tc = NULL;
+        CHARACTER* tc = Hero;
 
-        if (IsTargetedTempleSkill(CursedTempleCurSkillType))
+        if (targetedSkill)
         {
+            // Protect the character-table access in the teammate loop below.
             if (selectcharacterindex >= MAX_CHARACTERS_CLIENT
                 || getTargetCharacterKey(c, selectcharacterindex) == -1)
             {
@@ -1173,18 +1175,7 @@ void mu::ui::window::CCursedTempleSystem::SetCursedTempleSkill(CHARACTER* c, OBJ
 
             tc = &CharactersClient[selectcharacterindex];
         }
-        else
-        {
-            tc = Hero;
-        }
-
-        if (tc == NULL)
-        {
-            MouseRButtonPush = false;
-            return;
-        }
-
-        SocketClient->ToGameServer()->SendIllusionTempleSkillRequest(CursedTempleCurSkillType, static_cast<WORD>(tc->Key), Distance);
+        SocketClient->ToGameServer()->SendIllusionTempleSkillRequestExtended(CursedTempleCurSkillType, static_cast<WORD>(tc->Key), Distance);
         Hero->m_CursedTempleCurSkillPacket = true;
         MouseRButtonPush = false;
 

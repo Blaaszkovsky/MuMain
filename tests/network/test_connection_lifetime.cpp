@@ -7,6 +7,7 @@
 #include <chrono>
 #include <future>
 #include <memory>
+#include <thread>
 
 #include "Dotnet/Connection.h"
 
@@ -15,6 +16,7 @@ namespace
 using namespace std::chrono_literals;
 constexpr auto CompletionDeadline = 5s;
 constexpr auto HeldCallbackObservation = 100ms;
+constexpr auto DisconnectPollInterval = 1ms;
 // ServerToClientPackets.xml: C1:F1:00 GameServerEntered, twelve bytes.
 constexpr std::array<BYTE, 12> EntryPacket{0xC1, 12, 0xF1, 0x00, 1, 0, 1, '1', '0', '4', '0', '0'};
 
@@ -71,6 +73,31 @@ public:
         char byte;
         const int count = recv(m_peer, &byte, 1, 0);
         return count == 0 || (count == SOCKET_ERROR && WSAGetLastError() == WSAECONNRESET);
+    }
+
+    void Close()
+    {
+        closesocket(m_peer);
+        m_peer = INVALID_SOCKET;
+    }
+
+    std::array<BYTE, 9> ReceiveExtendedSkillRequest()
+    {
+        std::array<BYTE, 9> packet{};
+        std::size_t received = 0;
+        while (received < packet.size())
+        {
+            fd_set readable;
+            FD_ZERO(&readable);
+            FD_SET(m_peer, &readable);
+            timeval wait{5, 0};
+            REQUIRE(select(0, &readable, nullptr, nullptr, &wait) == 1);
+            const int count = recv(m_peer, reinterpret_cast<char*>(packet.data() + received),
+                                   static_cast<int>(packet.size() - received), 0);
+            REQUIRE(count > 0);
+            received += static_cast<std::size_t>(count);
+        }
+        return packet;
     }
 
     int port = 0;
@@ -211,4 +238,45 @@ TEST_CASE("Late native callbacks ignore a destroyed connection handle [network][
     CHECK(gate.calls.load() == 1);
     replacement.reset();
     CHECK(replacementPeer.WaitClosed());
+}
+
+TEST_CASE("Queued packet identity survives a server close until the client closes [network][connection-lifetime][identity]")
+{
+    CallbackGate gate;
+    LoopbackPeer peer;
+    auto connection = Connect(peer);
+    const auto identity = connection->GetId();
+    REQUIRE(identity == connection->GetHandle());
+
+    SUBCASE("A server close retains the identity of its queued packets")
+    {
+        peer.Close();
+        const auto deadline = std::chrono::steady_clock::now() + CompletionDeadline;
+        while (connection->IsConnected() && std::chrono::steady_clock::now() < deadline)
+            std::this_thread::sleep_for(DisconnectPollInterval);
+        REQUIRE_FALSE(connection->IsConnected());
+        CHECK(connection->GetId() == identity);
+    }
+
+    SUBCASE("A client close invalidates its queued packets immediately")
+    {
+        connection->Close();
+        CHECK(peer.WaitClosed());
+    }
+
+    connection->Close();
+    CHECK(connection->GetId() == 0);
+}
+
+TEST_CASE("Illusion Temple Extended sender writes nine bytes without truncating target 514 [network][illusion_temple][connection-lifetime]")
+{
+    CallbackGate gate;
+    LoopbackPeer peer;
+    auto connection = Connect(peer);
+    constexpr WORD ProtectionSkill = 210;
+    constexpr WORD TargetKey = 514;
+    constexpr BYTE Distance = 7;
+    const std::array<BYTE, 9> expected{0xC1, 9, 0xBF, 2, 0, 210, 2, 2, Distance};
+    connection->ToGameServer()->SendIllusionTempleSkillRequestExtended(ProtectionSkill, TargetKey, Distance);
+    CHECK(peer.ReceiveExtendedSkillRequest() == expected);
 }

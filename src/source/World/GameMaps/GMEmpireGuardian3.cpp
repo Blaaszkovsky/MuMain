@@ -731,7 +731,7 @@ bool GMEmpireGuardian3::RenderObjectMesh(OBJECT* o, BMD* b, bool ExtraMon)
     return false;
 }
 
-bool GMEmpireGuardian3::RenderObjectVisual(OBJECT* o, BMD* b)
+bool GMEmpireGuardian3::UpdateObjectEffects(OBJECT* o, BMD* b)
 {
     if (gMapManager.IsEmpireGuardian3() == false)
         return false;
@@ -742,6 +742,10 @@ bool GMEmpireGuardian3::RenderObjectVisual(OBJECT* o, BMD* b)
 
     switch (o->Type)
     {
+    case 115:
+    case 117:
+        g_EmpireGuardian1.UpdateProjectileLauncher(o, b);
+        return true;
     case 12:
     {
         vec3_t vPos, vRelativePos, vLight1, vLight2;
@@ -751,19 +755,19 @@ bool GMEmpireGuardian3::RenderObjectVisual(OBJECT* o, BMD* b)
         Vector(8.f, -3.f, -3.f, vRelativePos);
         Vector(flumi, flumi, flumi, vLight1);
         Vector(0.9f, 0.1f, 0.1f, vLight2);
-        b->TransformPosition(BoneTransform[2], vRelativePos, vPos);
+        b->TransformPosition(Engine::Object::Pose::World(o, b)[2], vRelativePos, vPos);
 #ifdef LDS_FIX_ACCESS_INDEXNUMBER_ALREADY_LOADTEXTURE
         CreateSprite(BITMAP_SHINY + 6, vPos, 0.5f, vLight2, o);
         CreateSprite(BITMAP_SHINY + 6, vPos, fScale, vLight1, o);
         Vector(3.f, -3.f, -3.5f, vRelativePos);
-        b->TransformPosition(BoneTransform[3], vRelativePos, vPos);
+        b->TransformPosition(Engine::Object::Pose::World(o, b)[3], vRelativePos, vPos);
         CreateSprite(BITMAP_SHINY + 6, vPos, 0.5f, vLight2, o);
         CreateSprite(BITMAP_SHINY + 6, vPos, fScale, vLight1, o);
 #else  // LDS_FIX_ACCESS_INDEXNUMBER_ALREADY_LOADTEXTURE
         CreateSprite(BITMAP_SHINY + 5, vPos, 0.5f, vLight2, o);
         CreateSprite(BITMAP_SHINY + 5, vPos, fScale, vLight1, o);
         Vector(3.f, -3.f, -3.5f, vRelativePos);
-        b->TransformPosition(BoneTransform[3], vRelativePos, vPos);
+        b->TransformPosition(Engine::Object::Pose::World(o, b)[3], vRelativePos, vPos);
         CreateSprite(BITMAP_SHINY + 5, vPos, 0.5f, vLight2, o);
         CreateSprite(BITMAP_SHINY + 5, vPos, fScale, vLight1, o);
 #endif // LDS_FIX_ACCESS_INDEXNUMBER_ALREADY_LOADTEXTURE
@@ -797,7 +801,7 @@ bool GMEmpireGuardian3::RenderObjectVisual(OBJECT* o, BMD* b)
     case 37:
     {
         Vector(0.f, 0.f, 0.f, p);
-        b->TransformPosition(BoneTransform[1], p, Position);
+        b->TransformPosition(Engine::Object::Pose::World(o, b)[1], p, Position);
 
         float fLumi;
         fLumi = (sinf(WorldTime * 0.039f) + 1.0f) * 0.2f + 0.6f;
@@ -818,7 +822,7 @@ bool GMEmpireGuardian3::RenderObjectVisual(OBJECT* o, BMD* b)
 
         for (int i = 2; i <= 7; i++)
         {
-            b->TransformPosition(BoneTransform[i], vRelativePos, vPos);
+            b->TransformPosition(Engine::Object::Pose::World(o, b)[i], vRelativePos, vPos);
             CreateParticleFpsChecked(BITMAP_FIRE_HIK3_MONO, vPos, vAngle, vLight1, 4, o->Scale * 0.6f);
             CreateParticleFpsChecked(BITMAP_FIRE_HIK3_MONO, vPos, vAngle, vLight2, 4, o->Scale * 0.3f);
         }
@@ -997,9 +1001,9 @@ bool GMEmpireGuardian3::RenderMonster(OBJECT* o, BMD* b, bool ExtraMon)
     return false;
 }
 
-bool GMEmpireGuardian3::RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+bool GMEmpireGuardian3::UpdateMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b)
 {
-    if (g_EmpireGuardian1.RenderMonsterVisual(c, o, b))
+    if (g_EmpireGuardian1.UpdateMonsterEffects(c, o, b))
     {
         return true;
     }
@@ -1077,9 +1081,6 @@ bool GMEmpireGuardian3::RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
             CreateParticle(BITMAP_SMOKELINE2, Position, o->Angle, Light, 3, 0.2f);
         }
 
-        b->RenderMesh(1, RENDER_CHROME | RENDER_BRIGHT, 0.5f, 1, o->BlendMeshLight, o->BlendMeshTexCoordU,
-                      o->BlendMeshTexCoordV);
-
         if (g_isNotCharacterBuff(o) == true && g_isCharacterBuff(o, eBuff_Berserker) == true)
         {
             vec3_t vLightRage, vPosRage;
@@ -1103,6 +1104,17 @@ bool GMEmpireGuardian3::RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
     case MODEL_BANSHEE:
     {
     }
+        return true;
+    }
+    return false;
+}
+
+bool GMEmpireGuardian3::RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+{
+    if (o->Type == MODEL_DUAL_BERSERKER)
+    {
+        b->RenderMesh(1, RENDER_CHROME | RENDER_BRIGHT, 0.5f, 1, o->BlendMeshLight, o->BlendMeshTexCoordU,
+                      o->BlendMeshTexCoordV);
         return true;
     }
     return false;

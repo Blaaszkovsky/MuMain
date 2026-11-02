@@ -226,14 +226,14 @@ void GMNewTown::PlayObjectSound(OBJECT* pObject)
     }
 }
 
-bool GMNewTown::RenderObjectVisual(OBJECT* pObject, BMD* pModel)
+bool GMNewTown::UpdateObjectEffects(OBJECT* pObject, BMD* pModel)
 {
     if (!IsCurrentMap())
         return false;
 
     if (IsNewMap73_74())
     {
-        g_EmpireGuardian4.RenderObjectVisual(pObject, pModel);
+        g_EmpireGuardian4.UpdateObjectEffects(pObject, pModel);
         return true;
     }
 
@@ -241,6 +241,19 @@ bool GMNewTown::RenderObjectVisual(OBJECT* pObject, BMD* pModel)
 
     switch (pObject->Type)
     {
+    case 78:
+    case 79:
+    {
+        vec3_t sparkP, sparkPosition, sparkLight;
+        Vector(0.0f, 0.0f, 0.0f, sparkP);
+        Vector(0.1f, 0.1f, 0.3f, sparkLight);
+        for (int i = 1; i <= (pObject->Type == 78 ? 4 : 6); ++i)
+        {
+            pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[i], sparkP, sparkPosition, false);
+            CreateSprite(BITMAP_SPARK + 1, sparkPosition, 5.5f, sparkLight, pObject);
+        }
+    }
+    break;
     case 0:
         if (rand_fps_check(3))
         {
@@ -289,7 +302,7 @@ bool GMNewTown::RenderObjectVisual(OBJECT* pObject, BMD* pModel)
         Vector(fLumi * 1.0f, fLumi * 1.0f, fLumi * 0.6f, Light);
 
         Vector(-40.0f, -10.0f, 0.0f, vRelative);
-        pModel->TransformPosition(BoneTransform[5], vRelative, vPos, false);
+        pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[5], vRelative, vPos, false);
         CreateSprite(BITMAP_LIGHT, vPos, pObject->Scale * 6.f, Light, pObject);
     }
     break;
@@ -300,7 +313,7 @@ bool GMNewTown::RenderObjectVisual(OBJECT* pObject, BMD* pModel)
         {
             p[0] = (float)cosf(WorldTime * 0.03f) * (30.f + rand() % 5);
             p[1] = (float)sinf(WorldTime * 0.03f) * (30.f + rand() % 5);
-            pModel->TransformPosition(BoneTransform[0], p, Position, false);
+            pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[0], p, Position, false);
             CreateParticle(BITMAP_LIGHT, Position, pObject->Angle, Light, 11, 0.6f, pObject);
         }
         break;
@@ -316,7 +329,7 @@ bool GMNewTown::RenderObjectVisual(OBJECT* pObject, BMD* pModel)
         Vector(5.0f, -4.0f, -1.0f, vRelative);
         for (int i = 3; i <= 8; ++i)
         {
-            pModel->TransformPosition(BoneTransform[i], vRelative, vPos, false);
+            pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[i], vRelative, vPos, false);
             CreateSprite(BITMAP_LIGHT, vPos, fScale, Light, pObject);
         }
     }
@@ -830,28 +843,12 @@ void GMNewTown::RenderObjectAfterCharacter(OBJECT* pObject, BMD* pModel, bool Ex
     {
         pModel->RenderMesh(0, RENDER_TEXTURE, pObject->Alpha, pObject->BlendMesh, pObject->BlendMeshLight, pObject->BlendMeshTexCoordU, pObject->BlendMeshTexCoordV);
         pModel->RenderMesh(0, RENDER_TEXTURE | RENDER_BRIGHT, pObject->Alpha, pObject->BlendMesh, pObject->BlendMeshLight, pObject->BlendMeshTexCoordU, pObject->BlendMeshTexCoordV);
-        vec3_t p, Position, Light;
-        for (int i = 1; i <= 4; ++i)
-        {
-            Vector(0.0f, 0.0f, 0.0f, p);
-            pModel->TransformPosition(BoneTransform[i], p, Position, false);
-            Vector(0.1f, 0.1f, 0.3f, Light);
-            CreateSprite(BITMAP_SPARK + 1, Position, 5.5f, Light, pObject);
-        }
     }
     else if (pObject->Type == 79)
     {
         pModel->RenderMesh(0, RENDER_TEXTURE, pObject->Alpha, pObject->BlendMesh, pObject->BlendMeshLight, pObject->BlendMeshTexCoordU, pObject->BlendMeshTexCoordV);
         pModel->RenderMesh(0, RENDER_TEXTURE | RENDER_BRIGHT, pObject->Alpha, pObject->BlendMesh, pObject->BlendMeshLight, pObject->BlendMeshTexCoordU, pObject->BlendMeshTexCoordV);
 
-        vec3_t p, Position, Light;
-        for (int i = 1; i <= 6; ++i)
-        {
-            Vector(0.0f, 0.0f, 0.0f, p);
-            pModel->TransformPosition(BoneTransform[i], p, Position, false);
-            Vector(0.1f, 0.1f, 0.3f, Light);
-            CreateSprite(BITMAP_SPARK + 1, Position, 5.5f, Light, pObject);
-        }
     }
 }
 
@@ -990,7 +987,7 @@ void GMNewTown::MoveBlurEffect(CHARACTER* pCharacter, OBJECT* pObject, BMD* pMod
     }
 }
 
-bool GMNewTown::RenderMonsterVisual(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel)
+bool GMNewTown::UpdateMonsterEffects(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel)
 {
     if (!IsCurrentMap())
         return false;

@@ -6,6 +6,7 @@
 #include "Scenes/SceneCore.h"
 #include "Render/Effects/ZzzEffect.h"
 #include "Engine/AI/ZzzAI.h"
+#include "Engine/Object/ZzzObject.h"
 #include "Engine/Object/ZzzOpenData.h"
 #include "Audio/DSPlaySound.h"
 #include "World/MapInfra/MapManager.h"
@@ -116,7 +117,7 @@ bool M31HuntingGround::MoveHuntingGroundObject(OBJECT* pObject)
     return true;
 }
 
-bool M31HuntingGround::RenderHuntingGroundObjectVisual(OBJECT* pObject, BMD* pModel)
+bool M31HuntingGround::UpdateHuntingGroundObjectEffects(OBJECT* pObject, BMD* pModel)
 {
     if (!IsInHuntingGround())
         return false;
@@ -143,7 +144,7 @@ bool M31HuntingGround::RenderHuntingGroundObjectVisual(OBJECT* pObject, BMD* pMo
     {
         vec3_t Relative, Position;
         Vector(0.f, -10.f, 0.f, Relative);
-        pModel->TransformPosition(BoneTransform[3], Relative, Position, false);
+        pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[3], Relative, Position, false);
 
         Vector(1.f, 0.f, 0.f, Light);
         float Luminosity = (float)sinf((WorldTime) * 0.002f) * 0.35f + 0.65f;
@@ -367,8 +368,27 @@ void M31HuntingGround::MoveHuntingGroundBlurEffect(CHARACTER* pCharacter, OBJECT
     break;
     }
 }
-bool M31HuntingGround::RenderHuntingGroundMonsterVisual(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel)
+bool M31HuntingGround::UpdateHuntingGroundMonsterEffects(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel)
 {
+    if (pObject->CurrentAction == MONSTER01_DIE)
+    {
+        switch (pObject->Type)
+        {
+        case MODEL_FIRE_GOLEM:
+            SkinObjectMeshes(pObject, pModel, true);
+            pModel->RenderMeshEffect(0, MODEL_GOLEM_STONE);
+            pObject->Live = false;
+            PlayBuffer(SOUND_BC_FIREGOLEM_DIE);
+            break;
+        case MODEL_POISON_GOLEM:
+            SkinObjectMeshes(pObject, pModel, true);
+            pModel->RenderMeshEffect(0, MODEL_GOLEM_STONE, 1);
+            pObject->Live = false;
+            PlayBuffer(SOUND_BC_POISONGOLEM_DIE);
+            break;
+        }
+    }
+
     switch (pObject->Type)
     {
     case MODEL_LIZARD_WARRIOR:
@@ -415,13 +435,7 @@ bool M31HuntingGround::RenderHuntingGroundMonsterVisual(CHARACTER* pCharacter, O
         vec3_t Position, Relative;
 
         //. Dying Scene Processing
-        if (pObject->CurrentAction == MONSTER01_DIE)
-        {
-            pModel->RenderMeshEffect(0, MODEL_GOLEM_STONE);
-            pObject->Live = false;
-            PlayBuffer(SOUND_BC_FIREGOLEM_DIE);
-        }
-        else if (rand_fps_check(1))
+        if (pObject->CurrentAction != MONSTER01_DIE && rand_fps_check(1))
         {
             Vector(5.f, 10.f, 5.f, Relative);
             BoneManager::GetBonePosition(pObject, L"Monster82_LHand", Relative, Position);
@@ -559,14 +573,6 @@ bool M31HuntingGround::RenderHuntingGroundMonsterVisual(CHARACTER* pCharacter, O
                 pObject->SubType = TRUE;
                 PlayBuffer(static_cast<ESound>(SOUND_BC_POISONGOLEM_MOVE1 + rand() % 2));
             }
-        }
-
-        //. Dying Scene Processing
-        if (pObject->CurrentAction == MONSTER01_DIE)
-        {
-            pModel->RenderMeshEffect(0, MODEL_GOLEM_STONE, 1);
-            pObject->Live = false;
-            PlayBuffer(SOUND_BC_POISONGOLEM_DIE);
         }
 
         //. Attack Scene Processing

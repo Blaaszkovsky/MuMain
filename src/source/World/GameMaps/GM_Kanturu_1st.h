@@ -16,6 +16,7 @@ namespace M37Kanturu1st
     // 오브젝트 관련
     bool CreateKanturu1stObject(OBJECT* pObject);
     bool MoveKanturu1stObject(OBJECT* pObject);
+    bool UpdateKanturu1stObjectEffects(OBJECT* pObject, BMD* pModel);
     bool RenderKanturu1stObjectVisual(OBJECT* pObject, BMD* pModel);
     bool RenderKanturu1stObjectMesh(OBJECT* o, BMD* b, bool ExtraMon = 0);	// 오브젝트 렌더(몬스터 포함)
     void RenderKanturu1stAfterObjectMesh(OBJECT* o, BMD* b);				// 반투명 오브젝트 나중 랜더.
@@ -26,6 +27,7 @@ namespace M37Kanturu1st
     bool MoveKanturu1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b);		// 몬스터 효과 업데이트
     void MoveKanturu1stBlurEffect(CHARACTER* c, OBJECT* o, BMD* b);		// 몬스터 무기의 잔상 처리
     bool RenderKanturu1stMonsterObjectMesh(OBJECT* o, BMD* b, int ExtraMon);	// 몬스터 오브젝트 렌더링
+    bool UpdateKanturu1stMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b);
     bool RenderKanturu1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b);	// 몬스터 효과 렌더링
 };
 

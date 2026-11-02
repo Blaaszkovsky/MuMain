@@ -57,6 +57,22 @@ another developer build of the same platform. `ENABLE_IN_GAME_TESTS` needs
 
 ## The test server
 
+### Pairing the extended Illusion Temple client
+
+For current-fork Illusion Temple checks, use the matching server and freshly generated
+client network library. The private client sends the named nine-byte
+`IllusionTempleSkillRequestExtended` at BF/02: the target is a little-endian
+16-bit key, so player key 514 is not truncated to 2. The original eight-byte request
+with its one-byte target remains available for older clients.
+
+Results at BF/04 have a seven-byte header and twenty-byte player rows: three
+padding bytes follow the class and signed little-endian experience starts at
+row offset 16. BF/07 is the eight-byte skill-ended message; BF/09 is the
+six-byte event-phase message, not a second skill-ended opcode. Test a result
+with two players and a target above 255 when validating a paired release.
+
+These current-fork checks are separate from the pinned demo scenarios below.
+
 `tools/InGameTests/docker-compose.yml` runs OpenMU 0.9.10 in demo mode (`-demo`): it
 uses no database, keeps all data in memory and creates OpenMU's test data on
 every start. Recreating the container therefore brings back the same accounts,

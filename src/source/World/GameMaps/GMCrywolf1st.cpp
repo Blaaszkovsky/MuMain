@@ -441,13 +441,14 @@ bool M34CryWolf1st::MoveCryWolf1stObject(OBJECT* o)
     return true;
 }
 
-bool M34CryWolf1st::RenderCryWolf1stObjectVisual(OBJECT* o, BMD* b)
+bool M34CryWolf1st::UpdateCryWolf1stObjectEffects(OBJECT* o, BMD* b)
 {
     if (!IsCyrWolf1st())
         return false;
 
     vec3_t Light, p;
-    float Scale;//,Luminosity;
+    float Scale;
+    float Luminosity;
     Vector(0.f, 0.f, 0.f, p);
     static int Change_weather = 0;
 
@@ -482,6 +483,93 @@ bool M34CryWolf1st::RenderCryWolf1stObjectVisual(OBJECT* o, BMD* b)
         CreateSprite(BITMAP_FLARE, p, Scale, Light, o, Ro);
     }
     break;
+    case 56:
+    {
+        if (m_OccupationState == CRYWOLF_OCCUPATION_STATE_PEACE)
+        {
+            float Color = (int)rand() % 10000 * 0.0001f;
+
+            Vector(Color, Color, Color, Light);
+
+            if (rand_fps_check(3))
+                CreateEffect(BITMAP_MAGIC, o->Position, o->Angle, Light, 3, o, 4.0f);
+        }
+    }
+    break;
+    case 57:
+    {
+        if (rand_fps_check(3))
+        {
+            Vector(1.f, 1.f, 1.f, Light);
+            CreateParticle(BITMAP_TRUE_FIRE, o->Position, o->Angle, Light, 5, o->Scale);
+            CreateParticle(BITMAP_SMOKE, o->Position, o->Angle, Light, 21, o->Scale);
+        }
+    }
+    break;
+    case 71:
+    {
+        if (rand_fps_check(3))
+        {
+            Vector(1.f, 1.f, 1.f, Light);
+            CreateParticle(BITMAP_TRUE_FIRE, o->Position, o->Angle, Light, 5, o->Scale);
+        }
+    }
+    break;
+    case 72:
+    {
+        if (rand_fps_check(10))
+        {
+            vec3_t Position;
+            VectorCopy(o->Position, Position);
+            Position[2] += 50.0f;
+            Luminosity = (float)(rand() % 4 + 3) * 0.1f;
+            Vector(Luminosity, Luminosity * 0.6f, Luminosity * 0.2f, Light);
+            CreateParticle(BITMAP_SMOKE, Position, o->Angle, Light, 33, o->Scale);
+        }
+    }
+    break;
+    case 73:
+    {
+        if (weather == 0)
+            ashies = true;
+    }
+    break;
+    case 74:
+    {
+        if (rand_fps_check(3) && m_OccupationState == CRYWOLF_OCCUPATION_STATE_OCCUPIED)
+        {
+            Vector(1.f, 1.f, 1.f, Light);
+            CreateParticle(BITMAP_SMOKE, o->Position, o->Angle, Light, 21, o->Scale);
+        }
+    }
+    break;
+    case 77:
+    {
+        if (rand_fps_check(6))
+        {
+            //	Vector(0.02f,0.02f,0.03f,Light);
+            Vector(0.02f, 0.03f, 0.02f, Light);
+            CreateParticle(BITMAP_CLOUD, o->Position, o->Angle, Light, 9, o->Scale, o);
+        }
+    }
+    break;
+    case 78:
+    {
+        if (rand_fps_check(6))
+        {
+            Vector(0.03f, 0.06f, 0.05f, Light);
+            CreateParticle(BITMAP_CLOUD, o->Position, o->Angle, Light, 9, o->Scale, o);
+        }
+    }
+    break;
+    case 81:
+    {
+        if (m_OccupationState == CRYWOLF_OCCUPATION_STATE_WAR)
+        {
+            o->Scale = 1.03f;
+        }
+    }
+    break;
     case 37:
     {
     }
@@ -514,105 +602,41 @@ bool M34CryWolf1st::RenderCryWolf1stObjectMesh(OBJECT* o, BMD* b, int ExtraMon)
         if (m_OccupationState == CRYWOLF_OCCUPATION_STATE_PEACE)
         {
             Vector(0.4f, 0.4f, 0.4f, b->BodyLight);
-            b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh);
+            b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
+                          o->BlendMeshTexCoordV, o->HiddenMesh);
         }
         else
         {
             Vector(0.4f, 0.4f, 0.4f, b->BodyLight);
-            b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh);
+            b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
+                          o->BlendMeshTexCoordV, o->HiddenMesh);
         }
     }
-    return true;
+        return true;
     case 56:
     {
-        b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh);
-        if (m_OccupationState == CRYWOLF_OCCUPATION_STATE_PEACE)
-        {
-            float Color = (int)rand() % 10000 * 0.0001f;
-
-            Vector(Color, Color, Color, Light);
-
-            if (rand_fps_check(3))
-                CreateEffect(BITMAP_MAGIC, o->Position, o->Angle, Light, 3, o, 4.0f);
-        }
+        b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
+                      o->BlendMeshTexCoordV, o->HiddenMesh);
     }
-    return true;
+        return true;
     case 41:
         Vector(0.2f, 0.7f, 0.f, Light);
-        b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh);
+        b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
+                      o->BlendMeshTexCoordV, o->HiddenMesh);
         return true;
+    // Fires, smoke and mist only: UpdateCryWolf1stObjectEffects spawns them.
     case 57:
-    {
-        if (rand_fps_check(3))
-        {
-            Vector(1.f, 1.f, 1.f, Light);
-            CreateParticle(BITMAP_TRUE_FIRE, o->Position, o->Angle, Light, 5, o->Scale);
-            CreateParticle(BITMAP_SMOKE, o->Position, o->Angle, Light, 21, o->Scale);
-        }
-    }
-    return true;
     case 71:
-    {
-        if (rand_fps_check(3))
-        {
-            Vector(1.f, 1.f, 1.f, Light);
-            CreateParticle(BITMAP_TRUE_FIRE, o->Position, o->Angle, Light, 5, o->Scale);
-        }
-    }
-    return true;
     case 72:
-    {
-        if (rand_fps_check(10))
-        {
-            vec3_t Position;
-            VectorCopy(o->Position, Position);
-            Position[2] += 50.0f;
-            Luminosity = (float)(rand() % 4 + 3) * 0.1f;
-            Vector(Luminosity, Luminosity * 0.6f, Luminosity * 0.2f, Light);
-            CreateParticle(BITMAP_SMOKE, Position, o->Angle, Light, 33, o->Scale);
-        }
-    }
-    return true;
     case 73:
-    {
-        if (weather == 0)
-            ashies = true;
-    }
-    return true;
     case 74:
-    {
-        if (rand_fps_check(3) && m_OccupationState == CRYWOLF_OCCUPATION_STATE_OCCUPIED)
-        {
-            Vector(1.f, 1.f, 1.f, Light);
-            CreateParticle(BITMAP_SMOKE, o->Position, o->Angle, Light, 21, o->Scale);
-        }
-    }
-    return true;
     case 77:
-    {
-        if (rand_fps_check(6))
-        {
-            //	Vector(0.02f,0.02f,0.03f,Light);
-            Vector(0.02f, 0.03f, 0.02f, Light);
-            CreateParticle(BITMAP_CLOUD, o->Position, o->Angle, Light, 9, o->Scale, o);
-        }
-    }
-    return true;
     case 78:
-    {
-        if (rand_fps_check(6))
-        {
-            Vector(0.03f, 0.06f, 0.05f, Light);
-            CreateParticle(BITMAP_CLOUD, o->Position, o->Angle, Light, 9, o->Scale, o);
-        }
-    }
-    return true;
+        return true;
     case 81:
     {
         if (m_OccupationState == CRYWOLF_OCCUPATION_STATE_WAR)
         {
-            o->Scale = 1.03f;
-
             float fTemp = 0.1f;
 
             if (m_StatueHP <= 10) fTemp = 1.0f;
@@ -629,7 +653,7 @@ bool M34CryWolf1st::RenderCryWolf1stObjectMesh(OBJECT* o, BMD* b, int ExtraMon)
             b->StreamMesh = -1;
         }
     }
-    return true;
+        return true;
     case MODEL_SKILL_FURY_STRIKE:
     {
         Vector(0.0f, 0.0f, 0.9f, b->BodyLight);
@@ -1631,7 +1655,7 @@ bool M34CryWolf1st::RenderCryWolf1stMonsterObjectMesh(OBJECT* o, BMD* b, int Ext
     return false;
 }
 
-bool M34CryWolf1st::RenderCryWolf1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+bool M34CryWolf1st::UpdateCryWolf1stMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b)
 {
     if (!IsCyrWolf1st() && !(gMapManager.InDevilSquare()))
         return false;
@@ -1643,48 +1667,14 @@ bool M34CryWolf1st::RenderCryWolf1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* 
     case MODEL_CRYWOLF_ALTAR3:
     case MODEL_CRYWOLF_ALTAR4:
     case MODEL_CRYWOLF_ALTAR5:
-    {
-        vec3_t Light;
-        float fRotation1, fRotation2;
-        float Luminosity = sinf(WorldTime * 0.002f) * 0.1f + 0.28f;
-        float Luminosity2 = sinf(WorldTime * 0.002f) * 0.04f + 0.2f;
-
-        EnableAlphaBlend();
-
         if (g_isCharacterBuff(o, eBuff_CrywolfAltarContracted))
         {
-            Vector(Luminosity2, Luminosity2, 0.05f, Light);
-            fRotation1 = WorldTime * 0.01f;
-            fRotation2 = -WorldTime * 0.01f;
             Vector(0.09f, 0.09f, 0.04f, o->Light);
 
             CreateParticleFpsChecked(BITMAP_EFFECT, o->Position, o->Angle, o->Light);
             CreateParticleFpsChecked(BITMAP_EFFECT, o->Position, o->Angle, o->Light, 1);
         }
-        if (g_isCharacterBuff(o, eBuff_CrywolfAltarOccufied))
-        {
-            Vector(Luminosity, 0.1f, 0.1f, Light);
-        }
-        if (g_isCharacterBuff(o, eBuff_CrywolfAltarDisable))
-        {
-            Vector(Luminosity, 0.1f, 0.1f, Light);
-        }
-        if (g_isCharacterBuff(o, eBuff_CrywolfAltarEnable) || g_isCharacterBuff(o, eBuff_CrywolfAltarAttempt))
-        {
-            fRotation1 = WorldTime * 0.01f;
-            Vector(0.15f, 0.15f, Luminosity, Light);
-        }
-
-        Vector(Light[0] * 2.0f, Light[1] * 2.0f, Light[2] * 2.0f, Light);
-
-        RenderTerrainAlphaBitmap(BITMAP_MAGIC_CIRCLE, o->Position[0], o->Position[1], 2.8f, 2.8f, Light, fRotation1);
-        RenderTerrainAlphaBitmap(BITMAP_MAGIC_CIRCLE, o->Position[0], o->Position[1], 3.6f, 3.6f, Light, fRotation2);
-        DisableAlphaBlend();
-
-        if (fRotation1 >= 360.0f) fRotation1 = 0.0f;
-        if (fRotation2 >= 360.0f) fRotation2 = 0.0f;
-    }
-    break;
+        break;
     case MODEL_BALGASS:
     {
         if (o->CurrentAction == MONSTER01_WALK || o->CurrentAction == MONSTER01_RUN)
@@ -2101,6 +2091,62 @@ bool M34CryWolf1st::RenderCryWolf1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* 
             o->SubType = FALSE;
     }
     return true;
+    }
+    return false;
+}
+
+bool M34CryWolf1st::RenderCryWolf1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+{
+    if (!IsCyrWolf1st() && !(gMapManager.InDevilSquare()))
+        return false;
+
+    switch (o->Type)
+    {
+    case MODEL_CRYWOLF_ALTAR1:
+    case MODEL_CRYWOLF_ALTAR2:
+    case MODEL_CRYWOLF_ALTAR3:
+    case MODEL_CRYWOLF_ALTAR4:
+    case MODEL_CRYWOLF_ALTAR5:
+    {
+        vec3_t Light;
+        float fRotation1, fRotation2;
+        float Luminosity = sinf(WorldTime * 0.002f) * 0.1f + 0.28f;
+        float Luminosity2 = sinf(WorldTime * 0.002f) * 0.04f + 0.2f;
+
+        EnableAlphaBlend();
+
+        if (g_isCharacterBuff(o, eBuff_CrywolfAltarContracted))
+        {
+            Vector(Luminosity2, Luminosity2, 0.05f, Light);
+            fRotation1 = WorldTime * 0.01f;
+            fRotation2 = -WorldTime * 0.01f;
+        }
+        if (g_isCharacterBuff(o, eBuff_CrywolfAltarOccufied))
+        {
+            Vector(Luminosity, 0.1f, 0.1f, Light);
+        }
+        if (g_isCharacterBuff(o, eBuff_CrywolfAltarDisable))
+        {
+            Vector(Luminosity, 0.1f, 0.1f, Light);
+        }
+        if (g_isCharacterBuff(o, eBuff_CrywolfAltarEnable) || g_isCharacterBuff(o, eBuff_CrywolfAltarAttempt))
+        {
+            fRotation1 = WorldTime * 0.01f;
+            Vector(0.15f, 0.15f, Luminosity, Light);
+        }
+
+        Vector(Light[0] * 2.0f, Light[1] * 2.0f, Light[2] * 2.0f, Light);
+
+        RenderTerrainAlphaBitmap(BITMAP_MAGIC_CIRCLE, o->Position[0], o->Position[1], 2.8f, 2.8f, Light, fRotation1);
+        RenderTerrainAlphaBitmap(BITMAP_MAGIC_CIRCLE, o->Position[0], o->Position[1], 3.6f, 3.6f, Light, fRotation2);
+        DisableAlphaBlend();
+
+        if (fRotation1 >= 360.0f)
+            fRotation1 = 0.0f;
+        if (fRotation2 >= 360.0f)
+            fRotation2 = 0.0f;
+    }
+    break;
     }
     return false;
 }

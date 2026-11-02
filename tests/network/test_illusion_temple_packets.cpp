@@ -14,10 +14,10 @@ using Reader = Network::Packets::IllusionTemplePacketReader;
 constexpr std::array<std::uint8_t, 24> StatePacket{
     0xC1, 24, 0xBF, 1, 0x34, 0x12, 0xCD, 0xAB, 40, 41, 2, 3, 1, 2,
     0x23, 1, 45, 50, 51, 0x56, 4, 46, 60, 61};
-constexpr std::array<std::uint8_t, 41> ResultPacket{
-    0xC1, 41, 0xBF, 4, 2, 3, 2,
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 45, 0, 0x18, 0x87, 0xD6, 0x12, 0,
-    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 46, 1, 0x30, 0xFE, 0xFF, 0xFF, 0xFF};
+constexpr std::array<std::uint8_t, 47> ResultPacket{
+    0xC1, 47, 0xBF, 4, 2, 3, 2,
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 45, 0, 0x18, 0xA1, 0xB2, 0xC3, 0x87, 0xD6, 0x12, 0,
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 46, 1, 0x30, 0xE4, 0xF5, 0x96, 0xFE, 0xFF, 0xFF, 0xFF};
 constexpr std::array<std::uint8_t, 11> SkillPacket{
     0xC1, 11, 0xBF, 2, 1, 0, 210, 0x34, 0x12, 0xCD, 0xAB};
 
@@ -71,13 +71,13 @@ TEST_CASE("Illusion Temple state rejects incomplete records and retains empty-te
     CHECK_FALSE(Reader::ReadPartyMember(empty->members, 0));
 }
 
-TEST_CASE("Illusion Temple result reads seventeen-byte rows and signed experience [network][illusion_temple]")
+TEST_CASE("Illusion Temple result reads twenty-byte rows with padding and signed experience [network][illusion_temple]")
 {
     const auto result = Reader::ReadResult(ResultPacket);
     REQUIRE(result);
     CHECK(result->alliedScore == 2);
     CHECK(result->illusionScore == 3);
-    REQUIRE(result->players.size() == 34);
+    REQUIRE(result->players.size() == 40);
     const auto first = Reader::ReadPlayerResult(result->players, 0);
     const auto second = Reader::ReadPlayerResult(result->players, 1);
     REQUIRE(first);
@@ -137,7 +137,7 @@ TEST_CASE("Illusion Temple decoders ignore dirty receive-buffer tail [network][i
     std::copy(ResultPacket.begin(), ResultPacket.end(), buffer.begin());
     const auto result = Reader::ReadResult(buffer);
     REQUIRE(result);
-    REQUIRE(result->players.size() == 34);
+    REQUIRE(result->players.size() == 40);
     CHECK(Reader::ReadPlayerResult(result->players, 0)->addedExperience == 1234567);
     std::copy(SkillPacket.begin(), SkillPacket.end(), buffer.begin());
     const auto skill = Reader::ReadSkillResult(buffer);
@@ -168,7 +168,9 @@ TEST_CASE("Illusion Temple fixed messages reject all truncated prefixes [network
 TEST_CASE("Illusion Temple generated sender preserves sixteen-bit target ABI [network][illusion_temple]")
 {
     using Sender = void (PacketFunctions_ClientToServer::*)(std::uint16_t, std::uint16_t, BYTE);
-    CHECK((std::is_same_v<decltype(&PacketFunctions_ClientToServer::SendIllusionTempleSkillRequest), Sender>));
+    using LegacySender = void (PacketFunctions_ClientToServer::*)(std::uint16_t, BYTE, BYTE);
+    CHECK((std::is_same_v<decltype(&PacketFunctions_ClientToServer::SendIllusionTempleSkillRequestExtended), Sender>));
+    CHECK((std::is_same_v<decltype(&PacketFunctions_ClientToServer::SendIllusionTempleSkillRequest), LegacySender>));
 }
 
 TEST_CASE("Illusion Temple network updates belong only to the world scene [network][illusion_temple]")

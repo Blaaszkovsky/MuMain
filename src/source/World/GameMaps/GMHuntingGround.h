@@ -10,7 +10,7 @@ namespace M31HuntingGround {		//. 공성 사냥터
     //. 오브젝트
     bool CreateHuntingGroundObject(OBJECT* pObject);
     bool MoveHuntingGroundObject(OBJECT* pObject);
-    bool RenderHuntingGroundObjectVisual(OBJECT* pObject, BMD* pModel);
+    bool UpdateHuntingGroundObjectEffects(OBJECT* pObject, BMD* pModel);
     bool RenderHuntingGroundObjectMesh(OBJECT* pObject, BMD* pModel, bool ExtraMon = 0);
 
     //. 몬스터
@@ -19,7 +19,7 @@ namespace M31HuntingGround {		//. 공성 사냥터
     bool MoveHuntingGroundMonsterVisual(OBJECT* pObject, BMD* pModel);
     void MoveHuntingGroundBlurEffect(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel);
     bool RenderHuntingGroundMonsterObjectMesh(OBJECT* pObject, BMD* pModel, bool ExtraMon);
-    bool RenderHuntingGroundMonsterVisual(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel);
+    bool UpdateHuntingGroundMonsterEffects(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel);
 
     bool AttackEffectHuntingGroundMonster(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel);
 

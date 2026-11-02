@@ -10,7 +10,7 @@ namespace M39Kanturu3rd {
 
     bool CreateKanturu3rdObject(OBJECT* o);
     bool MoveKanturu3rdObject(OBJECT* o);
-    bool RenderKanturu3rdObjectVisual(OBJECT* o, BMD* b);
+    bool UpdateKanturu3rdObjectEffects(OBJECT* o, BMD* b);
     bool RenderKanturu3rdObjectMesh(OBJECT* o, BMD* b, bool ExtraMon = 0);
     void RenderKanturu3rdAfterObjectMesh(OBJECT* o, BMD* b, bool ExtraMon = 0);
 
@@ -20,7 +20,7 @@ namespace M39Kanturu3rd {
     void MoveKanturu3rdBlurEffect(CHARACTER* c, OBJECT* o, BMD* b);
 
     bool RenderKanturu3rdMonsterObjectMesh(OBJECT* o, BMD* b, bool ExtraMon);
-    bool RenderKanturu3rdMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b);
+    bool UpdateKanturu3rdMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b);
 
     bool AttackEffectKanturu3rdMonster(CHARACTER* c, OBJECT* o, BMD* b);
     bool SetCurrentActionKanturu3rdMonster(CHARACTER* c, OBJECT* o);

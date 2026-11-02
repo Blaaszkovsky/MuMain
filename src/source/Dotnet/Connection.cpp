@@ -241,6 +241,7 @@ Connection::Connection(const char16_t* host, int32_t port, bool isEncrypted,
 
     if (handle > 0)
     {
+        this->_id = handle;
         // cppcheck-suppress [noCopyConstructor, noOperatorEq]
         _chatServer = new PacketFunctions_ChatServer();
         _connectServer = new PacketFunctions_ConnectServer();
@@ -280,6 +281,7 @@ Connection::~Connection()
             disconnect(handle);
     }
 
+    // A connection the server closed made these too, when it connected.
     SAFE_DELETE(_chatServer);
     SAFE_DELETE(_connectServer);
     SAFE_DELETE(_gameServer);
@@ -309,6 +311,7 @@ void Connection::Send(const BYTE* data, const int32_t size)
 
 void Connection::Close()
 {
+    this->_id = 0;
     const auto handle = GetHandle();
     if (handle <= 0)
     {

@@ -96,6 +96,7 @@ void OBJECT::Initialize()
     Visible = false;
     AlphaEnable = false;
     EnableBoneMatrix = false;
+    OwnsBoneTransform = false;
     ContrastEnable = false;
     ChromeEnable = false;
     m_bRenderAfterCharacter = false;
@@ -173,6 +174,8 @@ void OBJECT::Initialize()
     IdentityVector3D(EyeRight2);
     IdentityVector3D(EyeLeft3);
     IdentityVector3D(EyeRight3);
+    IdentityVector3D(SetTrailLeft);
+    IdentityVector3D(SetTrailRight);
 
     IdentityVector3D(OBB.StartPos);
     IdentityVector3D(OBB.XAxis);
@@ -181,6 +184,8 @@ void OBJECT::Initialize()
 
     m_pCloth = NULL;
     BoneTransform = NULL;
+    Pose = {};
+    DrawnFrame = 0;
 
     Owner = NULL;
     Prior = NULL;

@@ -22,6 +22,7 @@
 #include "UI/Windows/CreditWin.h"
 #include "Core/Input/Input.h"
 #include "Network/Server/WSclient.h"
+#include "Network/Reconnect/ReconnectManager.h"
 #include "Core/Utilities/Log/muConsoleDebug.h"
 #include "I18N/All.h"
 #include "Engine/Object/ZzzCharacter.h"
@@ -261,7 +262,12 @@ static void InitializeLoginConnection()
     if (MuEditor::BmdRuntimeProbe::IsEnabled())
         return;
 #endif
-    CreateSocket(szServerIpAddress, g_ServerPort);
+    // The in-game reconnect resumes its game server; a fresh login starts at the connect server.
+    const ReconnectManager& reconnect = ReconnectManager::Instance();
+    if (reconnect.IsActive())
+        ConnectForLogin(reconnect.GetServerIp(), reconnect.GetServerPort());
+    else
+        ConnectForLogin(szServerIpAddress, g_ServerPort);
 }
 
 void CreateLogInScene()
@@ -335,6 +341,10 @@ void NewMoveLogInScene()
         MoveParticles();
         MoveBoids();
         ThePetProcess().UpdatePets();
+        UpdateCharacterEffects();
+        UpdateObjectEffects();
+        UpdateMountEffects();
+        UpdateEffectModelEffects();
     }
 
     // ESC menu toggle is handled by CSceneUICoordinator::Update()

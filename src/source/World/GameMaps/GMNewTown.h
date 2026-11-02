@@ -20,7 +20,7 @@ namespace SEASON3B
         //. 오브젝트
         static void CreateObject(OBJECT* pObject);
         static bool MoveObject(OBJECT* pObject);
-        static bool RenderObjectVisual(OBJECT* pObject, BMD* pModel);
+        static bool UpdateObjectEffects(OBJECT* pObject, BMD* pModel);
         static bool RenderObject(OBJECT* pObject, BMD* pModel, bool ExtraMon = 0);
         static void RenderObjectAfterCharacter(OBJECT* pObject, BMD* pModel, bool ExtraMon = 0);
 
@@ -29,7 +29,7 @@ namespace SEASON3B
 
         static bool MoveMonsterVisual(OBJECT* pObject, BMD* pModel);
         static void MoveBlurEffect(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel);
-        static bool RenderMonsterVisual(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel);
+        static bool UpdateMonsterEffects(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel);
 
         static bool AttackEffectMonster(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel);
 

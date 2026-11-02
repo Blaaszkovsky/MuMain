@@ -16,7 +16,7 @@ public: // Object
     // 오브젝트 프로세서
     virtual bool MoveObject(OBJECT* o);
     // 오브젝트 이펙트
-    virtual bool RenderObjectVisual(OBJECT* o, BMD* b);
+    virtual bool UpdateObjectEffects(OBJECT* o, BMD* b);
     // 오브젝트 랜더
     virtual bool RenderObjectMesh(OBJECT* o, BMD* b, bool ExtraMon = 0);
     // 맵 관련 오브젝트 이펙트
@@ -30,6 +30,7 @@ public: // Character
     // 몬스터 스킬 블러 이펙트
     virtual void MoveBlurEffect(CHARACTER* c, OBJECT* o, BMD* b);
     // 몬스터 이펙트 ( 일반 )
+    virtual bool UpdateMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b);
     virtual bool RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b);
     // 몬스터 이펙트 ( 스킬 )
     virtual bool AttackEffectMonster(CHARACTER* c, OBJECT* o, BMD* b);

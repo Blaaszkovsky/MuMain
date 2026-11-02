@@ -1,12 +1,17 @@
 #include "stdafx.h"
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
 #include <winsock2.h>
+#endif
 #include <doctest.h>
 
 #include "RmlLayoutFixture.h"
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
 #include "Dotnet/Connection.h"
+#endif
 #include "Engine/Object/ZzzCharacter.h"
 #include "Engine/Object/ZzzInfomation.h"
 #include "Engine/Object/ZzzInterface.h"
+#include "Engine/Object/ZzzInventory.h"
 #include "GameLogic/Events/w_CursedTemple.h"
 #include "Render/Effects/ZzzEffect.h"
 #include "Render/Models/ZzzBMD.h"
@@ -27,6 +32,11 @@
 #include <memory>
 #include <vector>
 
+#ifndef _WIN32
+#include <sys/mman.h>
+#include <unistd.h>
+#endif
+
 extern int TargetX;
 extern int TargetY;
 extern bool g_bWndActive;
@@ -41,7 +51,11 @@ constexpr int EnemySlot = MAX_CHARACTERS_CLIENT - 1;
 constexpr BYTE SkillRange = 5;
 constexpr BYTE SkillCost = 5;
 constexpr BYTE SkillBudget = 20;
+constexpr int TestTile = 40;
+constexpr int TestCharacterLevel = 400;
+constexpr int TempleSkillCount = AT_SKILL_CURSED_TEMPLE_SUBLIMATION - AT_SKILL_CURSED_TEMPLE_PRODECTION + 1;
 constexpr DWORD MissingSelection = static_cast<DWORD>(-1);
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
 constexpr WORD StatueKey = 0x123;
 constexpr DWORD CaptureMilliseconds = 10000;
 
@@ -67,19 +81,38 @@ public:
     int updates = 0;
 };
 
-// End the real character table at an inaccessible page. Index400 must not silently read padding.
+#endif
+
+// End the real character table at an inaccessible page so one-past-end reads always fault.
 class GuardedCharacters
 {
 public:
     GuardedCharacters()
     {
+        const std::size_t bytes = sizeof(CHARACTER) * MAX_CHARACTERS_CLIENT;
+#ifdef _WIN32
         SYSTEM_INFO info{};
         GetSystemInfo(&info);
-        const std::size_t bytes = sizeof(CHARACTER) * MAX_CHARACTERS_CLIENT;
-        const std::size_t committed = (bytes + info.dwPageSize - 1) / info.dwPageSize * info.dwPageSize;
-        m_storage = VirtualAlloc(nullptr, committed + info.dwPageSize, MEM_RESERVE, PAGE_NOACCESS);
+        const std::size_t pageSize = info.dwPageSize;
+#else
+        const long systemPageSize = sysconf(_SC_PAGESIZE);
+        REQUIRE(systemPageSize > 0);
+        const std::size_t pageSize = static_cast<std::size_t>(systemPageSize);
+#endif
+        const std::size_t committed = (bytes + pageSize - 1) / pageSize * pageSize;
+        m_storageSize = committed + pageSize;
+#ifdef _WIN32
+        m_storage = VirtualAlloc(nullptr, m_storageSize, MEM_RESERVE, PAGE_NOACCESS);
         REQUIRE(m_storage != nullptr);
-        REQUIRE(VirtualAlloc(m_storage, committed, MEM_COMMIT, PAGE_READWRITE) == m_storage);
+        const bool writable = VirtualAlloc(m_storage, committed, MEM_COMMIT, PAGE_READWRITE) == m_storage;
+#else
+        m_storage = mmap(nullptr, m_storageSize, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        REQUIRE(m_storage != MAP_FAILED);
+        const bool writable = mprotect(m_storage, committed, PROT_READ | PROT_WRITE) == 0;
+#endif
+        if (!writable)
+            ReleaseStorage();
+        REQUIRE(writable);
         characters = reinterpret_cast<CHARACTER*>(static_cast<BYTE*>(m_storage) + committed - bytes);
         std::uninitialized_value_construct_n(characters, MAX_CHARACTERS_CLIENT);
     }
@@ -87,15 +120,26 @@ public:
     ~GuardedCharacters()
     {
         std::destroy_n(characters, MAX_CHARACTERS_CLIENT);
-        VirtualFree(m_storage, 0, MEM_RELEASE);
+        ReleaseStorage();
     }
 
     CHARACTER* characters = nullptr;
 
 private:
+    void ReleaseStorage()
+    {
+#ifdef _WIN32
+        VirtualFree(m_storage, 0, MEM_RELEASE);
+#else
+        munmap(m_storage, m_storageSize);
+#endif
+    }
+
     void* m_storage = nullptr;
+    std::size_t m_storageSize = 0;
 };
 
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
 // Same real asynchronous NativeAOT transport as the NPC/attack fixtures; no game host is contacted.
 class SkillPacketPeer
 {
@@ -162,82 +206,42 @@ private:
     SOCKET m_peer = INVALID_SOCKET;
 };
 
-class TempleSkillFixture : public UI::Tests::RmlLayoutFixture
+#endif
+
+// This member is constructed before any global is replaced, including when setup throws.
+class TempleSkillState
 {
 public:
-    explicit TempleSkillFixture(const char* theme = "legacy")
+    TempleSkillState()
         : m_previousHero(Hero), m_previousCharacters(CharactersClient), m_previousModels(Models),
-          m_previousMachine(CharacterMachine), m_previousAttribute(CharacterAttribute), m_previousSkills(SkillAttribute),
-          m_previousSocket(SocketClient), m_previousScene(SceneFlag), m_previousWorld(gMapManager.WorldActive),
-          m_previousSelection(SelectedCharacter), m_previousTargetX(TargetX), m_previousTargetY(TargetY),
-          m_previousMousePush(MouseRButtonPush),
-          m_previousActive(g_bWndActive), m_previousLanguage(g_strSelectedML),
-          m_previousTheme(UI::RmlBridge::GetActiveThemeName()), m_previousGauge(g_CursedTemple->IsGaugebarEnabled()),
-          m_previousDirectory(std::filesystem::current_path()),
-          m_previousTextureCollector(Render::Textures::GetTextureErrorCollector()),
-          m_models(std::make_unique<BMD[]>(MODEL_PLAYER + 1)), m_skills(std::make_unique<SKILL_ATTRIBUTE[]>(MAX_SKILLS))
+          m_previousMachine(CharacterMachine), m_previousAttribute(CharacterAttribute),
+          m_previousSkills(SkillAttribute), m_previousSocket(SocketClient), m_previousScene(SceneFlag),
+          m_previousWorld(gMapManager.WorldActive), m_previousSelection(SelectedCharacter), m_previousTargetX(TargetX),
+          m_previousTargetY(TargetY), m_previousMousePush(MouseRButtonPush), m_previousActive(g_bWndActive),
+          m_previousLanguage(g_strSelectedML), m_previousTheme(UI::RmlBridge::GetActiveThemeName()),
+          m_previousGauge(g_CursedTemple->IsGaugebarEnabled()), m_previousDirectory(std::filesystem::current_path()),
+          m_previousTextureCollector(Render::Textures::GetTextureErrorCollector())
     {
-        std::filesystem::current_path(MU_BIN_DIR);
-        UI::RmlBridge::SetContextResolver([this](std::string_view) { return context; });
-        UI::RmlBridge::SetActiveThemeName(theme);
-        Render::Sprites::SetGpuUploadsSkipped(true);
-        Render::Textures::SetTextureErrorCollector([](const std::string&) {});
-        CharactersClient = m_table.characters;
-        Hero = &CharactersClient[0];
-        CharacterMachine = &m_machine;
-        CharacterAttribute = &m_machine.Character;
-        CharacterAttribute->Level = 400;
-        SkillAttribute = m_skills.get();
-        g_bWndActive = true;
-        g_strSelectedML = L"Eng";
-        Models = m_models.get();
-        Models[MODEL_PLAYER].NumActions = MAX_PLAYER_ACTION;
-        Models[MODEL_PLAYER].Actions = new Action_t[MAX_PLAYER_ACTION]{};
-        SceneFlag = MAIN_SCENE;
-        gMapManager.WorldActive = WD_45CURSEDTEMPLE_LV1;
-        Place(*Hero, HeroId);
-        Place(CharactersClient[TeamSlot], TeamId);
-        Place(CharactersClient[EnemySlot], EnemyId);
-        TargetX = TargetY = 40;
-        SelectedCharacter = -1;
-
-        for (int i = 0; i < 4; ++i)
-        {
-            const int skill = AT_SKILL_CURSED_TEMPLE_PRODECTION + static_cast<int>(i);
-            SkillAttribute[skill].Distance = SkillRange;
-            SkillAttribute[skill].KillCount = SkillCost;
-        }
-
-        REQUIRE(g_pNewUISystem->Create());
-        m_window = std::make_unique<mu::ui::window::CCursedTempleSystem>();
-        REQUIRE(m_window->Create(g_pNewUIMng));
-        const std::array<UI::CursedTemple::PartyPosition, 2> team{
-            UI::CursedTemple::PartyPosition{HeroId, WD_45CURSEDTEMPLE_LV1, 40, 40},
-            UI::CursedTemple::PartyPosition{TeamId, WD_45CURSEDTEMPLE_LV1, 40, 40}};
-        UI::CursedTemple::MatchStatus status{};
-        status.relicHolderIndex = EnemyId;
-        status.localTeam = SEASON3A::eTeam_Allied;
-        status.party = team;
-        m_window->SetMatchStatus(status);
-        m_window->SetSkillPoints(SkillBudget);
-        m_connection = std::make_unique<Connection>(u"127.0.0.1", peer.port, false, nullptr);
-        REQUIRE(m_connection->IsConnected());
-        peer.Accept();
-        SocketClient = m_connection.get();
     }
 
-    ~TempleSkillFixture()
+    ~TempleSkillState()
     {
-        for (const int slot : {0, TeamSlot, EnemySlot})
-        {
-            for (const int effect : std::array<int, 4>{MODEL_SKILL_INFERNO, MODEL_SHIELD_CRASH, BITMAP_SHOCK_WAVE, MODEL_FENRIR_THUNDER})
-                DeleteEffect(effect, &CharactersClient[slot].Object);
-        }
-        m_window.reset();
+        Restore();
+    }
+
+    void Activate()
+    {
+        m_active = true;
+    }
+
+    void Restore()
+    {
+        if (!m_active)
+            return;
         g_pNewUISystem->Release();
         Bitmaps.UnloadAllImages();
         SocketClient = m_previousSocket;
-        m_connection.reset();
+        // This isolated binary owns the resolver and upload-skip test services.
         UI::RmlBridge::SetContextResolver({});
         Render::Textures::SetTextureErrorCollector(m_previousTextureCollector);
         Render::Sprites::SetGpuUploadsSkipped(false);
@@ -258,8 +262,107 @@ public:
         UI::RmlBridge::SetActiveThemeName(m_previousTheme);
         g_CursedTemple->SetGaugebarEnabled(m_previousGauge);
         std::filesystem::current_path(m_previousDirectory);
+        m_active = false;
     }
 
+private:
+    CHARACTER* m_previousHero;
+    CHARACTER* m_previousCharacters;
+    BMD* m_previousModels;
+    CHARACTER_MACHINE* m_previousMachine;
+    decltype(CharacterAttribute) m_previousAttribute;
+    SKILL_ATTRIBUTE* m_previousSkills;
+    decltype(SocketClient) m_previousSocket;
+    EGameScene m_previousScene;
+    int m_previousWorld;
+    int m_previousSelection;
+    int m_previousTargetX;
+    int m_previousTargetY;
+    bool m_previousMousePush;
+    bool m_previousActive;
+    std::wstring m_previousLanguage;
+    std::string m_previousTheme;
+    bool m_previousGauge;
+    std::filesystem::path m_previousDirectory;
+    Render::Textures::TextureErrorCollector m_previousTextureCollector;
+    bool m_active = false;
+};
+
+class TempleSkillFixture : public UI::Tests::RmlLayoutFixture
+{
+public:
+    explicit TempleSkillFixture(const char* theme = "legacy")
+        : m_models(std::make_unique<BMD[]>(MODEL_PLAYER + 1)), m_skills(std::make_unique<SKILL_ATTRIBUTE[]>(MAX_SKILLS))
+    {
+        m_state.Activate();
+        std::filesystem::current_path(MU_BIN_DIR);
+        UI::RmlBridge::SetContextResolver([this](std::string_view) { return context; });
+        UI::RmlBridge::SetActiveThemeName(theme);
+        Render::Sprites::SetGpuUploadsSkipped(true);
+        Render::Textures::SetTextureErrorCollector([](const std::string&) {});
+        CharactersClient = m_table.characters;
+        Hero = &CharactersClient[0];
+        CharacterMachine = &m_machine;
+        CharacterAttribute = &m_machine.Character;
+        CharacterAttribute->Level = TestCharacterLevel;
+        SkillAttribute = m_skills.get();
+        g_bWndActive = true;
+        g_strSelectedML = L"Eng";
+        Models = m_models.get();
+        Models[MODEL_PLAYER].NumActions = MAX_PLAYER_ACTION;
+        Models[MODEL_PLAYER].Actions = new Action_t[MAX_PLAYER_ACTION]{};
+        SceneFlag = MAIN_SCENE;
+        gMapManager.WorldActive = WD_45CURSEDTEMPLE_LV1;
+        Place(*Hero, HeroId);
+        Place(CharactersClient[TeamSlot], TeamId);
+        Place(CharactersClient[EnemySlot], EnemyId);
+        TargetX = TargetY = TestTile;
+        SelectedCharacter = -1;
+
+        for (int i = 0; i < TempleSkillCount; ++i)
+        {
+            const int skill = AT_SKILL_CURSED_TEMPLE_PRODECTION + static_cast<int>(i);
+            SkillAttribute[skill].Distance = SkillRange;
+            SkillAttribute[skill].KillCount = SkillCost;
+        }
+
+        REQUIRE(g_pNewUISystem->Create());
+        m_window = std::make_unique<mu::ui::window::CCursedTempleSystem>();
+        REQUIRE(m_window->Create(g_pNewUIMng));
+        const std::array<UI::CursedTemple::PartyPosition, 2> team{
+            UI::CursedTemple::PartyPosition{HeroId, WD_45CURSEDTEMPLE_LV1, TestTile, TestTile},
+            UI::CursedTemple::PartyPosition{TeamId, WD_45CURSEDTEMPLE_LV1, TestTile, TestTile}};
+        UI::CursedTemple::MatchStatus status{};
+        status.relicHolderIndex = EnemyId;
+        status.localTeam = SEASON3A::eTeam_Allied;
+        status.party = team;
+        m_window->SetMatchStatus(status);
+        m_window->SetSkillPoints(SkillBudget);
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
+        m_connection = std::make_unique<Connection>(u"127.0.0.1", peer.port, false, nullptr);
+        REQUIRE(m_connection->IsConnected());
+        peer.Accept();
+        SocketClient = m_connection.get();
+#else
+        SocketClient = nullptr;
+#endif
+    }
+
+    ~TempleSkillFixture()
+    {
+        for (const int slot : {0, TeamSlot, EnemySlot})
+        {
+            for (const int effect : std::array<int, 4>{MODEL_SKILL_INFERNO, MODEL_SHIELD_CRASH, BITMAP_SHOCK_WAVE, MODEL_FENRIR_THUNDER})
+                DeleteEffect(effect, &CharactersClient[slot].Object);
+        }
+        m_window.reset();
+        m_state.Restore();
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
+        m_connection.reset();
+#endif
+    }
+
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
     QueuedTempleProgress* StartProgress(bool& destroyed)
     {
         const mu::ui::window::CMessageBoxFactory::TContainer<QueuedTempleProgress> container;
@@ -291,6 +394,8 @@ public:
         CHECK(peer.Collect() == expected);
     }
 
+#endif
+
     void Cast(int skill, DWORD selection)
     {
         Hero->m_CursedTempleCurSkill = skill;
@@ -304,9 +409,12 @@ public:
         Cast(skill, selection);
         CHECK_FALSE(Hero->m_CursedTempleCurSkillPacket);
         CHECK_FALSE(MouseRButtonPush);
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
         CHECK(peer.Collect().empty());
+#endif
     }
 
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
     void ExpectRequest(int skill, DWORD selection, short target)
     {
         Cast(skill, selection);
@@ -318,7 +426,15 @@ public:
         CHECK(peer.Collect() == expected);
     }
 
+#endif
+
+private:
+    TempleSkillState m_state;
+
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
+public:
     SkillPacketPeer peer;
+#endif
 
 private:
     static void Place(CHARACTER& character, short key)
@@ -328,34 +444,17 @@ private:
         character.Object.Live = true;
         character.Object.Type = MODEL_PLAYER;
         character.Object.Kind = KIND_PLAYER;
-        character.Object.Position[0] = character.Object.Position[1] = (40.f + 0.5f) * TERRAIN_SCALE;
+        character.Object.Position[0] = character.Object.Position[1] = (TestTile + 0.5f) * TERRAIN_SCALE;
     }
 
-    CHARACTER* m_previousHero;
-    CHARACTER* m_previousCharacters;
-    BMD* m_previousModels;
-    CHARACTER_MACHINE* m_previousMachine;
-    decltype(CharacterAttribute) m_previousAttribute;
-    SKILL_ATTRIBUTE* m_previousSkills;
-    Connection* m_previousSocket;
-    EGameScene m_previousScene;
-    int m_previousWorld;
-    int m_previousSelection;
-    int m_previousTargetX;
-    int m_previousTargetY;
-    bool m_previousMousePush;
-    bool m_previousActive;
-    std::wstring m_previousLanguage;
-    std::string m_previousTheme;
-    bool m_previousGauge;
-    std::filesystem::path m_previousDirectory;
-    Render::Textures::TextureErrorCollector m_previousTextureCollector;
     GuardedCharacters m_table;
     CHARACTER_MACHINE m_machine{};
     std::unique_ptr<BMD[]> m_models;
     std::unique_ptr<SKILL_ATTRIBUTE[]> m_skills;
     std::array<std::unique_ptr<vec34_t[]>, 3> m_bones;
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
     std::unique_ptr<Connection> m_connection;
+#endif
     std::unique_ptr<mu::ui::window::CCursedTempleSystem> m_window;
 };
 }
@@ -397,6 +496,7 @@ TEST_CASE("Temple hostile skills reject absent target keys and teammates [ui][te
     }
 }
 
+#ifdef MU_TEST_TEMPLE_AOT_TRANSPORT
 TEST_CASE("Temple hostile skills send the last valid enemy slot [ui][temple-skill]")
 {
     TempleSkillFixture fixture;
@@ -519,4 +619,55 @@ TEST_CASE("Interrupted temple progress closes after an unrelated foreground noti
         CHECK_FALSE(g_CursedTemple->IsGaugebarEnabled());
         CHECK(fixture.peer.Collect().empty());
     }
+}
+
+#endif
+
+namespace
+{
+class PartyMembershipFixture
+{
+public:
+    PartyMembershipFixture() : m_previousCharacters(CharactersClient), m_previousCount(PartyNumber)
+    {
+        std::copy_n(Party, MAX_PARTYS, m_previousParty.begin());
+        CharactersClient = m_table.characters;
+        PartyNumber = 1;
+        wcscpy(Party[0].Name, L"Teammate");
+        wcscpy(CharactersClient[TeamSlot].ID, L"Teammate");
+        wcscpy(CharactersClient[EnemySlot].ID, L"Enemy");
+    }
+
+    ~PartyMembershipFixture()
+    {
+        CharactersClient = m_previousCharacters;
+        PartyNumber = m_previousCount;
+        std::copy(m_previousParty.begin(), m_previousParty.end(), Party);
+    }
+
+private:
+    GuardedCharacters m_table;
+    CHARACTER* m_previousCharacters;
+    int m_previousCount;
+    std::array<PARTY_t, MAX_PARTYS> m_previousParty{};
+};
+} // namespace
+
+TEST_CASE("Temple party membership rejects missing selection [ui][temple-skill][party-missing]")
+{
+    PartyMembershipFixture fixture;
+    CHECK_FALSE(g_CursedTemple->IsPartyMember(MissingSelection));
+}
+
+TEST_CASE("Temple party membership rejects character table boundary [ui][temple-skill][party-boundary]")
+{
+    PartyMembershipFixture fixture;
+    CHECK_FALSE(g_CursedTemple->IsPartyMember(MAX_CHARACTERS_CLIENT));
+}
+
+TEST_CASE("Temple party membership recognizes teammates and enemies [ui][temple-skill][party-controls]")
+{
+    PartyMembershipFixture fixture;
+    CHECK(g_CursedTemple->IsPartyMember(TeamSlot));
+    CHECK_FALSE(g_CursedTemple->IsPartyMember(EnemySlot));
 }

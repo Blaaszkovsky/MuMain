@@ -2,6 +2,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Core/Utilities/DrawSpawnCheck.h"
 #include "Render/Textures/ZzzOpenglUtil.h"
 #include "Render/Models/ZzzBMD.h"
 #include "Engine/Object/ZzzInfomation.h"
@@ -48,11 +49,21 @@ namespace
 // glows and eye lights - are drawn inside one, so post-processing leaves the
 // character's Classic look alone.
 std::array<bool, MAX_SPRITES> s_spriteBloomExcluded{};
+// Sprites a RenderSprites pass already drew this frame; a later pass in the same frame draws only newer ones.
+std::array<bool, MAX_SPRITES> s_spriteDrawn{};
 } // namespace
+
+void ClearSprites()
+{
+    for (OBJECT& sprite : Sprites)
+        sprite.Live = false;
+    s_spriteDrawn.fill(false);
+}
 
 int CreateSprite(int Type, vec3_t Position, float Scale, vec3_t Light, OBJECT* Owner, float Rotation, int SubType)
 {
-    if (!g_pOption->GetRenderAllEffects())
+    Diagnostics::DrawSpawnCheck::Note("sprite");
+    if (g_pOption && !g_pOption->GetRenderAllEffects())
     {
         return false;
     }
@@ -67,6 +78,7 @@ int CreateSprite(int Type, vec3_t Position, float Scale, vec3_t Light, OBJECT* O
             o->SubType = SubType;
             o->Owner = Owner;
             s_spriteBloomExcluded[i] = mu::GetRenderer().IsBloomExcluded();
+            s_spriteDrawn[i] = false;
             o->AnimationFrame = 1.f;
             o->Scale = Scale;
             o->Angle[2] = Rotation;
@@ -79,10 +91,14 @@ int CreateSprite(int Type, vec3_t Position, float Scale, vec3_t Light, OBJECT* O
     return false;
 }
 
+bool IsSpriteBloomExcluded(int sprite)
+{
+    return s_spriteBloomExcluded[sprite];
+}
+
 void RenderSprite(OBJECT* o, OBJECT* Owner)
 {
-    o->AnimationFrame = UpdateAnimationFrame(o->AnimationFrame, o->Visible);
-    float Scale = o->AnimationFrame * o->Scale;
+    float Scale = UpdateAnimationFrame(o->AnimationFrame, o->Visible) * o->Scale;
 
     BITMAP_t* pBitmap = Bitmaps.GetTexture(o->Type);
     float Width = pBitmap->Width * Scale;
@@ -169,12 +185,12 @@ void RenderSprites(BYTE byRenderOneMore)
         {
             if (o->Position[2] <= 300.f)
             {
-                o->Live = false;
+                s_spriteDrawn[i] = true;
                 continue;
             }
         }
 
-        if (o->Live)
+        if (o->Live && !s_spriteDrawn[i])
         {
             if (o->Type == BITMAP_FORMATION_MARK)
             {
@@ -207,7 +223,7 @@ void RenderSprites(BYTE byRenderOneMore)
 
             if (byRenderOneMore == 0 || byRenderOneMore == 2)
             {
-                o->Live = false;
+                s_spriteDrawn[i] = true;
             }
         }
     }

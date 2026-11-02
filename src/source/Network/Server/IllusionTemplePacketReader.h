@@ -67,7 +67,7 @@ public:
     static constexpr std::size_t StateHeaderSize = 14;
     static constexpr std::size_t PartyMemberSize = 5;
     static constexpr std::size_t ResultHeaderSize = 7;
-    static constexpr std::size_t PlayerResultSize = 17;
+    static constexpr std::size_t PlayerResultSize = 20;
 
     static std::optional<State> ReadState(std::span<const std::uint8_t> packet)
     {
@@ -108,7 +108,7 @@ public:
         result.map = player[10];
         result.team = player[11];
         result.playerClass = player[12];
-        result.addedExperience = std::bit_cast<std::int32_t>(Little32(player, 13));
+        result.addedExperience = std::bit_cast<std::int32_t>(Little32(player, 16));
         return result;
     }
 

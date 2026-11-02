@@ -118,10 +118,10 @@ bool CursedTemple::GetInterfaceState(int type, int subtype)
 
 bool CursedTemple::IsPartyMember(DWORD selectcharacterindex)
 {
-    if (PartyNumber == 0) return false;
+    if (PartyNumber == 0 || selectcharacterindex >= MAX_CHARACTERS_CLIENT)
+        return false;
 
     CHARACTER* c = &CharactersClient[selectcharacterindex];
-    if (c == NULL) return false;
 
     for (int i = 0; i < PartyNumber; ++i)
     {
@@ -499,7 +499,7 @@ void CursedTemple::MoveBlurEffect(CHARACTER* c, OBJECT* o, BMD* b)
     }
 }
 
-bool CursedTemple::RenderObjectVisual(OBJECT* o, BMD* b)
+bool CursedTemple::UpdateObjectEffects(OBJECT* o, BMD* b)
 {
     if (!gMapManager.IsCursedTemple()) return false;
 
@@ -687,7 +687,7 @@ bool CursedTemple::RenderObject_AfterCharacter(OBJECT* o, BMD* b)
     return false;
 }
 
-bool CursedTemple::RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+bool CursedTemple::UpdateMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b)
 {
     vec3_t Light;
 

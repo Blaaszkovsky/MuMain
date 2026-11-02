@@ -14,10 +14,21 @@ DWORD GetGuildRelationShipBGColor(BYTE GuildRelationShip);
 CHARACTER* FindCharacterByID(wchar_t* szName);
 CHARACTER* FindCharacterByKey(int Key);
 
-void RenderLinkObject(float x, float y, float z, CHARACTER* c, PART_t* f, int Type, int Level, int Option1, bool Link,
-                      bool Translate, int RenderType = 0, bool bRightHandItem = true);
+// Draws a linked part and returns the bones it posed it into.
+vec34_t* RenderLinkObject(float x, float y, float z, CHARACTER* c, PART_t* f, int Type, int Level, int Option1,
+                          bool Link, bool Translate, int RenderType = 0, bool bRightHandItem = true);
 void RenderCharacter(CHARACTER* c, OBJECT* o, int Select = 0);
 void RenderCharactersClient();
+// Whether RenderCharactersClient draws the character this frame.
+bool IsCharacterDrawn(CHARACTER* c);
+// The effects, sounds and state changes of the characters drawn this frame, after every Move* of the frame: their
+// bones are final, and what they spawn is drawn this frame.
+void UpdateCharacterEffects();
+// Hands the camera a shake UpdateCharacterEffects requested last frame; call before the frame's damping.
+void ApplyCharacterEffectsEarthQuake();
+// A shake the update requests for the camera after its next damping, as when the draw set it; a character effect's
+// shake wins, as the characters drew later.
+void RequestEarthQuake(float value);
 
 /**
  * @brief Builds a generous axis-aligned pick box for the character selection screen.
@@ -37,20 +48,25 @@ extern size_t g_LastActiveCharacterCount;
 extern bool g_LastAnimationWasParallel;
 
 #ifdef MU_ENABLE_CONTROL_SOCKET
-// Render's recompute against the pre-pass bones of each drawn client character, while enabled.
+// The poses drawn client characters reuse, against a fresh animation of their state, while enabled.
 struct PrepassBoneCheck
 {
     bool enabled = false;
     int checked = 0;
     int players = 0;
     int mismatched = 0;
+    // Draws that animated the character again: its state changed after the update built the pose.
+    int rebuilt = 0;
+    // Draws of a client character's own part: reusing the update's animation step, or advancing it themselves
+    // (an attachment's first frame; steadily rising when update and draw disagree).
+    int partsReused = 0;
+    int partsAdvancedInDraw = 0;
     float maxDelta = 0.f;
 };
 extern PrepassBoneCheck g_PrepassBoneCheck;
 void RecordPrepassBones(const float (*prepass)[3][4], const float (*rendered)[3][4], int numBones, bool player);
-// Around render's Animation() call: Begin keeps the pre-pass bones, End compares render's with them.
-bool BeginPrepassBoneCheck(const OBJECT* o, int numBones);
-void EndPrepassBoneCheck(const OBJECT* o, int numBones);
+// Called by a draw that reused o's pose, or animated o again.
+void CheckCharacterPose(const OBJECT* o, BMD* model, bool reused);
 #endif
 
 void MoveEye(OBJECT* o, BMD* b, int Right, int Left, int Right2 = -1, int Left2 = -1, int Right3 = -1, int Left3 = -1);
@@ -103,7 +119,7 @@ bool AttackStage(CHARACTER* c, OBJECT* o);
 
 void RenderGuild(OBJECT* o, int Type = -1, vec3_t vPos = NULL);
 void RenderLight(OBJECT* o, int Texture, float Scale, int Bone, float x, float y, float z);
-void RenderProtectGuildMark(CHARACTER* c);
+void SpawnProtectGuildMark(CHARACTER* c);
 
 void MakeElfHelper(CHARACTER* c);
 int GetFenrirType(CHARACTER* c);
@@ -118,6 +134,8 @@ void CreateJointFpsChecked(int Type, vec3_t Position, vec3_t TargetPosition, vec
                            OBJECT* Target = NULL, float Scale = 10.f, short PK = -1, WORD SkillIndex = 0,
                            WORD SkillSerialNum = 0, int iChaIndex = -1, const float* vColor = NULL,
                            short int sTargetIndex = -1);
+// Whether the character carries its weapons on its back instead of in hand.
+bool AreWeaponsOnBack(const CHARACTER* c, const OBJECT* o);
 bool RenderCharacterBackItem(CHARACTER* c, OBJECT* o, bool bTranslate);
 bool IsBackItem(CHARACTER* c, int iType);
 

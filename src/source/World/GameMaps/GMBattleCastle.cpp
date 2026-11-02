@@ -14,6 +14,7 @@
 #include "Scenes/SceneCore.h"
 #include "Render/Effects/ZzzEffect.h"
 #include "Engine/AI/ZzzAI.h"
+#include "Engine/Object/ZzzObject.h"
 #include "Engine/Object/ZzzOpenData.h"
 #include "Engine/Physics/PhysicsManager.h"
 #include "Character/CSParts.h"
@@ -1131,7 +1132,7 @@ namespace battleCastle
         return true;
     }
 
-    bool RenderBattleCastleVisual(OBJECT* o, BMD* b)
+    bool UpdateBattleCastleObjectEffects(OBJECT* o, BMD* b)
     {
         if (gMapManager.InBattleCastle() == false) return false;
 
@@ -1253,13 +1254,10 @@ namespace battleCastle
         }
         else if (o->Type >= BATTLE_CASTLE_WALL1 && o->Type <= BATTLE_CASTLE_WALL4)
         {
+            // A wall's debris effect (SubType 1) shows only the debris its first move spawns.
             if (o->SubType == 0)
             {
                 b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh);
-            }
-            else
-            {
-                b->RenderMeshEffect(0, MODEL_WALL_PART1);
             }
             return true;
         }
@@ -1811,7 +1809,7 @@ namespace battleCastle
         return false;
     }
 
-    bool    RenderBattleCastleMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+    bool UpdateBattleCastleMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b)
     {
         if (gMapManager.InBattleCastle() == false) return false;
 
@@ -1822,25 +1820,10 @@ namespace battleCastle
         case MODEL_CASTLE_GATE1:
             break;
 
-        case MODEL_GUARDIAN_STATUE:
-            if (IsBattleCastleStart())
-            {
-                Vector(0.3f, 0.2f, 0.f, Light);
-                RenderAurora(BITMAP_MAGIC + 1, RENDER_BRIGHT, o->Position[0], o->Position[1], 9.f, 9.f, Light);
-            }
-            else
-            {
-                RenderAurora(BITMAP_MAGIC + 1, RENDER_DARK, o->Position[0], o->Position[1], 5.5f, 5.5f, o->Light);
-            }
-            return true;
-
         case MODEL_LIFE_STONE:
             if (o->m_byBuildTime >= 5)
             {
                 o->BlendMeshLight = sinf(WorldTime * 0.001f) * 0.3 + 0.3f;
-
-                Vector(0.3f, 0.2f, 0.f, Light);
-                RenderAurora(BITMAP_MAGIC + 1, RENDER_BRIGHT, o->Position[0], o->Position[1], 9.f, 9.f, Light);
             }
             else
             {
@@ -1868,8 +1851,6 @@ namespace battleCastle
 
                 b->TransformPosition(o->BoneTransform[2], p, Position, true);
                 CreateSprite(BITMAP_LIGHT, Position, 4.f, Light, NULL);
-
-                RenderAurora(BITMAP_MAGIC + 1, RENDER_DARK, o->Position[0], o->Position[1], 5.5f, 5.5f, o->Light);
             }
             else
             {
@@ -1896,9 +1877,85 @@ namespace battleCastle
         return false;
     }
 
+    bool RenderBattleCastleMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+    {
+        if (gMapManager.InBattleCastle() == false)
+            return false;
+
+        vec3_t Light;
+
+        switch (o->Type)
+        {
+        case MODEL_GUARDIAN_STATUE:
+            if (IsBattleCastleStart())
+            {
+                Vector(0.3f, 0.2f, 0.f, Light);
+                RenderAurora(BITMAP_MAGIC + 1, RENDER_BRIGHT, o->Position[0], o->Position[1], 9.f, 9.f, Light);
+            }
+            else
+            {
+                RenderAurora(BITMAP_MAGIC + 1, RENDER_DARK, o->Position[0], o->Position[1], 5.5f, 5.5f, o->Light);
+            }
+            return true;
+
+        case MODEL_LIFE_STONE:
+            if (o->m_byBuildTime >= 5)
+            {
+                Vector(0.3f, 0.2f, 0.f, Light);
+                RenderAurora(BITMAP_MAGIC + 1, RENDER_BRIGHT, o->Position[0], o->Position[1], 9.f, 9.f, Light);
+            }
+            return true;
+
+        case MODEL_CANON_TOWER:
+            if (IsBattleCastleStart())
+            {
+                RenderAurora(BITMAP_MAGIC + 1, RENDER_DARK, o->Position[0], o->Position[1], 5.5f, 5.5f, o->Light);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     bool    RenderBattleCastleMonsterCloth(CHARACTER* c, OBJECT* o, bool Translate, int Select)
     {
         return false;
+    }
+
+    void UpdateBattleCastleObjectMeshEffects(OBJECT* o, BMD* b)
+    {
+        if (gMapManager.InBattleCastle() == false)
+            return;
+
+        switch (o->Type)
+        {
+        case MODEL_CASTLE_GATE1:
+            if (o->CurrentAction == MONSTER01_DIE)
+            {
+                o->Live = false;
+                PlayBuffer(SOUND_HIT_GATE2);
+                SkinObjectMeshes(o, b, true);
+                b->RenderMeshEffect(0, MODEL_GATE_PART1);
+            }
+            break;
+
+        case MODEL_GUARDIAN_STATUE:
+            if (IsBattleCastleStart())
+            {
+                if (o->CurrentAction != MONSTER01_DIE)
+                    o->HiddenMesh = -1;
+
+                if (o->CurrentAction == MONSTER01_DIE)
+                {
+                    o->Live = false;
+
+                    PlayBuffer(SOUND_BC_GUARD_STONE_DIS);
+                    SkinObjectMeshes(o, b, true);
+                    b->RenderMeshEffect(0, MODEL_STONE_COFFIN);
+                }
+            }
+            break;
+        }
     }
 
     bool    RenderBattleCastleMonsterObjectMesh(OBJECT* o, BMD* b)
@@ -1954,40 +2011,26 @@ namespace battleCastle
             break;
 
         case MODEL_CASTLE_GATE1:
-            if (o->CurrentAction == MONSTER01_DIE)
-            {
-                o->Live = false;
-                PlayBuffer(SOUND_HIT_GATE2);
-                b->RenderMeshEffect(0, MODEL_GATE_PART1);
-            }
-            else
+            // Dying, it shows only the debris UpdateBattleCastleObjectMeshEffects spawns.
+            if (o->CurrentAction != MONSTER01_DIE)
             {
                 b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh);
             }
             break;
 
         case MODEL_GUARDIAN_STATUE:
-            if (IsBattleCastleStart())
+            // Dying, it shows only the debris UpdateBattleCastleObjectMeshEffects spawns.
+            if (IsBattleCastleStart() && o->CurrentAction != MONSTER01_DIE)
             {
-                if (o->CurrentAction != MONSTER01_DIE)
-                    o->HiddenMesh = -1;
-
-                if (o->CurrentAction == MONSTER01_DIE)
-                {
-                    o->Live = false;
-
-                    PlayBuffer(SOUND_BC_GUARD_STONE_DIS);
-                    b->RenderMeshEffect(0, MODEL_STONE_COFFIN);
-                }
-                else
-                {
-                    b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh);
-                    Vector(0.3f, 0.3f, 0.3f, b->BodyLight);
-                    b->RenderBody(RENDER_BRIGHT | RENDER_CHROME, o->Alpha, 0.5f, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh, BITMAP_CHROME);
-                    Vector(0.2f, 0.2f, 0.5f, b->BodyLight);
-                    b->RenderBody(RENDER_BRIGHT | RENDER_METAL, o->Alpha, 0.5f, o->BlendMeshLight, o->BlendMeshTexCoordU, o->BlendMeshTexCoordV, o->HiddenMesh, BITMAP_CHROME);
-                    Vector(1.f, 1.f, 1.f, b->BodyLight);
-                }
+                b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
+                              o->BlendMeshTexCoordV, o->HiddenMesh);
+                Vector(0.3f, 0.3f, 0.3f, b->BodyLight);
+                b->RenderBody(RENDER_BRIGHT | RENDER_CHROME, o->Alpha, 0.5f, o->BlendMeshLight, o->BlendMeshTexCoordU,
+                              o->BlendMeshTexCoordV, o->HiddenMesh, BITMAP_CHROME);
+                Vector(0.2f, 0.2f, 0.5f, b->BodyLight);
+                b->RenderBody(RENDER_BRIGHT | RENDER_METAL, o->Alpha, 0.5f, o->BlendMeshLight, o->BlendMeshTexCoordU,
+                              o->BlendMeshTexCoordV, o->HiddenMesh, BITMAP_CHROME);
+                Vector(1.f, 1.f, 1.f, b->BodyLight);
             }
             success = true;
             break;

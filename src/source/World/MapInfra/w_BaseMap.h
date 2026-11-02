@@ -30,6 +30,11 @@ public: // Object
     {
         return false;
     }
+    // A map object's effects, sounds and state changes, for the objects the last draw drew. True when handled.
+    virtual bool UpdateObjectEffects(OBJECT* o, BMD* b)
+    {
+        return false;
+    }
     virtual bool RenderObjectVisual(OBJECT* o, BMD* b)
     {
         return false;
@@ -52,6 +57,12 @@ public: // Character
         return false;
     }
     virtual void MoveBlurEffect(CHARACTER* c, OBJECT* o, BMD* b) {}
+    // A drawn monster's effects, sounds and state changes, after every Move* this frame: its bones are final and
+    // what it spawns is drawn this frame. True when handled.
+    virtual bool UpdateMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b)
+    {
+        return false;
+    }
     virtual bool RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
     {
         return false;

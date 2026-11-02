@@ -125,7 +125,7 @@ bool M37Kanturu1st::MoveKanturu1stObject(OBJECT* pObject)
     return true;
 }
 
-bool M37Kanturu1st::RenderKanturu1stObjectVisual(OBJECT* pObject, BMD* pModel)
+bool M37Kanturu1st::UpdateKanturu1stObjectEffects(OBJECT* pObject, BMD* pModel)
 {
     if (!(IsKanturu1st() || M40GMArea::IsGmArea()))
         return false;
@@ -134,6 +134,18 @@ bool M37Kanturu1st::RenderKanturu1stObjectVisual(OBJECT* pObject, BMD* pModel)
 
     switch (pObject->Type)
     {
+    case 95:
+    {
+        vec3_t sparkP, sparkPosition, sparkLight;
+        Vector(0.0f, 0.0f, 0.0f, sparkP);
+        Vector(0.1f, 0.1f, 0.3f, sparkLight);
+        for (int i = 0; i <= 9; ++i)
+        {
+            pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[i], sparkP, sparkPosition, false);
+            CreateSprite(BITMAP_SPARK + 1, sparkPosition, 7.5f, sparkLight, pObject);
+        }
+    }
+    break;
     case 37:
     {
         int time = timeGetTime() % 1024;
@@ -174,7 +186,7 @@ bool M37Kanturu1st::RenderKanturu1stObjectVisual(OBJECT* pObject, BMD* pModel)
     case 70:
         float Luminosity;
         Vector(0.0f, 0.0f, 0.0f, p);
-        pModel->TransformPosition(BoneTransform[6], p, Position, false);
+        pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[6], p, Position, false);
         Luminosity = (float)sinf(WorldTime * 0.002f) + 1.8f;
         Vector(0.8f, 0.4f, 0.2f, Light);
         CreateSprite(
@@ -200,46 +212,23 @@ bool M37Kanturu1st::RenderKanturu1stObjectVisual(OBJECT* pObject, BMD* pModel)
             CreateParticle(BITMAP_WATERFALL_2, pObject->Position,
                 pObject->Angle, Light, 2, pObject->Scale);
         break;
-    case 85:
-        pModel->BeginRender(pObject->Alpha);
-        pModel->RenderMesh(3, RENDER_TEXTURE | RENDER_BRIGHT, pObject->Alpha,
-            pObject->BlendMesh, pObject->BlendMeshLight,
-            pObject->BlendMeshTexCoordU, pObject->BlendMeshTexCoordV);
-        pModel->RenderMesh(3, RENDER_CHROME | RENDER_DARK, pObject->Alpha,
-            pObject->BlendMesh, pObject->BlendMeshLight,
-            pObject->BlendMeshTexCoordU, pObject->BlendMeshTexCoordV,
-            BITMAP_CHROME);
-        pModel->EndRender();
-        break;
     case 92:
     {
         vec3_t EndRelative, StartPos, EndPos;
         Vector(0.f, 0.f, 0.f, EndRelative);
-        pModel->TransformPosition(
-            BoneTransform[1], EndRelative, StartPos, false);
-        pModel->TransformPosition(
-            BoneTransform[2], EndRelative, EndPos, false);
+        pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[1], EndRelative, StartPos, false);
+        pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[2], EndRelative, EndPos, false);
         if (rand() % 30 == 1)
             CreateJoint(BITMAP_JOINT_THUNDER, StartPos, EndPos,
                 pObject->Angle, 18, NULL, 50.f);
     }
     break;
-    case 96:
-        pModel->StreamMesh = 0;
-        mu::GetRenderer().SetAlphaFunc(GL_GREATER, 0.0f);
-        pModel->RenderMesh(
-            0, RENDER_TEXTURE, 1.0f, pObject->BlendMesh,
-            pObject->BlendMeshLight, pObject->BlendMeshTexCoordU,
-            -(int)WorldTime % 20000 * 0.00005f);
-        mu::GetRenderer().SetAlphaFunc(GL_GREATER, 0.25f);
-        pModel->StreamMesh = -1;
-        break;
     case 98:
         if (rand_fps_check(3))
         {
             vec3_t vPos;
             Vector(0.0f, 0.0f, 0.0f, vPos);
-            pModel->TransformPosition(BoneTransform[1], vPos, Position, false);
+            pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[1], vPos, Position, false);
             Vector(0.5f, 0.6f, 0.1f, Light);
             CreateParticle(
                 BITMAP_TWINTAIL_WATER, Position, pObject->Angle, Light, 2);
@@ -251,7 +240,7 @@ bool M37Kanturu1st::RenderKanturu1stObjectVisual(OBJECT* pObject, BMD* pModel)
         vec3_t vPos;
         Vector(0.0f, 0.0f, 0.0f, vPos);
         Vector(fLumi, fLumi, fLumi, Light);
-        pModel->TransformPosition(BoneTransform[4], vPos, Position, false);
+        pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[4], vPos, Position, false);
         CreateParticleFpsChecked(
             BITMAP_ENERGY, Position, pObject->Angle, Light, 0, 1.5f);
         CreateSprite(BITMAP_SPARK + 1, Position, 10.0f, Light, pObject);
@@ -296,10 +285,38 @@ bool M37Kanturu1st::RenderKanturu1stObjectVisual(OBJECT* pObject, BMD* pModel)
         Vector(fLumi * 0.6f, fLumi * 1.0f, fLumi * 0.8f, Light);
         vec3_t vPos;
         Vector(0.0f, 0.0f, 0.0f, vPos);
-        pModel->TransformPosition(BoneTransform[1], vPos, Position, false);
+        pModel->TransformPosition(Engine::Object::Pose::World(pObject, pModel)[1], vPos, Position, false);
         CreateSprite(BITMAP_LIGHT, Position, 1.1f, Light, pObject);
     }
     break;
+    }
+
+    return true;
+}
+
+bool M37Kanturu1st::RenderKanturu1stObjectVisual(OBJECT* pObject, BMD* pModel)
+{
+    if (!(IsKanturu1st() || M40GMArea::IsGmArea()))
+        return false;
+
+    switch (pObject->Type)
+    {
+    case 85:
+        pModel->BeginRender(pObject->Alpha);
+        pModel->RenderMesh(3, RENDER_TEXTURE | RENDER_BRIGHT, pObject->Alpha, pObject->BlendMesh,
+                           pObject->BlendMeshLight, pObject->BlendMeshTexCoordU, pObject->BlendMeshTexCoordV);
+        pModel->RenderMesh(3, RENDER_CHROME | RENDER_DARK, pObject->Alpha, pObject->BlendMesh, pObject->BlendMeshLight,
+                           pObject->BlendMeshTexCoordU, pObject->BlendMeshTexCoordV, BITMAP_CHROME);
+        pModel->EndRender();
+        break;
+    case 96:
+        pModel->StreamMesh = 0;
+        mu::GetRenderer().SetAlphaFunc(GL_GREATER, 0.0f);
+        pModel->RenderMesh(0, RENDER_TEXTURE, 1.0f, pObject->BlendMesh, pObject->BlendMeshLight,
+                           pObject->BlendMeshTexCoordU, -(int)WorldTime % 20000 * 0.00005f);
+        mu::GetRenderer().SetAlphaFunc(GL_GREATER, 0.25f);
+        pModel->StreamMesh = -1;
+        break;
     }
 
     return true;
@@ -369,14 +386,6 @@ void M37Kanturu1st::RenderKanturu1stAfterObjectMesh(OBJECT* o, BMD* b)
             o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
             o->BlendMeshTexCoordV, BITMAP_CHROME);
         b->EndRender();
-        vec3_t Light, p, Position;
-        for (int i = 0; i < 10; ++i)
-        {
-            Vector(0.0f, 0.0f, 0.0f, p);
-            b->TransformPosition(BoneTransform[i], p, Position, false);
-            Vector(0.1f, 0.1f, 0.3f, Light);
-            CreateSprite(BITMAP_SPARK + 1, Position, 7.5f, Light, o);
-        }
     }
     break;
 
@@ -1003,7 +1012,7 @@ bool M37Kanturu1st::RenderKanturu1stMonsterObjectMesh(OBJECT* o, BMD* b, int Ext
     return false;
 }
 
-bool M37Kanturu1st::RenderKanturu1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+bool M37Kanturu1st::UpdateKanturu1stMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b)
 {
     switch (o->Type)
     {
@@ -1241,26 +1250,9 @@ bool M37Kanturu1st::RenderKanturu1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* 
     {
         if (gMapManager.WorldActive == WD_39KANTURU_3RD && g_Direction.m_CKanturu.m_iKanturuState == KANTURU_STATE_MAYA_BATTLE)
         {
-            vec3_t Light;
-            float Scale, Angle;
-
             o->Distance += 0.05f * FPS_ANIMATION_FACTOR;
-            Scale = o->Distance;
-
-            if (Scale >= 3.0f)
+            if (o->Distance >= 3.0f)
                 o->Distance = 0.1f;
-
-            Angle = (timeGetTime() % 9000) / 10.0f;
-
-            Light[0] = 0.6f - (Scale / 5.0f);
-            Light[1] = 0.6f - (Scale / 5.0f);
-            Light[2] = 0.6f - (Scale / 5.0f);
-
-            EnableAlphaBlend();
-            RenderTerrainAlphaBitmap(BITMAP_ENERGY_RING, o->Position[0], o->Position[1], Scale, Scale, Light, Angle);
-
-            Vector(0.5f, 0.5f, 0.5f, Light);
-            RenderTerrainAlphaBitmap(BITMAP_ENERGY_FIELD, o->Position[0], o->Position[1], 2.0f, 2.0f, Light, Angle);
         }
         if (o->CurrentAction == MONSTER01_WALK)
         {
@@ -1516,6 +1508,33 @@ bool M37Kanturu1st::RenderKanturu1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* 
         }
     }
     return true;
+    }
+    return false;
+}
+
+bool M37Kanturu1st::RenderKanturu1stMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+{
+    switch (o->Type)
+    {
+    case MODEL_BLADE_HUNTER:
+        if (gMapManager.WorldActive == WD_39KANTURU_3RD &&
+            g_Direction.m_CKanturu.m_iKanturuState == KANTURU_STATE_MAYA_BATTLE)
+        {
+            vec3_t Light;
+            const float Scale = o->Distance;
+            const float Angle = (timeGetTime() % 9000) / 10.0f;
+
+            Light[0] = 0.6f - (Scale / 5.0f);
+            Light[1] = 0.6f - (Scale / 5.0f);
+            Light[2] = 0.6f - (Scale / 5.0f);
+
+            EnableAlphaBlend();
+            RenderTerrainAlphaBitmap(BITMAP_ENERGY_RING, o->Position[0], o->Position[1], Scale, Scale, Light, Angle);
+
+            Vector(0.5f, 0.5f, 0.5f, Light);
+            RenderTerrainAlphaBitmap(BITMAP_ENERGY_FIELD, o->Position[0], o->Position[1], 2.0f, 2.0f, Light, Angle);
+        }
+        break;
     }
     return false;
 }

@@ -127,7 +127,7 @@ void GMSwampOfQuiet::PlayObjectSound(OBJECT* pObject)
     // 	}
 }
 
-bool GMSwampOfQuiet::RenderObjectVisual(OBJECT* pObject, BMD* pModel)
+bool GMSwampOfQuiet::UpdateObjectEffects(OBJECT* pObject, BMD* pModel)
 {
     if (!IsCurrentMap())
         return false;
@@ -800,7 +800,7 @@ void GMSwampOfQuiet::MoveBlurEffect(CHARACTER* pCharacter, OBJECT* pObject, BMD*
     }
 }
 
-bool GMSwampOfQuiet::RenderMonsterVisual(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel)
+bool GMSwampOfQuiet::UpdateMonsterEffects(CHARACTER* pCharacter, OBJECT* pObject, BMD* pModel)
 {
     if (!IsCurrentMap())
         return false;
