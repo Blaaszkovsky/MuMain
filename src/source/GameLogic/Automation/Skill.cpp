@@ -2,6 +2,7 @@
 #include "GameLogic/Automation/Skill.h"
 
 #include "GameLogic/Automation/Attack.h"
+#include "GameLogic/Automation/Movement.h"
 #include "GameLogic/Combat/SkillExecution.h"
 #include "GameLogic/Skills/SkillManager.h"
 #include "Engine/AI/ZzzAI.h"
@@ -85,7 +86,7 @@ static SkillResult AimAtSelf(int targetKey, bool allowPlayers)
 }
 
 // Aims a targeted skill, walking into range when needed.
-static SkillResult AimAtTarget(int targetKey, bool allowPlayers, float skillDistance)
+static SkillResult AimAtTarget(int targetKey, bool allowPlayers, int huntingDistance, float skillDistance)
 {
     if (targetKey == -1)
     {
@@ -132,7 +133,7 @@ static SkillResult AimAtTarget(int targetKey, bool allowPlayers, float skillDist
 
     PATH_t path;
     if (!inRange && !PathFinding2(Hero->PositionX, Hero->PositionY, TargetX, TargetY, &path,
-                                  skillDistance))
+                                  static_cast<float>(huntingDistance) + skillDistance))
     {
         SelectedCharacter = previousSelection;
         return SkillResult::NoPath;
@@ -152,12 +153,18 @@ static SkillResult AimAtTarget(int targetKey, bool allowPlayers, float skillDist
     return SkillResult::NotReady;
 }
 
-SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey, bool allowPlayers)
+SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey, bool allowPlayers, int huntingDistance)
 {
-    // Let the current swing finish before issuing another action.
-    if (IsSwingInProgress())
+    // Let the current action finish before the timer can replace its path or swing.
+    if (IsSwingInProgress() || IsWalkInProgress())
     {
         return SkillResult::Busy;
+    }
+
+    // Saved helper configurations reach here unchecked; the skill table is indexed below.
+    if (skill <= AT_SKILL_UNDEFINED || skill >= MAX_SKILLS)
+    {
+        return SkillResult::Refused;
     }
 
     const float skillDistance = gSkillManager.GetSkillDistance(skill, Hero);
@@ -182,7 +189,7 @@ SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey,
     }
     else
     {
-        const SkillResult aimed = AimAtTarget(targetKey, allowPlayers, skillDistance);
+        const SkillResult aimed = AimAtTarget(targetKey, allowPlayers, huntingDistance, skillDistance);
         if (aimed != SkillResult::NotReady)
         {
             return aimed;
@@ -201,6 +208,9 @@ SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey,
     g_MovementSkill.m_bMagic = true;
 
     const int executed = GameLogic::Combat::ExecuteSkill(Hero, skill, skillDistance);
+    // With auto-attack on, ExecuteSkill arms the per-frame repeat (Attacking = 2), which would recast
+    // this skill before the caller picks the next one; -1 is the state with auto-attack off.
+    Attacking = -1;
     if (executed == SkillExecutionRefused)
     {
         return SkillResult::Refused;

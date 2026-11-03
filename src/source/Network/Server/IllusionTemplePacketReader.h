@@ -65,7 +65,7 @@ public:
     };
 
     static constexpr std::size_t StateHeaderSize = 14;
-    static constexpr std::size_t PartyMemberSize = 5;
+    static constexpr std::size_t PartyMemberSize = 6;
     static constexpr std::size_t ResultHeaderSize = 7;
     static constexpr std::size_t PlayerResultSize = 20;
 
@@ -114,10 +114,10 @@ public:
 
     static std::optional<SkillResult> ReadSkillResult(std::span<const std::uint8_t> packet)
     {
-        constexpr std::size_t wireSize = 11;
+        constexpr std::size_t wireSize = 12;
         if (packet.size() < wireSize)
             return std::nullopt;
-        return SkillResult{packet[4], Big16(packet, 5), Little16(packet, 7), Little16(packet, 9)};
+        return SkillResult{packet[4], Big16(packet, 5), Little16(packet, 8), Little16(packet, 10)};
     }
 
     static std::optional<SkillEnd> ReadSkillEnd(std::span<const std::uint8_t> packet)

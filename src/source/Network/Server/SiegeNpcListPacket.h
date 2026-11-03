@@ -6,7 +6,7 @@
 
 namespace Network::Packets
 {
-inline constexpr std::size_t SiegeNpcEntrySize = 27;
+inline constexpr std::size_t SiegeNpcEntrySize = 28;
 
 struct SiegeNpcListView
 {
@@ -16,8 +16,8 @@ struct SiegeNpcListView
 
 inline std::optional<SiegeNpcListView> ReadSiegeNpcList(std::span<const std::uint8_t> packet)
 {
-    // Season 6 C2/B3: result at 4, little-endian count at 5, then 27-byte NPCs at 9.
-    constexpr std::size_t headerSize = 9;
+    // C2/B3: result at 4, little-endian count at 8, then aligned 28-byte NPCs at 12.
+    constexpr std::size_t headerSize = 12;
     constexpr std::uint8_t headerCode = 0xC2;
     constexpr std::uint8_t packetCode = 0xB3;
     if (packet.size() < headerSize || packet[0] != headerCode || packet[3] != packetCode)
@@ -27,8 +27,8 @@ inline std::optional<SiegeNpcListView> ReadSiegeNpcList(std::span<const std::uin
     if (frameSize < headerSize || frameSize > packet.size())
         return std::nullopt;
 
-    const auto count = std::uint32_t(packet[5]) | (std::uint32_t(packet[6]) << 8)
-        | (std::uint32_t(packet[7]) << 16) | (std::uint32_t(packet[8]) << 24);
+    const auto count = std::uint32_t(packet[8]) | (std::uint32_t(packet[9]) << 8)
+        | (std::uint32_t(packet[10]) << 16) | (std::uint32_t(packet[11]) << 24);
     const auto entriesSize = frameSize - headerSize;
     if (entriesSize % SiegeNpcEntrySize != 0 || count != entriesSize / SiegeNpcEntrySize)
         return std::nullopt;

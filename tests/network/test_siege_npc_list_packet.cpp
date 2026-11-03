@@ -16,10 +16,15 @@ void ReceiveBCNPCBuy(const BYTE* ReceiveBuffer, int Size);
 void ReceiveBCNPCRepair(const BYTE* ReceiveBuffer, int Size);
 void ReceiveBCNPCUpgrade(const BYTE* ReceiveBuffer, int Size);
 
+static_assert(sizeof(PRECEIVE_CASTLE_HUNTZONE_INFO) == 20);
+static_assert(offsetof(PRECEIVE_CASTLE_HUNTZONE_INFO, m_iCurrPrice) == 8);
+static_assert(offsetof(PRECEIVE_CASTLE_HUNTZONE_INFO, m_iMaxPrice) == 12);
+static_assert(offsetof(PRECEIVE_CASTLE_HUNTZONE_INFO, m_iUnitPrice) == 16);
+
 namespace
 {
-constexpr std::size_t HeaderSize = 9;
-constexpr std::size_t EntrySize = 27;
+constexpr std::size_t HeaderSize = 12;
+constexpr std::size_t EntrySize = 28;
 constexpr int GateNumber = 277;
 constexpr int StatueNumber = 283;
 constexpr int GateMaxHp = 1900000;
@@ -50,7 +55,7 @@ std::vector<BYTE> NpcList(int number, std::size_t count)
     packet[2] = static_cast<BYTE>(size);
     packet[3] = 0xB3;
     packet[4] = 1;
-    WriteLe32(packet, 5, static_cast<std::uint32_t>(count));
+    WriteLe32(packet, 8, static_cast<std::uint32_t>(count));
     for (std::size_t i = 0; i < count; ++i)
     {
         const auto offset = HeaderSize + i * EntrySize;
@@ -96,8 +101,8 @@ void CheckUnchanged(const std::array<PMSG_NPCDBLIST, 10>& previous)
 
 std::vector<BYTE> NpcReply(BYTE subcode, int number, int index, int first = 0, int second = 0)
 {
-    const std::size_t size = subcode == 0x05 ? 13 : 21;
-    // Keep the legacy native read in allocated storage during RED; the wire length remains 13/21.
+    const std::size_t size = subcode == 0x05 ? 16 : 24;
+    // A buy reply may have an allocated receive-buffer tail beyond its declared 16 bytes.
     constexpr std::size_t backingSize = 24;
     std::vector<BYTE> packet(backingSize);
     packet[0] = 0xC1;
@@ -105,12 +110,12 @@ std::vector<BYTE> NpcReply(BYTE subcode, int number, int index, int first = 0, i
     packet[2] = 0xB2;
     packet[3] = subcode;
     packet[4] = 1;
-    WriteLe32(packet, 5, number);
-    WriteLe32(packet, 9, index);
+    WriteLe32(packet, 8, number);
+    WriteLe32(packet, 12, index);
     if (subcode != 0x05)
     {
-        WriteLe32(packet, 13, first);
-        WriteLe32(packet, 17, second);
+        WriteLe32(packet, 16, first);
+        WriteLe32(packet, 20, second);
     }
     return packet;
 }
@@ -195,7 +200,7 @@ TEST_CASE("Castle Siege NPC list rejects malformed frames without partial update
         CheckUnchanged(previous);
     }
     for (const auto [offset, value] : std::array<std::pair<std::size_t, BYTE>, 7>{
-             {{0, 0xC1}, {3, 0xB4}, {1, 1}, {2, 8}, {2, 170}, {5, 5}, {5, 7}}})
+             {{0, 0xC1}, {3, 0xB4}, {1, 1}, {2, 8}, {2, 170}, {8, 5}, {8, 7}}})
     {
         auto malformed = packet;
         malformed[offset] = value;
@@ -203,7 +208,7 @@ TEST_CASE("Castle Siege NPC list rejects malformed frames without partial update
         CheckUnchanged(previous);
     }
     auto oversizedCount = packet;
-    WriteLe32(oversizedCount, 5, UINT32_MAX);
+    WriteLe32(oversizedCount, 8, UINT32_MAX);
     ReceiveBCNPCList(oversizedCount.data(), static_cast<int>(oversizedCount.size()));
     CheckUnchanged(previous);
 }

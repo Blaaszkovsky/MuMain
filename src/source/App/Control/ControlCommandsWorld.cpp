@@ -110,14 +110,6 @@ bool ParseMapIndex(const std::string& text, int& map)
     return true;
 }
 
-// True while the character is still walking a planned path. Re-issuing a
-// move before it ends restarts the walk from the current tile, so an act
-// that walks into range would crawl.
-bool WalkInProgress()
-{
-    return Hero != nullptr && Hero->Path.PathNum > 0 && Hero->Path.CurrentPath < Hero->Path.PathNum - 1;
-}
-
 // True when the next step of a per-frame act is due, remembering when the
 // previous one was taken.
 bool StepIsDue(std::chrono::steady_clock::time_point& last, std::chrono::milliseconds interval = PrimitiveInterval)
@@ -201,23 +193,14 @@ public:
             return Status::Finished;
         }
 
-        if (Hero == nullptr)
-        {
-            return Status::Running;
-        }
-
-        // Tile coordinates advance before the rendered walk finishes.
-        if (WalkInProgress())
+        if (Hero == nullptr || Automation::IsWalkInProgress())
         {
             return Status::Running;
         }
 
         if (std::abs(Hero->PositionX - m_tileX) <= ArrivalTiles && std::abs(Hero->PositionY - m_tileY) <= ArrivalTiles)
         {
-            json result;
-            result["position"] = PositionObject();
-            response = App::Control::EncodeResult(EncodedId(), result.dump());
-            return Status::Finished;
+            return FinishArrival(response);
         }
 
         // Pace the walk packets like a player's clicks; the server treats a
@@ -237,16 +220,21 @@ public:
 
         if (result == Automation::MoveResult::Arrived)
         {
-            json arrived;
-            arrived["position"] = PositionObject();
-            response = App::Control::EncodeResult(EncodedId(), arrived.dump());
-            return Status::Finished;
+            return FinishArrival(response);
         }
 
         return Status::Running;
     }
 
 private:
+    Status FinishArrival(std::string& response) const
+    {
+        json result;
+        result["position"] = PositionObject();
+        response = App::Control::EncodeResult(EncodedId(), result.dump());
+        return Status::Finished;
+    }
+
     int m_tileX;
     int m_tileY;
     int m_fromMap;
@@ -302,7 +290,7 @@ public:
             return Status::Running;
         }
 
-        if (WalkInProgress() || !StepIsDue(m_lastStep))
+        if (Automation::IsWalkInProgress() || !StepIsDue(m_lastStep))
         {
             return Status::Running;
         }
@@ -427,7 +415,7 @@ public:
         if (m_approach.WasRelocated())
             return Fail(response, ErrorCode::Interrupted, "the character relocated during the skill");
 
-        if (WalkInProgress() || !StepIsDue(m_lastStep))
+        if (Automation::IsWalkInProgress() || !StepIsDue(m_lastStep))
         {
             return Status::Running;
         }
@@ -534,7 +522,7 @@ public:
             return Status::Finished;
         }
 
-        if (WalkInProgress() || !StepIsDue(m_lastStep))
+        if (Automation::IsWalkInProgress() || !StepIsDue(m_lastStep))
         {
             return Status::Running;
         }

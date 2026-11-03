@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "Render/Models/ZzzBMD.h"
 #include "Render/Models/WorldModelSlots.h"
+#include "Core/Utilities/Random.h"
 #include "Engine/Object/ZzzInfomation.h"
 #include "Engine/Object/ZzzObject.h"
 #include "Engine/Object/ZzzCharacter.h"
@@ -114,7 +115,7 @@ void OpenModels(int Model, wchar_t* FileName, int i)
 void OpenPlayers()
 {
     ModelsDump = new BMD[Render::WorldModels::ModelStorageCount + 1024];
-    Models = ModelsDump + (rand() % 1024);
+    Models = ModelsDump + (Random::Rand() % 1024);
     ZeroMemory(Models, Render::WorldModels::ModelStorageCount * sizeof(BMD));
 
     gLoadData.AccessModel(MODEL_PLAYER, L"Data\\Player\\", L"Player");

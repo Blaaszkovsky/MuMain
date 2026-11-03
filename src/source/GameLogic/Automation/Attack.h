@@ -18,7 +18,7 @@ enum class AttackResult : std::uint8_t
     Attacked,
     // Out of range: a step towards the target was taken instead.
     Approaching,
-    // A swing is still playing; try again on a later frame.
+    // A walk or swing is still playing; try again on a later frame.
     Busy,
     // No target was given.
     NoTarget,
@@ -96,5 +96,6 @@ inline constexpr float BasicAttackRangeBow = 6.0f;
 // Attacks the object with that server-assigned id, walking into range
 // first when needed. Path endpoints use the equipped weapon's reach;
 // callers select which targets to pursue independently.
-AttackResult AttackObject(int targetKey, bool allowPlayers);
+// Control callers retain the weapon-range search; the helper supplies its hunting distance.
+AttackResult AttackObject(int targetKey, bool allowPlayers, int huntingDistance = 0);
 } // namespace GameLogic::Automation

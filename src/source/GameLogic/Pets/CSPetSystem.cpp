@@ -630,7 +630,7 @@ void CSPetDarkSpirit::MovePet(void)
             c->AttackTime = 15;
         }
     }
-    if (rand_fps_check(100) && rand() % 60 == 0)
+    if (rand_fps_check(100) && Random::Rand() % 60 == 0)
     {
         PlayBuffer(SOUND_DSPIRIT_SHOUT, o);
     }
@@ -659,10 +659,10 @@ void CSPetDarkSpirit::CullPet()
         o->Visible = TestFrustrum2D(o->Position[0] * 0.01f, o->Position[1] * 0.01f, -20.f);
 }
 
-void CSPetDarkSpirit::RenderPet(int PetState)
+void CSPetDarkSpirit::RenderPet(int PetState) const
 {
-    CHARACTER* c = &m_PetCharacter;
-    OBJECT* o = &c->Object;
+    const CHARACTER* c = &m_PetCharacter;
+    const OBJECT* o = &c->Object;
 
     if (c == nullptr || o == nullptr)
     {

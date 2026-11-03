@@ -6,7 +6,10 @@
 
 namespace Network::Packets
 {
-// C2/B4 and C2/B5 share a result and little-endian count followed by 14-byte entries.
+inline constexpr std::size_t RegisteredSiegeGuildEntrySize = 14;
+inline constexpr std::size_t SiegeGuildEntrySize = 16;
+
+// C2/B4 registered guilds and C2/B5 guild scores have distinct row layouts.
 struct SiegeGuildListView
 {
     std::uint8_t result;
@@ -15,13 +18,17 @@ struct SiegeGuildListView
 
 inline std::optional<SiegeGuildListView> ReadSiegeGuildList(std::span<const std::uint8_t> packet)
 {
-    constexpr std::size_t entrySize = 14;
-    constexpr std::size_t headerSize = 9;
+    constexpr std::size_t headerSize = 12;
     if (packet.size() < headerSize)
         return std::nullopt;
-    // The count starts at byte5, without native integer alignment padding.
-    const std::uint32_t count = std::uint32_t(packet[5]) | (std::uint32_t(packet[6]) << 8)
-        | (std::uint32_t(packet[7]) << 16) | (std::uint32_t(packet[8]) << 24);
+    constexpr std::uint8_t registeredGuildCode = 0xB4;
+    constexpr std::uint8_t guildCode = 0xB5;
+    const std::size_t entrySize = packet[3] == registeredGuildCode ? RegisteredSiegeGuildEntrySize
+        : packet[3] == guildCode ? SiegeGuildEntrySize : 0;
+    if (entrySize == 0)
+        return std::nullopt;
+    const std::uint32_t count = std::uint32_t(packet[8]) | (std::uint32_t(packet[9]) << 8)
+        | (std::uint32_t(packet[10]) << 16) | (std::uint32_t(packet[11]) << 24);
     const auto available = packet.size() - headerSize;
     if (count > available / entrySize)
         return std::nullopt;

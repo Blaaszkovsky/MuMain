@@ -2620,6 +2620,8 @@ struct GroundItemLabelDescriptor
     bool Bold = false;
     DWORD TextColor = 0xFFFFFFFF;
     DWORD BgColor = 0xFF000000;
+    // The style the look came from; nullptr while none.
+    const Data::Items::GroundLabelStyle* Style = nullptr;
 };
 
 DWORD MakeRgba(BYTE red, BYTE green, BYTE blue, BYTE alpha = 255)
@@ -2637,6 +2639,7 @@ void ApplyGroundLabelStyle(GroundItemLabelDescriptor& descriptor, const Data::It
     descriptor.TextColor = MakeRgba(style->color[0], style->color[1], style->color[2]);
     descriptor.BgColor = MakeRgba(style->background[0], style->background[1], style->background[2]);
     descriptor.Bold = style->bold;
+    descriptor.Style = style;
 }
 
 template <size_t BufferSize, typename... Args>
@@ -2666,7 +2669,7 @@ void AppendGroundItemLabelText(wchar_t(&buffer)[BufferSize], const wchar_t* form
 // The label's look comes from the ground label styles (D68): the item's own rule for its level ("groundLabels" in its
 // item file), else the first standard rule whose conditions hold. Only a label of the standard rules shows the set's
 // name in front and the options after the name.
-void BuildGroundItemLabelDescriptor(OBJECT* o, ITEM* ip, GroundItemLabelDescriptor& descriptor)
+void BuildGroundItemLabelDescriptor(const OBJECT* o, ITEM* ip, GroundItemLabelDescriptor& descriptor)
 {
     descriptor.Bold = false;
     descriptor.TextColor = MakeRgba(255, 255, 255, 255);
@@ -2758,14 +2761,15 @@ void ApplyGroundItemLabelDescriptor(const GroundItemLabelDescriptor& descriptor)
 
 }
 
-GroundItemLabel DescribeGroundItemLabel(OBJECT* o, ITEM* ip)
+GroundItemLabel DescribeGroundItemLabel(const OBJECT* o, ITEM* ip)
 {
     GroundItemLabelDescriptor descriptor;
     BuildGroundItemLabelDescriptor(o, ip, descriptor);
-    return {descriptor.Name, descriptor.TextColor, descriptor.BgColor, descriptor.Bold};
+    return {descriptor.Name, descriptor.TextColor, descriptor.BgColor, descriptor.Bold,
+            descriptor.Style != nullptr ? descriptor.Style->name : std::string()};
 }
 
-void RenderItemName(int i, OBJECT* o, ITEM* ip, bool Sort)
+void RenderItemName(int i, const OBJECT* o, ITEM* ip, bool Sort)
 {
     (void)i;
 
@@ -3023,7 +3027,6 @@ std::wstring GetItemDisplayName(ITEM* pItem)
     return strDisplayName;
 }
 
-OBJECT ObjectSelect;
 
 namespace
 {
@@ -3047,25 +3050,20 @@ void RenderObjectScreen(int Type, int ItemLevel, int excellentFlags, int ancient
     Type = Render::Items::Display::GetDrawnModel(Type, Level);
 
     const Render::Items::Display::InventoryDisplay display = Render::Items::Display::GetInventoryDisplay(Type);
-    Vector(display.rotation[0], display.rotation[1], display.rotation[2], ObjectSelect.Angle);
+    vec3_t angle = {display.rotation[0], display.rotation[1], display.rotation[2]};
 
     // Gamble items turn slowly, and every item turns while the mouse is on it.
     if (GameLogic::Items::IsGambleItemModel(Type) && Select != 1)
     {
-        ObjectSelect.Angle[1] = WorldTime * GambleItemTurnSpeed;
+        angle[1] = WorldTime * GambleItemTurnSpeed;
     }
     if (1 == Select)
     {
-        ObjectSelect.Angle[1] = WorldTime * SelectedItemTurnSpeed;
+        angle[1] = WorldTime * SelectedItemTurnSpeed;
     }
 
-    ObjectSelect.Type = Render::Items::Display::IsDrawnOnCharacterSkeleton(Type) ? MODEL_PLAYER : Type;
-
-    BMD* b = &Models[ObjectSelect.Type];
+    BMD* b = &Models[Render::Items::Display::IsDrawnOnCharacterSkeleton(Type) ? MODEL_PLAYER : Type];
     b->CurrentAction = 0;
-    ObjectSelect.AnimationFrame = 0;
-    ObjectSelect.PriorAnimationFrame = 0;
-    ObjectSelect.PriorAction = 0;
     b->BodyHeight = display.bodyHeight;
 
     float Scale = display.scale;
@@ -3077,7 +3075,8 @@ void RenderObjectScreen(int Type, int ItemLevel, int excellentFlags, int ancient
 
     VectorAdd(Position, display.offset.data(), Position);
 
-    b->Animation(BoneTransform, ObjectSelect.AnimationFrame, ObjectSelect.PriorAnimationFrame, ObjectSelect.PriorAction, ObjectSelect.Angle, ObjectSelect.HeadAngle, false, false);
+    const vec3_t headAngle = {0.f, 0.f, 0.f};
+    b->Animation(BoneTransform, 0.f, 0.f, 0, angle, headAngle, false, false);
 
     CHARACTER Armor;
     OBJECT* o = &Armor.Object;

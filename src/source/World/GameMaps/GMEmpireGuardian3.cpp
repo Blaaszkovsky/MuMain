@@ -1,6 +1,7 @@
 ﻿// GMEmpireGuardian3.cpp: implementation of the GMEmpireGuardian3 class.
 //////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
+#include "Core/Utilities/Random.h"
 #include "GameLogic/Monsters/MonsterAttackPlay.h"
 
 #include "Render/Models/ZzzBMD.h"
@@ -620,54 +621,54 @@ void GMEmpireGuardian3::MoveBlurEffect(CHARACTER* c, OBJECT* o, BMD* b)
 
                         for (int i_ = 0; i_ < 8; i_++)
                         {
-                            vRelative[0] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[1] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[2] = ((rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[0] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[1] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[2] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
                             b->TransformPosition(BoneTransform[24], vRelative, vPosition, false);
                             CreateParticleFpsChecked(BITMAP_FIRE, vPosition, o->Angle, o->Light, 0);
 
-                            vRelative[0] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[1] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[2] = ((rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[0] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[1] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[2] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
                             b->TransformPosition(BoneTransform[25], vRelative, vPosition, false);
                             CreateParticleFpsChecked(BITMAP_FIRE, vPosition, o->Angle, o->Light, 0);
 
-                            vRelative[0] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[1] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[2] = ((rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[0] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[1] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[2] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
                             b->TransformPosition(BoneTransform[43], vRelative, vPosition, false);
                             CreateParticleFpsChecked(BITMAP_FIRE, vPosition, o->Angle, o->Light, 0);
 
-                            vRelative[0] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[1] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[2] = ((rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[0] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[1] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[2] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
                             b->TransformPosition(BoneTransform[44], vRelative, vPosition, false);
                             CreateParticleFpsChecked(BITMAP_FIRE, vPosition, o->Angle, o->Light, 0);
 
                             vec3_t vLight__;
                             Vector(0.9f, 0.9f, 0.9f, vLight__);
 
-                            vRelative[0] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[1] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[2] = ((rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[0] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[1] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[2] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
                             b->TransformPosition(BoneTransform[24], vRelative, vPosition, false);
                             CreateParticleFpsChecked(BITMAP_SMOKELINE2, vPosition, o->Angle, vLight__, 3);
 
-                            vRelative[0] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[1] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[2] = ((rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[0] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[1] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[2] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
                             b->TransformPosition(BoneTransform[25], vRelative, vPosition, false);
                             CreateParticleFpsChecked(BITMAP_SMOKELINE2, vPosition, o->Angle, vLight__, 3);
 
-                            vRelative[0] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[1] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[2] = ((rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[0] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[1] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[2] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
                             b->TransformPosition(BoneTransform[43], vRelative, vPosition, false);
                             CreateParticleFpsChecked(BITMAP_SMOKELINE2, vPosition, o->Angle, vLight__, 3);
 
-                            vRelative[0] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[1] = ((rand() % iOffset) - iOffset * 0.5f);
-                            vRelative[2] = ((rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[0] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[1] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
+                            vRelative[2] = ((Random::Rand() % iOffset) - iOffset * 0.5f);
                             b->TransformPosition(BoneTransform[44], vRelative, vPosition, false);
                             CreateParticleFpsChecked(BITMAP_SMOKELINE2, vPosition, o->Angle, vLight__, 3);
                         }
@@ -718,12 +719,12 @@ void GMEmpireGuardian3::MoveBlurEffect(CHARACTER* c, OBJECT* o, BMD* b)
     } // switch end
 }
 
-bool GMEmpireGuardian3::RenderObjectMesh(OBJECT* o, BMD* b, bool ExtraMon)
+bool GMEmpireGuardian3::RenderObjectMesh(const OBJECT* o, DrawLook& look, BMD* b, bool ExtraMon)
 {
     if (gMapManager.IsEmpireGuardian3() == false)
         return false;
 
-    if (true == g_EmpireGuardian1.RenderObjectMesh(o, b, ExtraMon))
+    if (true == g_EmpireGuardian1.RenderObjectMesh(o, look, b, ExtraMon))
     {
         return true;
     }
@@ -780,7 +781,7 @@ bool GMEmpireGuardian3::UpdateObjectEffects(OBJECT* o, BMD* b)
             vec3_t Angle;
             for (int i = 0; i < 4; ++i)
             {
-                Vector((float)(rand() % 60 + 60 + 90), 0.f, o->Angle[2] + 180, Angle);
+                Vector((float)(Random::Rand() % 60 + 60 + 90), 0.f, o->Angle[2] + 180, Angle);
                 CreateJointFpsChecked(BITMAP_JOINT_SPARK, o->Position, o->Position, Angle, 5, o);
             }
             CreateParticleFpsChecked(BITMAP_SPARK, o->Position, Angle, o->Light, 11);
@@ -790,7 +791,7 @@ bool GMEmpireGuardian3::UpdateObjectEffects(OBJECT* o, BMD* b)
             vec3_t Angle;
             for (int i = 0; i < 4; ++i)
             {
-                Vector((float)(rand() % 60 + 60 + 90), 0.f, o->Angle[2], Angle);
+                Vector((float)(Random::Rand() % 60 + 60 + 90), 0.f, o->Angle[2], Angle);
                 CreateJointFpsChecked(BITMAP_JOINT_SPARK, o->Position, o->Position, Angle, 5, o);
             }
             CreateParticleFpsChecked(BITMAP_SPARK, o->Position, Angle, o->Light, 11);
@@ -836,7 +837,7 @@ bool GMEmpireGuardian3::UpdateObjectEffects(OBJECT* o, BMD* b)
             vec3_t Angle;
             for (int i = 0; i < 4; ++i)
             {
-                Vector((float)(rand() % 60 + 60 + 90), 0.f, o->Angle[2] + 180, Angle);
+                Vector((float)(Random::Rand() % 60 + 60 + 90), 0.f, o->Angle[2] + 180, Angle);
                 CreateJointFpsChecked(BITMAP_JOINT_SPARK, o->Position, o->Position, Angle, 5, o);
             }
             CreateParticleFpsChecked(BITMAP_SPARK, o->Position, Angle, o->Light, 11);
@@ -875,7 +876,7 @@ bool GMEmpireGuardian3::UpdateObjectEffects(OBJECT* o, BMD* b)
         vec3_t vLight;
         Vector(1.0f, 1.0f, 1.0f, vLight);
 
-        switch (rand() % 3)
+        switch (Random::Rand() % 3)
         {
         case 0:
             CreateParticleFpsChecked(BITMAP_FIRE_HIK1, o->Position, o->Angle, vLight, 0, o->Scale);
@@ -930,7 +931,7 @@ bool GMEmpireGuardian3::UpdateObjectEffects(OBJECT* o, BMD* b)
 
         if (iRemainder >= 0 && iRemainder <= 1)
         {
-            int iRand = rand() % 4 + 4;
+            int iRand = Random::Rand() % 4 + 4;
             for (int i = 0; i < iRand; ++i)
             {
                 CreateEffectFpsChecked(BITMAP_FLAME, o->Position, o->Angle, vLight, 6, NULL, -1, 0, o->Scale);
@@ -996,7 +997,7 @@ bool GMEmpireGuardian3::UpdateObjectEffects(OBJECT* o, BMD* b)
     return false;
 }
 
-bool GMEmpireGuardian3::RenderMonster(OBJECT* o, BMD* b, bool ExtraMon)
+bool GMEmpireGuardian3::RenderMonster(const OBJECT* o, DrawLook& look, BMD* b, bool ExtraMon)
 {
     return false;
 }
@@ -1089,13 +1090,14 @@ bool GMEmpireGuardian3::UpdateMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b)
             Vector(1.0f, 0.1f, 0.1f, vLightRage);
             for (int i = 0; i < iBoneCount; ++i)
             {
-                if (rand() % 6 > 0)
+                if (Random::Rand() % 6 > 0)
                     continue;
                 if (i % 5 == 0)
                 {
                     b->TransformByObjectBone(vPosRage, o, i);
                     CreateParticleFpsChecked(BITMAP_SMOKE, vPosRage, o->Angle, vLightRage, 50, 1.0f);
-                    CreateParticleFpsChecked(BITMAP_SMOKELINE1 + rand() % 3, vPosRage, o->Angle, vLightRage, 0, 1.0f);
+                    CreateParticleFpsChecked(BITMAP_SMOKELINE1 + Random::Rand() % 3, vPosRage, o->Angle, vLightRage, 0,
+                                             1.0f);
                 }
             }
         }
@@ -1109,7 +1111,7 @@ bool GMEmpireGuardian3::UpdateMonsterEffects(CHARACTER* c, OBJECT* o, BMD* b)
     return false;
 }
 
-bool GMEmpireGuardian3::RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
+bool GMEmpireGuardian3::RenderMonsterVisual(const CHARACTER* c, const OBJECT* o, BMD* b)
 {
     if (o->Type == MODEL_DUAL_BERSERKER)
     {
@@ -1120,7 +1122,7 @@ bool GMEmpireGuardian3::RenderMonsterVisual(CHARACTER* c, OBJECT* o, BMD* b)
     return false;
 }
 
-void GMEmpireGuardian3::RenderAfterObjectMesh(OBJECT* o, BMD* b, bool ExtraMon)
+void GMEmpireGuardian3::RenderAfterObjectMesh(const OBJECT* o, DrawLook& look, BMD* b, bool ExtraMon)
 {
     if (gMapManager.IsEmpireGuardian3() == false)
         return;
@@ -1135,19 +1137,18 @@ void GMEmpireGuardian3::RenderAfterObjectMesh(OBJECT* o, BMD* b, bool ExtraMon)
         float fLumi;
         fLumi = (sinf(WorldTime * 0.0015f) + 1.0f) * 0.4f + 0.2f;
 
-        b->RenderMesh(0, RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
-                      o->BlendMeshTexCoordV);
-        b->RenderMesh(1, RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
-                      o->BlendMeshTexCoordV);
-        b->RenderMesh(2, RENDER_TEXTURE | RENDER_BRIGHT, o->Alpha, 2, fLumi, o->BlendMeshTexCoordU,
-                      o->BlendMeshTexCoordV);
+        b->RenderMesh(0, RENDER_TEXTURE, look.alpha, look.blendMesh, look.blendMeshLight, look.blendMeshU,
+                      look.blendMeshV);
+        b->RenderMesh(1, RENDER_TEXTURE, look.alpha, look.blendMesh, look.blendMeshLight, look.blendMeshU,
+                      look.blendMeshV);
+        b->RenderMesh(2, RENDER_TEXTURE | RENDER_BRIGHT, look.alpha, 2, fLumi, look.blendMeshU, look.blendMeshV);
     }
     break;
 
     case 81:
     {
-        b->RenderBody(RENDER_TEXTURE, o->Alpha, o->BlendMesh, o->BlendMeshLight, o->BlendMeshTexCoordU,
-                      o->BlendMeshTexCoordV, o->HiddenMesh);
+        b->RenderBody(RENDER_TEXTURE, look.alpha, look.blendMesh, look.blendMeshLight, look.blendMeshU, look.blendMeshV,
+                      look.hiddenMesh);
     }
     break;
     }

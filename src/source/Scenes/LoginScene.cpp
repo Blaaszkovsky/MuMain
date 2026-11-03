@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Core/Utilities/Random.h"
 #include "LoginScene.h"
 #include "Camera/CameraUtility.h"
 #include "Camera/CameraManager.h"
@@ -161,8 +162,8 @@ static void SelectNextWaypoint()
 {
     if (SceneFlag == LOG_IN_SCENE)
     {
-        g_loginCamera.currentNumber = rand() % 4 + 1;
-        g_loginCamera.currentWalkType = rand() % 2;
+        g_loginCamera.currentNumber = Random::Rand() % 4 + 1;
+        g_loginCamera.currentWalkType = Random::Rand() % 2;
     }
     else
     {
@@ -454,7 +455,6 @@ bool NewRenderLogInScene(HDC hDC)
         }
         { FRAME_PROFILE(Effects); RenderJoints(); }
         { FRAME_PROFILE(Effects); RenderEffects(); }
-        { FRAME_PROFILE(Effects); CheckSprites(); }
         { FRAME_PROFILE(Effects); RenderLeaves(); }
         { FRAME_PROFILE(Effects); RenderBoids(); }
         {

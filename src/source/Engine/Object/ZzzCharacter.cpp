@@ -448,14 +448,14 @@ void SetPlayerStop(CHARACTER* c)
         {
             if (HasSlotSound(o, 0))
             {
-                PlaySlotSound(o, rand() % 2);
+                PlaySlotSound(o, Random::Rand() % 2);
             }
         }
         else if (c->Helper.Type == MODEL_HORN_OF_FENRIR)
         {
-            if (rand() % 3 == 0)
+            if (Random::Rand() % 3 == 0)
             {
-                PlayBuffer(static_cast<ESound>(SOUND_FENRIR_IDLE_1 + rand() % 2), o);
+                PlayBuffer(static_cast<ESound>(SOUND_FENRIR_IDLE_1 + Random::Rand() % 2), o);
             }
         }
     }
@@ -773,27 +773,27 @@ void SetPlayerWalk(CHARACTER* c)
         PlayBuffer(SOUND_BONE2, o);
     else if (gCharacterManager.GetBaseClass(c->Class) == CLASS_DARK_LORD && c->Helper.Type == MODEL_DARK_HORSE_ITEM && !c->SafeZone)
     {
-        PlayBuffer(static_cast<ESound>(SOUND_RUN_DARK_HORSE_1 + rand() % 3), o);
+        PlayBuffer(static_cast<ESound>(SOUND_RUN_DARK_HORSE_1 + Random::Rand() % 3), o);
     }
     else if (c->Helper.Type == MODEL_HORN_OF_FENRIR && !c->SafeZone
         && (c->Object.CurrentAction >= PLAYER_FENRIR_RUN && c->Object.CurrentAction <= PLAYER_FENRIR_RUN_ONE_LEFT_ELF))
     {
-        PlayBuffer(static_cast<ESound>(SOUND_FENRIR_RUN_1 + rand() % 3), o);
+        PlayBuffer(static_cast<ESound>(SOUND_FENRIR_RUN_1 + Random::Rand() % 3), o);
     }
     else if (c->Helper.Type == MODEL_HORN_OF_FENRIR && !c->SafeZone
         && (c->Object.CurrentAction >= PLAYER_FENRIR_WALK && c->Object.CurrentAction <= PLAYER_FENRIR_WALK_ONE_LEFT))
     {
-        PlayBuffer(static_cast<ESound>(SOUND_FENRIR_RUN_1 + rand() % 2), o);
+        PlayBuffer(static_cast<ESound>(SOUND_FENRIR_RUN_1 + Random::Rand() % 2), o);
     }
     else if (c->Helper.Type == MODEL_HORN_OF_FENRIR && !c->SafeZone
         && (c->Object.CurrentAction >= PLAYER_RAGE_FENRIR_RUN && c->Object.CurrentAction <= PLAYER_RAGE_FENRIR_RUN_ONE_LEFT))
     {
-        PlayBuffer(static_cast<ESound>(SOUND_FENRIR_RUN_1 + rand() % 3), o);
+        PlayBuffer(static_cast<ESound>(SOUND_FENRIR_RUN_1 + Random::Rand() % 3), o);
     }
     else if (c->Helper.Type == MODEL_HORN_OF_FENRIR && !c->SafeZone
         && (c->Object.CurrentAction >= PLAYER_RAGE_FENRIR_WALK && c->Object.CurrentAction <= PLAYER_RAGE_FENRIR_WALK_TWO_SWORD))
     {
-        PlayBuffer(static_cast<ESound>(SOUND_FENRIR_RUN_1 + rand() % 2), o);
+        PlayBuffer(static_cast<ESound>(SOUND_FENRIR_RUN_1 + Random::Rand() % 2), o);
     }
     else if ((c == Hero && rand_fps_check(64)) || (c != Hero && rand_fps_check(16)))
     {
@@ -803,7 +803,7 @@ void SetPlayerWalk(CHARACTER* c)
                 PlayBuffer(SOUND_BONE1, o);
             if (HasSlotSound(o, 0))
             {
-                PlaySlotSound(o, rand() % 2);
+                PlaySlotSound(o, Random::Rand() % 2);
             }
         }
     }
@@ -1192,14 +1192,14 @@ void SetPlayerAttack(CHARACTER* c)
                 }
                 else if (c->Weapon[1].Type >= MODEL_SWORD && c->Weapon[1].Type < MODEL_MACE + MAX_ITEM_INDEX)
                 {
-                    SetAction(&c->Object, PLAYER_ATTACK_SWORD_LEFT1 + rand() % 2);
+                    SetAction(&c->Object, PLAYER_ATTACK_SWORD_LEFT1 + Random::Rand() % 2);
                 }
                 else if (c->Weapon[0].Type >= MODEL_STAFF && c->Weapon[0].Type < MODEL_STAFF + MAX_ITEM_INDEX)
                 {
                     if (!ItemAttribute[Data::Items::ToItemType(c->Weapon[0].Type)].TwoHand)
-                        SetAction(&c->Object, PLAYER_ATTACK_SWORD_RIGHT1 + rand() % 2);
+                        SetAction(&c->Object, PLAYER_ATTACK_SWORD_RIGHT1 + Random::Rand() % 2);
                     else
-                        SetAction(&c->Object, PLAYER_SKILL_WEAPON1 + rand() % 2);
+                        SetAction(&c->Object, PLAYER_SKILL_WEAPON1 + Random::Rand() % 2);
                 }
                 else if (c->Weapon[0].Type == MODEL__SPEAR || c->Weapon[0].Type == MODEL_DRAGON_LANCE)
                     SetAction(&c->Object, PLAYER_ATTACK_SPEAR1);
@@ -1272,10 +1272,10 @@ void SetPlayerAttack(CHARACTER* c)
             if (o->Type != MODEL_PLAYER || (o->SubType >= MODEL_SKELETON1 && o->SubType <= MODEL_SKELETON3))
             {
                 if (o->SubType >= MODEL_SKELETON1 && o->SubType <= MODEL_SKELETON3)
-                    PlayBuffer(static_cast<ESound>(SOUND_BRANDISH_SWORD01 + rand() % 2), o);
+                    PlayBuffer(static_cast<ESound>(SOUND_BRANDISH_SWORD01 + Random::Rand() % 2), o);
                 if (HasSlotSound(o, 2))
                 {
-                    PlaySlotSound(o, 2 + rand() % 2);
+                    PlaySlotSound(o, 2 + Random::Rand() % 2);
                 }
             }
             else
@@ -1293,7 +1293,7 @@ void SetPlayerAttack(CHARACTER* c)
                 else if (c->Weapon[0].Type == MODEL_LIGHT_SABER || c->Weapon[0].Type == MODEL_SPEAR)
                     PlayBuffer(SOUND_BRANDISH_SWORD03, o);
                 else if (c->Weapon[0].Type != -1 || c->Weapon[1].Type != -1)
-                    PlayBuffer(static_cast<ESound>(SOUND_BRANDISH_SWORD01 + rand() % 2), o);
+                    PlayBuffer(static_cast<ESound>(SOUND_BRANDISH_SWORD01 + Random::Rand() % 2), o);
             }
         }
     c->SwordCount++;
@@ -1318,7 +1318,7 @@ void SetPlayerMagic(CHARACTER* c)
             if (gCharacterManager.IsFemale(c->Class))
                 SetAction(o, PLAYER_SKILL_ELF1);
             else
-                SetAction(o, PLAYER_SKILL_HAND1 + rand() % 2);
+                SetAction(o, PLAYER_SKILL_HAND1 + Random::Rand() % 2);
         }
     }
     else
@@ -1362,8 +1362,8 @@ void SetPlayerShock(CHARACTER* c, int Hit)
             if (c->Helper.Type == MODEL_HORN_OF_FENRIR)
             {
                 SetAction_Fenrir_Damage(c, &c->Object);
-                if (rand() % 3 == 0)
-                    PlayBuffer(static_cast<ESound>(SOUND_FENRIR_DAMAGE_1 + rand() % 2), o);
+                if (Random::Rand() % 3 == 0)
+                    PlayBuffer(static_cast<ESound>(SOUND_FENRIR_DAMAGE_1 + Random::Rand() % 2), o);
             }
             else
             {
@@ -1396,20 +1396,20 @@ void SetPlayerShock(CHARACTER* c, int Hit)
                     PlayBuffer(SOUND_BONE1, o);
                 else if (o->Type != MODEL_ASSASSIN && HasSlotSound(o, 2))
                 {
-                    PlaySlotSound(o, 2 + rand() % 2);
+                    PlaySlotSound(o, 2 + Random::Rand() % 2);
                 }
             }
             else
             {
                 if (!gCharacterManager.IsFemale(c->Class))
                 {
-                    if (gCharacterManager.GetBaseClass(c->Class) == CLASS_DARK_LORD && rand() % 5)
+                    if (gCharacterManager.GetBaseClass(c->Class) == CLASS_DARK_LORD && Random::Rand() % 5)
                         PlayBuffer(SOUND_DARKLORD_PAIN, o);
                     else
-                        PlayBuffer(static_cast<ESound>(SOUND_HUMAN_SCREAM01 + rand() % 3), o);
+                        PlayBuffer(static_cast<ESound>(SOUND_HUMAN_SCREAM01 + Random::Rand() % 3), o);
                 }
                 else
-                    PlayBuffer(static_cast<ESound>(SOUND_FEMALE_SCREAM01 + rand() % 2), o);
+                    PlayBuffer(static_cast<ESound>(SOUND_FEMALE_SCREAM01 + Random::Rand() % 2), o);
             }
         }
 
@@ -1418,11 +1418,11 @@ void SetPlayerShock(CHARACTER* c, int Hit)
             vec3_t Position;
             for (int i = 0; i < 5; i++)
             {
-                if (rand() % 2 == 0)
+                if (Random::Rand() % 2 == 0)
                 {
-                    Position[0] = o->Position[0] + (rand() % 128 - 64);
+                    Position[0] = o->Position[0] + (Random::Rand() % 128 - 64);
                     Position[1] = o->Position[1];
-                    Position[2] = o->Position[2] + 200 + (rand() % 50);
+                    Position[2] = o->Position[2] + 200 + (Random::Rand() % 50);
 
                     CreateParticle(BITMAP_SMOKE + 1, Position, o->Angle, o->Light);
                 }
@@ -1518,7 +1518,7 @@ void SetPlayerDie(CHARACTER* c)
         PlayMonsterSound(o);
         if (gMapManager.InChaosCastle() == true)
         {
-            PlayBuffer(static_cast<ESound>(SOUND_CHAOS_MOB_BOOM01 + rand() % 2), o);
+            PlayBuffer(static_cast<ESound>(SOUND_CHAOS_MOB_BOOM01 + Random::Rand() % 2), o);
         }
         else
         {
@@ -1563,6 +1563,18 @@ void CalcAddPosition(OBJECT* o, float x, float y, float z, vec3_t Position)
 
 vec3_t BossHeadPosition;
 
+// The Dark Phoenix's second model (its type + 1, drawn over the body) posed as the object stands; its thunder
+// starts at bone 23.
+static float (*DarkPhoenixThunderBone(const OBJECT* o))[4]
+{
+    static vec34_t bones[MAX_BONES];
+    BMD* b = &Models[o->Type + 1];
+    PlaceObjectModel(o, b);
+    b->Animation(bones, o->AnimationFrame, o->PriorAnimationFrame, o->PriorAction, o->Angle, o->HeadAngle, false,
+                 false);
+    return bones[23];
+}
+
 void AttackEffect(CHARACTER* c)
 {
     OBJECT* o = &c->Object;
@@ -1570,7 +1582,7 @@ void AttackEffect(CHARACTER* c)
     int i;
     vec3_t Angle, Light;
     vec3_t p, Position;
-    float Luminosity = (float)(rand() % 6 + 2) * 0.1f;
+    float Luminosity = (float)(Random::Rand() % 6 + 2) * 0.1f;
     Vector(0.f, 0.f, 0.f, p);
     Vector(1.f, 1.f, 1.f, Light);
 
@@ -1633,7 +1645,7 @@ void AttackEffect(CHARACTER* c)
     case MONSTER_MAGIC_SKELETON_7:
         if ((c->Skill) == AT_SKILL_BOSS)
         {
-            if (rand() % 2 == 0)
+            if (Random::Rand() % 2 == 0)
             {
                 if (c->CheckAttackTime(1))
                 {
@@ -1643,7 +1655,8 @@ void AttackEffect(CHARACTER* c)
             }
             else if (rand_fps_check(1))
             {
-                Vector(o->Position[0] + rand() % 1024 - 512, o->Position[1] + rand() % 1024 - 512, o->Position[2], Position);
+                Vector(o->Position[0] + Random::Rand() % 1024 - 512, o->Position[1] + Random::Rand() % 1024 - 512,
+                       o->Position[2], Position);
                 CreateEffect(MODEL_FIRE, Position, o->Angle, o->Light);
                 PlayBuffer(SOUND_METEORITE01);
             }
@@ -1694,9 +1707,9 @@ void AttackEffect(CHARACTER* c)
                 for (int i = 0; i < iCount; ++i)
                 {
                     //Angle[2] = ( float)i * 10.0f;
-                    Angle[0] = (float)(rand() % 360);
-                    Angle[1] = (float)(rand() % 360);
-                    Angle[2] = (float)(rand() % 360);
+                    Angle[0] = (float)(Random::Rand() % 360);
+                    Angle[1] = (float)(Random::Rand() % 360);
+                    Angle[2] = (float)(Random::Rand() % 360);
                     vec3_t Position;
                     VectorCopy(o->Position, Position);
                     Position[2] += 100.f;
@@ -1722,8 +1735,8 @@ void AttackEffect(CHARACTER* c)
                     VectorCopy(o->Angle, Angle);
                     Angle[0] += 45.f;
                     VectorCopy(o->Position, Position);
-                    Position[0] += (float)(rand() % 1001 - 500);
-                    Position[1] += (float)(rand() % 1001 - 500);
+                    Position[0] += (float)(Random::Rand() % 1001 - 500);
+                    Position[1] += (float)(Random::Rand() % 1001 - 500);
                     Position[2] += 500.f;
                     VectorCopy(Position, o->StartPosition);
                     CreateEffect(MODEL_PIERCING + 1, Position, Angle, Light, 1, o);
@@ -1768,9 +1781,9 @@ void AttackEffect(CHARACTER* c)
                 for (i = 0; i < iCount; ++i)
                 {
                     //Angle[2] = ( float)i * 10.0f;
-                    Angle[0] = (float)(rand() % 360);
-                    Angle[1] = (float)(rand() % 360);
-                    Angle[2] = (float)(rand() % 360);
+                    Angle[0] = (float)(Random::Rand() % 360);
+                    Angle[1] = (float)(Random::Rand() % 360);
+                    Angle[2] = (float)(Random::Rand() % 360);
                     vec3_t Position;
                     VectorCopy(o->Position, Position);
                     Position[2] += 100.f;
@@ -1795,7 +1808,8 @@ void AttackEffect(CHARACTER* c)
             {
                 if (c->MonsterIndex == MONSTER_DEATH_BEAM_KNIGHT && rand_fps_check(1))
                 {
-                    Vector(o->Position[0] + rand() % 800 - 400, o->Position[1] + rand() % 800 - 400, o->Position[2], Position);
+                    Vector(o->Position[0] + Random::Rand() % 800 - 400, o->Position[1] + Random::Rand() % 800 - 400,
+                           o->Position[2], Position);
                     CreateEffect(MODEL_SKILL_BLAST, Position, o->Angle, o->Light);
                 }
 
@@ -1926,7 +1940,8 @@ void AttackEffect(CHARACTER* c)
             }
             if (rand_fps_check(1))
             {
-                Vector(o->Position[0] + rand() % 1024 - 512, o->Position[1] + rand() % 1024 - 512, o->Position[2], Position);
+                Vector(o->Position[0] + Random::Rand() % 1024 - 512, o->Position[1] + Random::Rand() % 1024 - 512,
+                       o->Position[2], Position);
                 CreateEffect(MODEL_FIRE, Position, o->Angle, o->Light);
                 PlayBuffer(SOUND_METEORITE01);
             }
@@ -1961,7 +1976,8 @@ void AttackEffect(CHARACTER* c)
 
             if (rand_fps_check(1))
             {
-                Vector(o->Position[0] + rand() % 1024 - 512, o->Position[1] + rand() % 1024 - 512, o->Position[2], Position);
+                Vector(o->Position[0] + Random::Rand() % 1024 - 512, o->Position[1] + Random::Rand() % 1024 - 512,
+                       o->Position[2], Position);
                 CreateEffect(MODEL_FIRE, Position, o->Angle, o->Light);
                 PlayBuffer(SOUND_METEORITE01);
             }
@@ -1970,7 +1986,8 @@ void AttackEffect(CHARACTER* c)
     case MONSTER_METEORITE_TRAP://함정
         if ((c->Skill) == AT_SKILL_BOSS && rand_fps_check(1))
         {
-            Vector(o->Position[0] + rand() % 1024 - 512, o->Position[1] + rand() % 1024 - 512, o->Position[2], Position);
+            Vector(o->Position[0] + Random::Rand() % 1024 - 512, o->Position[1] + Random::Rand() % 1024 - 512,
+                   o->Position[2], Position);
             CreateEffect(MODEL_FIRE, Position, o->Angle, o->Light);
             PlayBuffer(SOUND_METEORITE01);
         }
@@ -1980,7 +1997,8 @@ void AttackEffect(CHARACTER* c)
         {
             for (int i = 0; i < 4; i++)
             {
-                Vector((float)(rand() % 32 - 16), (float)(rand() % 32 - 16), (float)(rand() % 32 - 16), p);
+                Vector((float)(Random::Rand() % 32 - 16), (float)(Random::Rand() % 32 - 16),
+                       (float)(Random::Rand() % 32 - 16), p);
                 b->TransformPosition(o->BoneTransform[2], p, Position, true);
                 CreateParticle(BITMAP_BUBBLE, Position, o->Angle, Light);
                 CreateParticle(BITMAP_BLOOD + 1, Position, o->Angle, Light);
@@ -2028,7 +2046,7 @@ void AttackEffect(CHARACTER* c)
                 {
                     if (c->CheckAttackTime(8))
                     {
-                        if (rand() % 2 == 0)
+                        if (Random::Rand() % 2 == 0)
                         {
                             CreateEffect(MODEL_SKILL_BLAST, to->Position, o->Angle, o->Light, 0, o);
                             CreateEffect(MODEL_SKILL_BLAST, to->Position, o->Angle, o->Light, 0, o);
@@ -2085,7 +2103,7 @@ void AttackEffect(CHARACTER* c)
                 if (c->CheckAttackTime(14))
                 {
                     Vector(0.f, 0.f, 0.f, p);
-                    b->TransformPosition(g_fBoneSave[2], p, Position, true);
+                    b->TransformPosition(o->BoneTransform[24], p, Position, true);
                     /*for ( int i = 0; i < 10; ++i)
                     {
                         CreateEffect(MODEL_FIRE,Position,o->Angle,o->Light,3,to);
@@ -2133,7 +2151,7 @@ void AttackEffect(CHARACTER* c)
                         int Hand = 0;
                         if (i >= 3) Hand = 1;
                         b->TransformPosition(o->BoneTransform[c->Weapon[Hand].LinkBone], p, Position, true);//에러
-                        Vector(0.f, 0.f, (float)(rand() % 360), Angle);
+                        Vector(0.f, 0.f, (float)(Random::Rand() % 360), Angle);
                         CreateJoint(BITMAP_JOINT_THUNDER, Position, to->Position, Angle, 2, to, 50.f);
                         CreateJoint(BITMAP_JOINT_THUNDER, Position, to->Position, Angle, 2, to, 10.f);
                     }
@@ -2143,7 +2161,7 @@ void AttackEffect(CHARACTER* c)
                         int Hand = 0;
                         if (i >= 2) Hand = 1;
                         b->TransformPosition(o->BoneTransform[c->Weapon[Hand].LinkBone], p, Position, true);
-                        Vector(0.f, 0.f, (float)(rand() % 360), Angle);
+                        Vector(0.f, 0.f, (float)(Random::Rand() % 360), Angle);
                         CreateJoint(BITMAP_JOINT_LASER + 1, Position, to->Position, Angle, 0, to, 50.f);
                         CreateParticle(BITMAP_FIRE, Position, o->Angle, o->Light);
                     }
@@ -2190,7 +2208,7 @@ void AttackEffect(CHARACTER* c)
                         int Hand = 0;
                         if (i >= 2) Hand = 1;
                         b->TransformPosition(o->BoneTransform[c->Weapon[Hand].LinkBone], p, Position, true);
-                        Vector(0.f, 0.f, (float)(rand() % 360), Angle);
+                        Vector(0.f, 0.f, (float)(Random::Rand() % 360), Angle);
                         CreateJoint(BITMAP_JOINT_LASER + 1, Position, to->Position, Angle, 0, to, 50.f);
                         CreateParticle(BITMAP_FIRE, Position, o->Angle, o->Light);
                     }
@@ -2260,10 +2278,10 @@ void AttackEffect(CHARACTER* c)
                 if (8 <= c->AttackTime && rand_fps_check(1))
                 {
                     Vector(0.f, 0.f, 0.f, p);
-                    b->TransformPosition(g_fBoneSave[0], p, Position, true);
+                    b->TransformPosition(DarkPhoenixThunderBone(o), p, Position, true);
                     for (int i = 0; i < 4; ++i)
                     {
-                        Vector(0.f, 0.f, (float)(rand() % 360), Angle);
+                        Vector(0.f, 0.f, (float)(Random::Rand() % 360), Angle);
                         CreateJoint(BITMAP_JOINT_THUNDER, Position, to->Position, Angle, 0, to, 80.f);
                     }
                 }
@@ -2282,7 +2300,7 @@ void AttackEffect(CHARACTER* c)
                         int Hand = 0;
                         if (i >= 2) Hand = 1;
                         b->TransformPosition(o->BoneTransform[c->Weapon[Hand].LinkBone], p, Position, true);
-                        Vector(0.f, 0.f, (float)(rand() % 360), Angle);
+                        Vector(0.f, 0.f, (float)(Random::Rand() % 360), Angle);
                         CreateJoint(BITMAP_JOINT_LASER + 1, Position, to->Position, Angle, 0, to, 50.f);
                         CreateParticle(BITMAP_FIRE, Position, o->Angle, o->Light);
                     }
@@ -2296,7 +2314,7 @@ void AttackEffect(CHARACTER* c)
                         int Hand = 0;
                         if (i >= 2) Hand = 1;
                         b->TransformPosition(o->BoneTransform[c->Weapon[Hand].LinkBone], p, Position, true);
-                        Vector(0.f, 0.f, (float)(rand() % 360), Angle);
+                        Vector(0.f, 0.f, (float)(Random::Rand() % 360), Angle);
                         CreateJoint(BITMAP_JOINT_THUNDER, Position, to->Position, Angle, 0, to, 50.f);
                         CreateJoint(BITMAP_JOINT_THUNDER, Position, to->Position, Angle, 0, to, 10.f);
                         CreateParticle(BITMAP_ENERGY, Position, o->Angle, Light);
@@ -2311,7 +2329,7 @@ void AttackEffect(CHARACTER* c)
                         int Hand = 0;
                         if (i >= 3) Hand = 1;
                         b->TransformPosition(o->BoneTransform[c->Weapon[Hand].LinkBone], p, Position, true);//에러
-                        Vector(0.f, 0.f, (float)(rand() % 360), Angle);
+                        Vector(0.f, 0.f, (float)(Random::Rand() % 360), Angle);
                         CreateJoint(BITMAP_JOINT_THUNDER, Position, to->Position, Angle, 2, to, 50.f);
                         CreateJoint(BITMAP_JOINT_THUNDER, Position, to->Position, Angle, 2, to, 10.f);
                     }
@@ -2654,9 +2672,9 @@ bool AttackStage(CHARACTER* c, OBJECT* o)
                 }
                 else
                 {
-                    Position[0] += (rand() % 60 - 30);
-                    Position[1] += (rand() % 60 - 30);
-                    Position[2] += (rand() % 60 - 30);
+                    Position[0] += (Random::Rand() % 60 - 30);
+                    Position[1] += (Random::Rand() % 60 - 30);
+                    Position[2] += (Random::Rand() % 60 - 30);
                 }
                 CreateEffect(MODEL_SPEARSKILL, Position, o->Angle, Light, c->Weapon[Hand].Type, o);
             }
@@ -2848,12 +2866,12 @@ bool AttackStage(CHARACTER* c, OBJECT* o)
             vec3_t	Angle;
 
             VectorCopy(o->Position, Position);
-            Position[0] += rand() % 30 - 15.f;
-            Position[1] += rand() % 30 - 15.f;
+            Position[0] += Random::Rand() % 30 - 15.f;
+            Position[1] += Random::Rand() % 30 - 15.f;
             Position[2] += 20.f;
             for (int i = 0; i < 4; i++)
             {
-                Vector((float)(rand() % 60 + 60 + 90), 0.f, o->Angle[2], Angle);
+                Vector((float)(Random::Rand() % 60 + 60 + 90), 0.f, o->Angle[2], Angle);
                 CreateJoint(BITMAP_JOINT_SPARK, Position, Position, Angle);
                 if (iSkill == AT_SKILL_OCCUPY)
                     CreateParticle(BITMAP_FIRE, Position, Angle, o->Light, 18, 1.5f);
@@ -3174,9 +3192,9 @@ void DeadCharacter(CHARACTER* c, OBJECT* o, BMD* b)
 
             VectorCopy(o->Position, Position);
 
-            Position[0] += rand() % 160 - 80.f;
-            Position[1] += rand() % 160 - 80.f;
-            Position[2] += rand() % 160 - 80.f + 50.f;
+            Position[0] += Random::Rand() % 160 - 80.f;
+            Position[1] += Random::Rand() % 160 - 80.f;
+            Position[2] += Random::Rand() % 160 - 80.f + 50.f;
             CreateBomb(Position, true);
         }
     }
@@ -3206,8 +3224,8 @@ void DeadCharacter(CHARACTER* c, OBJECT* o, BMD* b)
                 Vector(0.f, 0.f, 0.f, p);
                 for (int i = 0; i < 10; i++)
                 {
-                    b->TransformPosition(o->BoneTransform[rand() % 32], p, Position, true);
-                    CreateParticle(BITMAP_LIGHT, Position, o->Angle, Light, 5, 0.5f + (rand() % 100) / 50.f);
+                    b->TransformPosition(o->BoneTransform[Random::Rand() % 32], p, Position, true);
+                    CreateParticle(BITMAP_LIGHT, Position, o->Angle, Light, 5, 0.5f + (Random::Rand() % 100) / 50.f);
                 }
             }
             break;
@@ -3218,7 +3236,8 @@ void DeadCharacter(CHARACTER* c, OBJECT* o, BMD* b)
         for (int i = 0; i < 4; i++)
         {
             vec3_t Position;
-            Vector((float)(rand() % 128 - 64), (float)(rand() % 128 - 64), (float)(rand() % 256), Position);
+            Vector((float)(Random::Rand() % 128 - 64), (float)(Random::Rand() % 128 - 64),
+                   (float)(Random::Rand() % 256), Position);
             VectorAdd(Position, o->Position, Position);
             CreateParticle(BITMAP_BUBBLE, Position, o->Angle, o->Light);
         }
@@ -3312,7 +3331,7 @@ void OnlyNpcChatProcess(CHARACTER* c, OBJECT* o)
 
 void PlayerNpcStopAnimationSetting(CHARACTER* c, OBJECT* o)
 {
-    int action = rand() % 100;
+    int action = Random::Rand() % 100;
 
     if (o->CurrentAction != PLAYER_STOP_MALE)
     {
@@ -3441,7 +3460,7 @@ void EtcStopAnimationSetting(CHARACTER* c, OBJECT* o)
                 switch (o->Type)
                 {
                 case MODEL_WEDDING_NPC:
-                    if ((rand() % 16 < 4) && o->SubType == 0)
+                    if ((Random::Rand() % 16 < 4) && o->SubType == 0)
                     {
                         SetAction(o, 1);
                         o->SubType = 1;
@@ -3454,10 +3473,10 @@ void EtcStopAnimationSetting(CHARACTER* c, OBJECT* o)
                     break;
                 case MODEL_SMITH:
                 case MODEL_SCIENTIST:
-                    if (rand() % 16 < 12)
+                    if (Random::Rand() % 16 < 12)
                         SetAction(o, 0);
                     else
-                        SetAction(o, rand() % 2 + 1);
+                        SetAction(o, Random::Rand() % 2 + 1);
                     break;
                 case MODEL_FACE:
                 case MODEL_FACE + 1:
@@ -3469,28 +3488,28 @@ void EtcStopAnimationSetting(CHARACTER* c, OBJECT* o)
                     break;
                 case MODEL_ELBELAND_SILVIA:
                 case MODEL_ELBELAND_RHEA:
-                    if (rand() % 5 < 4 || o->CurrentAction == 1)
+                    if (Random::Rand() % 5 < 4 || o->CurrentAction == 1)
                         SetAction(o, 0);
                     else
                         SetAction(o, 1);
                     break;
                 case MODEL_NPC_DEVIN:
-                    if (rand() % 5 < 4)
+                    if (Random::Rand() % 5 < 4)
                         SetAction(o, 0);
                     else
                         SetAction(o, 1);
                     break;
 
                 case MODEL_SEED_MASTER:
-                    if (rand() % 3 < 2 || o->CurrentAction != 0)
+                    if (Random::Rand() % 3 < 2 || o->CurrentAction != 0)
                         SetAction(o, 0);
                     else
                     {
-                        SetAction(o, rand() % 3 + 1);
+                        SetAction(o, Random::Rand() % 3 + 1);
                     }
                     break;
                 case MODEL_SEED_INVESTIGATOR:
-                    if (rand() % 3 < 2 || o->CurrentAction == 1)
+                    if (Random::Rand() % 3 < 2 || o->CurrentAction == 1)
                         SetAction(o, 0);
                     else
                         SetAction(o, 1);
@@ -3499,36 +3518,36 @@ void EtcStopAnimationSetting(CHARACTER* c, OBJECT* o)
                 case MODEL_LITTLESANTA + 1:
                 case MODEL_LITTLESANTA + 2:
                 case MODEL_LITTLESANTA + 3:
-                    if (rand() % 5 < 2)
+                    if (Random::Rand() % 5 < 2)
                         SetAction(o, 0);
                     else
-                        SetAction(o, rand() % 3 + 2);
+                        SetAction(o, Random::Rand() % 3 + 2);
                     break;
 
                 case MODEL_LITTLESANTA + 4:
                 case MODEL_LITTLESANTA + 5:
                 case MODEL_LITTLESANTA + 6:
                 case MODEL_LITTLESANTA + 7:
-                    if (rand() % 5 < 2)
+                    if (Random::Rand() % 5 < 2)
                         SetAction(o, 1);
                     else
-                        SetAction(o, rand() % 3 + 2);
+                        SetAction(o, Random::Rand() % 3 + 2);
                     break;
                 case MODEL_XMAS2008_SANTA_NPC:
-                    if (rand() % 3 < 2 || (o->CurrentAction == 1 || o->CurrentAction == 2))
+                    if (Random::Rand() % 3 < 2 || (o->CurrentAction == 1 || o->CurrentAction == 2))
                     {
                         SetAction(o, 0);
                     }
                     else
                     {
-                        SetAction(o, rand() % 2 + 1);
+                        SetAction(o, Random::Rand() % 2 + 1);
                     }
                     break;
                 case MODEL_XMAS2008_SNOWMAN_NPC:
                     SetAction(o, 0);
                     break;
                 case MODEL_GAMBLE_NPC_MOSS:
-                    if (rand() % 5 < 4 || o->CurrentAction == 1)
+                    if (Random::Rand() % 5 < 4 || o->CurrentAction == 1)
                     {
                         SetAction(o, 0);
                     }
@@ -3539,33 +3558,33 @@ void EtcStopAnimationSetting(CHARACTER* c, OBJECT* o)
                     break;
                 case MODAL_GENS_NPC_DUPRIAN:
                 case MODAL_GENS_NPC_BARNERT:
-                    if (rand() % 5 < 4)
+                    if (Random::Rand() % 5 < 4)
                         SetAction(o, 0);
                     else
-                        SetAction(o, rand() % 2 + 1);
+                        SetAction(o, Random::Rand() % 2 + 1);
                     break;
                 case MODEL_UNITEDMARKETPLACE_RAUL:
                 case MODEL_UNITEDMARKETPLACE_JULIA:
-                    if (rand() % 5 < 4)
+                    if (Random::Rand() % 5 < 4)
                         SetAction(o, 0);
                     else
-                        SetAction(o, rand() % 2 + 1);
+                        SetAction(o, Random::Rand() % 2 + 1);
                     break;
                 case MODEL_UNITEDMARKETPLACE_CHRISTIN:
                 case MODEL_KARUTAN_NPC_REINA:
-                    if (rand() % 5 < 3)
+                    if (Random::Rand() % 5 < 3)
                         SetAction(o, 0);
                     else
-                        SetAction(o, rand() % 2 + 1);
+                        SetAction(o, Random::Rand() % 2 + 1);
                     break;
                 case MODEL_KARUTAN_NPC_VOLVO:
-                    if (rand() % 5 < 4)
+                    if (Random::Rand() % 5 < 4)
                         SetAction(o, 0);
                     else
                         SetAction(o, 1);
                     break;
                 case MODEL_LUCKYITEM_NPC:
-                    if (rand() % 5 < 4 || o->CurrentAction == 1)
+                    if (Random::Rand() % 5 < 4 || o->CurrentAction == 1)
                     {
                         SetAction(o, 0);
                     }
@@ -3575,7 +3594,7 @@ void EtcStopAnimationSetting(CHARACTER* c, OBJECT* o)
                     }
                     break;
                 default:
-                    SetAction(o, rand() % 2);
+                    SetAction(o, Random::Rand() % 2);
                     break;
                 }
             }
@@ -3941,7 +3960,7 @@ void PlayAttackHitSound(CHARACTER* attacker, OBJECT* o)
     constexpr int HitSoundVariants = 4;
     const ESound firstSound = gCharacterManager.GetEquipedBowType(attacker) != BOWTYPE_NONE ? SOUND_ATTACK_MISSILE_HIT1
                                                                                             : SOUND_ATTACK_MELEE_HIT1;
-    PlayBuffer(static_cast<ESound>(firstSound + rand() % HitSoundVariants), o);
+    PlayBuffer(static_cast<ESound>(firstSound + Random::Rand() % HitSoundVariants), o);
 }
 } // namespace
 
@@ -3990,7 +4009,7 @@ void MoveCharacter(CHARACTER* c, OBJECT* o)
 
     vec3_t p, Position;
     vec3_t Light;
-    float Luminosity = (float)(rand() % 6 + 2) * 0.1f;
+    float Luminosity = (float)(Random::Rand() % 6 + 2) * 0.1f;
 
     Vector(0.f, 0.f, 0.f, p);
     Vector(1.f, 1.f, 1.f, Light);
@@ -4368,7 +4387,7 @@ void MoveCharacter(CHARACTER* c, OBJECT* o)
             {
                 Pos[0] = TargetPosition[0];
                 Pos[1] = TargetPosition[1];
-                Pos[2] = TargetPosition[2] + (rand() % 50) * i;
+                Pos[2] = TargetPosition[2] + (Random::Rand() % 50) * i;
                 CreateEffect(MODEL_BLIZZARD, Pos, o->Angle, Light, 0, NULL, i + 1);
             }
             if (c == Hero)
@@ -4549,7 +4568,7 @@ void MoveCharacter(CHARACTER* c, OBJECT* o)
             }
 
             vec3_t vAngle;
-            int iAngle = rand() % 360;
+            int iAngle = Random::Rand() % 360;
 
             if (c->m_iFenrirSkillTarget != -1 && c->m_iFenrirSkillTarget < MAX_CHARACTERS_CLIENT)
             {
@@ -4560,7 +4579,7 @@ void MoveCharacter(CHARACTER* c, OBJECT* o)
                 for (int j = 0; j < 2; j++)
                 {
                     CalcAddPosition(o, 0.f, -140.f, 130.f, Position);
-                    Vector((float)(rand() % 360), 0.0f, (float)(rand() % 360), vAngle);
+                    Vector((float)(Random::Rand() % 360), 0.0f, (float)(Random::Rand() % 360), vAngle);
 
                     CreateJoint(MODEL_FENRIR_SKILL_THUNDER, Position, p_to->Position, vAngle, 0 + fenrirType, p_to, 100.f);
                     CreateJoint(MODEL_FENRIR_SKILL_THUNDER, Position, p_to->Position, vAngle, 3 + fenrirType, p_to, 80.f);
@@ -4571,7 +4590,7 @@ void MoveCharacter(CHARACTER* c, OBJECT* o)
                     for (int j = 0; j < 2; j++)
                     {
                         CalcAddPosition(o, 0.f, -140.f, 130.f, Position);
-                        Vector((float)(rand() % 360), 0.0f, (float)(rand() % 360), vAngle);
+                        Vector((float)(Random::Rand() % 360), 0.0f, (float)(Random::Rand() % 360), vAngle);
 
                         CreateJoint(MODEL_FENRIR_SKILL_THUNDER, Position, p_o[i]->Position, vAngle, 0 + fenrirType, p_o[i], 100.f);
                         CreateJoint(MODEL_FENRIR_SKILL_THUNDER, Position, p_o[i]->Position, vAngle, 4 + fenrirType, p_o[i], 80.f);
@@ -4580,8 +4599,8 @@ void MoveCharacter(CHARACTER* c, OBJECT* o)
 
                 for (int k = 0; k < 6; k++)
                 {
-                    CalcAddPosition(o, 0.f, 10.f + (rand() % 40 - 20), 130.f, Position);
-                    Vector((float)(rand() % 360), 0.0f, (float)(rand() % 360), vAngle);
+                    CalcAddPosition(o, 0.f, 10.f + (Random::Rand() % 40 - 20), 130.f, Position);
+                    Vector((float)(Random::Rand() % 360), 0.0f, (float)(Random::Rand() % 360), vAngle);
                     CreateJoint(BITMAP_FLARE_FORCE, Position, Position, vAngle, 11 + fenrirType, NULL, 60.f);
                 }
             }
@@ -4763,7 +4782,9 @@ void MoveCharacter(CHARACTER* c, OBJECT* o)
                 {
                     for (int i = 0; i < 10; i++)
                     {
-                        Vector(to->Position[0] + (float)(rand() % 64 - 32), to->Position[1] + (float)(rand() % 64 - 32), to->Position[2] + (float)(rand() % 64 + 90), Position);
+                        Vector(to->Position[0] + (float)(Random::Rand() % 64 - 32),
+                               to->Position[1] + (float)(Random::Rand() % 64 - 32),
+                               to->Position[2] + (float)(Random::Rand() % 64 + 90), Position);
                         CreateParticle(BITMAP_BLOOD + 1, Position, o->Angle, Light);
                     }
                 }
@@ -4776,7 +4797,7 @@ void MoveCharacter(CHARACTER* c, OBJECT* o)
                         {
                             Position[0] = to->Position[0];
                             Position[1] = to->Position[1];
-                            Position[2] = to->Position[2] + 50 + rand() % 30;
+                            Position[2] = to->Position[2] + 50 + Random::Rand() % 30;
 
                             CreateEffect(MODEL_STONE_COFFIN + 1, Position, o->Angle, o->Light);
                         }
@@ -5277,13 +5298,14 @@ void PlayWalkSound()
     }
 }
 
-bool CheckFullSet(CHARACTER* c)
+// Whether `c` wears a full set; levelSet is the set's lowest level (9 and up), addDefense its defense bonus.
+static bool FullSetOf(const CHARACTER* c, int& levelSet, bool& addDefense)
 {
     int tmpLevel = 10;
     bool Success = true;
     int  start = 5, end = 1;
 
-    EquipmentLevelSet = 0;
+    levelSet = 0;
 
     bool bHero = false;
 
@@ -5324,13 +5346,13 @@ bool CheckFullSet(CHARACTER* c)
                 int Level = CharacterMachine->Equipment[i].Level;
                 if (Level < 9)
                 {
-                    EquipmentLevelSet = 0;
+                    levelSet = 0;
                     Success = false;
                     break;
                 }
                 if (Type != Data::Items::GetItemNumber(CharacterMachine->Equipment[i].Type))
                 {
-                    EquipmentLevelSet = 0;
+                    levelSet = 0;
                     Success = false;
                     break;
                 }
@@ -5338,12 +5360,12 @@ bool CheckFullSet(CHARACTER* c)
                 if (Level >= 9 && tmpLevel >= Level)
                 {
                     tmpLevel = Level;
-                    EquipmentLevelSet = Level;
+                    levelSet = Level;
                 }
             }
         }
 
-        g_bAddDefense = true;
+        addDefense = true;
 
         if (gCharacterManager.GetBaseClass(c->Class) == CLASS_DARK && Success)
         {
@@ -5356,7 +5378,7 @@ bool CheckFullSet(CHARACTER* c)
                 && CharacterMachine->Equipment[EQUIPMENT_ARMOR].Type != ITEM_PHANTOM_ARMOR
                 )
             {
-                g_bAddDefense = false;
+                addDefense = false;
             }
         }
     }
@@ -5381,13 +5403,13 @@ bool CheckFullSet(CHARACTER* c)
                 int Level = c->BodyPart[i].Level & 0xf;
                 if (Level < 9)
                 {
-                    EquipmentLevelSet = 0;
+                    levelSet = 0;
                     Success = false;
                     break;
                 }
                 if (Type != Data::Items::GetItemNumber(Data::Items::ToItemType(c->BodyPart[i].Type)))
                 {
-                    EquipmentLevelSet = 0;
+                    levelSet = 0;
                     Success = false;
                     break;
                 }
@@ -5395,12 +5417,12 @@ bool CheckFullSet(CHARACTER* c)
                 if (Level >= 9 && tmpLevel >= Level)
                 {
                     tmpLevel = Level;
-                    EquipmentLevelSet = Level;
+                    levelSet = Level;
                 }
             }
         }
 
-        g_bAddDefense = true;
+        addDefense = true;
 
         if (gCharacterManager.GetBaseClass(c->Class) == CLASS_DARK && Success)
         {
@@ -5413,16 +5435,29 @@ bool CheckFullSet(CHARACTER* c)
                 && c->BodyPart[BODYPART_ARMOR].Type != ITEM_PHANTOM_ARMOR
                 )
             {
-                g_bAddDefense = false;
+                addDefense = false;
             }
         }
     }
 
+    return Success;
+}
+
+bool CheckFullSet(CHARACTER* c)
+{
+    const bool full = FullSetOf(c, EquipmentLevelSet, g_bAddDefense);
     if (gMapManager.InChaosCastle())
     {
         ChangeChaosCastleUnit(c);
     }
-    return Success;
+    return full;
+}
+
+bool IsFullSet(const CHARACTER* c)
+{
+    int levelSet = 0;
+    bool addDefense = false;
+    return FullSetOf(c, levelSet, addDefense);
 }
 
 void MoveEye(OBJECT* o, BMD* b, int Right, int Left, int Right2, int Left2, int Right3, int Left3)
@@ -5450,9 +5485,9 @@ void MonsterDieSandSmoke(OBJECT* o)
         for (int i = 0; i < 20; i++)
         {
             Vector(1.f, 1.f, 1.f, o->Light);
-            Vector(o->Position[0] + (float)(rand() % 64 - 32),
-                o->Position[1] + (float)(rand() % 64 - 32),
-                o->Position[2] + (float)(rand() % 32 - 16), Position);
+            Vector(o->Position[0] + (float)(Random::Rand() % 64 - 32),
+                   o->Position[1] + (float)(Random::Rand() % 64 - 32),
+                   o->Position[2] + (float)(Random::Rand() % 32 - 16), Position);
             if (rand_fps_check(1))
             {
                 CreateParticle(BITMAP_SMOKE + 1, Position, o->Angle, o->Light, 1);
@@ -5466,7 +5501,8 @@ void MonsterMoveSandSmoke(OBJECT* o)
     if (o->CurrentAction == MONSTER01_WALK)
     {
         vec3_t Position;
-        Vector(o->Position[0] + rand() % 200 - 100, o->Position[1] + rand() % 200 - 100, o->Position[2], Position);
+        Vector(o->Position[0] + Random::Rand() % 200 - 100, o->Position[1] + Random::Rand() % 200 - 100, o->Position[2],
+               Position);
         if (rand_fps_check(1))
         {
             CreateParticle(BITMAP_SMOKE + 1, Position, o->Angle, o->Light);
@@ -5514,8 +5550,8 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
                 MoveHead(c);
             if (c != Hero && c->Dead == 0 && rand_fps_check(32))
             {
-                o->HeadTargetAngle[0] = (float)(rand() % 128 - 64);
-                o->HeadTargetAngle[1] = (float)(rand() % 32 - 16);
+                o->HeadTargetAngle[0] = (float)(Random::Rand() % 128 - 64);
+                o->HeadTargetAngle[1] = (float)(Random::Rand() % 32 - 16);
                 for (int i = 0; i < 2; i++)
                     if (o->HeadTargetAngle[i] < 0) o->HeadTargetAngle[i] += 360.f;
             }
@@ -5532,13 +5568,13 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
             for (int i = 0; i < 20; i++)
             {
                 Vector(1.f, 1.f, 1.f, o->Light);
-                Vector(o->Position[0] + (float)(rand() % 64 - 32),
-                    o->Position[1] + (float)(rand() % 64 - 32),
-                    o->Position[2] + (float)(rand() % 32 - 16), Position);
+                Vector(o->Position[0] + (float)(Random::Rand() % 64 - 32),
+                       o->Position[1] + (float)(Random::Rand() % 64 - 32),
+                       o->Position[2] + (float)(Random::Rand() % 32 - 16), Position);
                 if (rand_fps_check(10))
                     CreateParticle(BITMAP_SMOKE + 1, Position, o->Angle, o->Light, 1);
                 if (rand_fps_check(10))
-                    CreateEffect(MODEL_STONE1 + rand() % 2, o->Position, o->Angle, o->Light);
+                    CreateEffect(MODEL_STONE1 + Random::Rand() % 2, o->Position, o->Angle, o->Light);
             }
         }
         else
@@ -5566,7 +5602,9 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
         {
             if (c->FreezeType == BITMAP_ICE && rand_fps_check(4))
             {
-                Vector(o->Position[0] + (float)(rand() % 100 - 50), o->Position[1] + (float)(rand() % 100 - 50), o->Position[2] + (float)(rand() % 180), Position);
+                Vector(o->Position[0] + (float)(Random::Rand() % 100 - 50),
+                       o->Position[1] + (float)(Random::Rand() % 100 - 50),
+                       o->Position[2] + (float)(Random::Rand() % 180), Position);
                 //CreateParticle(BITMAP_SHINY,Position,o->Angle,o->Light);
                 //CreateParticle(BITMAP_SHINY,Position,o->Angle,o->Light,1);
             }
@@ -5578,7 +5616,7 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
                     if (!b->Bones[i].Dummy)
                     {
                         b->TransformPosition(o->BoneTransform[i], Position, p);
-                        //CreateParticle(BITMAP_FIRE+1,p,o->Angle,o->Light,rand()%4);
+                        // CreateParticle(BITMAP_FIRE+1,p,o->Angle,o->Light,Random::Rand()%4);
                     }
                     int d = (int)(4.f / c->Freeze);
                     if (d < 1) d = 1;
@@ -5588,7 +5626,7 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
         }
         Vector(1.f, 1.f, 1.f, Light);
         Vector(0.f, 0.f, 0.f, p);
-        Luminosity = (float)(rand() % 8 + 2) * 0.1f;
+        Luminosity = (float)(Random::Rand() % 8 + 2) * 0.1f;
         bool Smoke = false;
         switch (o->Type)
         {
@@ -5644,7 +5682,7 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
             {
                 for (int i = 0; i < 10; i++)
                 {
-                    b->TransformPosition(o->BoneTransform[rand() % b->NumBones], p, Position, true);
+                    b->TransformPosition(o->BoneTransform[Random::Rand() % b->NumBones], p, Position, true);
                     CreateParticle(BITMAP_FIRE, Position, o->Angle, Light);
                 }
             }
@@ -5717,10 +5755,10 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
         case MODEL_DRAKAN:
             break;
         case MODEL_CURSED_KING:
-            if (0 == ((int)rand() % 5))
+            if (0 == ((int)Random::Rand() % 5))
             {
-                Position[0] = o->Position[0] + ((rand() % 21) - 10) * ((float)TERRAIN_SIZE / 70);
-                Position[1] = o->Position[1] + ((rand() % 21) - 10) * ((float)TERRAIN_SIZE / 70);
+                Position[0] = o->Position[0] + ((Random::Rand() % 21) - 10) * ((float)TERRAIN_SIZE / 70);
+                Position[1] = o->Position[1] + ((Random::Rand() % 21) - 10) * ((float)TERRAIN_SIZE / 70);
                 CreatePointer(BITMAP_BLOOD, Position, o->Angle[0], o->Light, 0.65f);
             }
             break;
@@ -5945,20 +5983,20 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
 
                 for (int i = 0; i < 20; i++)
                 {
-                    b->TransformPosition(o->BoneTransform[rand() % b->NumBones], p, Position, true);
+                    b->TransformPosition(o->BoneTransform[Random::Rand() % b->NumBones], p, Position, true);
                     CreateParticle(BITMAP_FIRE, Position, o->Angle, Light);
                 }
             }
             break;
         case MODEL_GORGON:
-            o->BlendMeshLight = (float)(rand() % 10) * 0.1f;
+            o->BlendMeshLight = (float)(Random::Rand() % 10) * 0.1f;
             if (c->Level == 2)
             {
                 if (rand_fps_check(1))
                 {
                     for (int i = 0; i < 10; i++)
                     {
-                        b->TransformPosition(o->BoneTransform[rand() % b->NumBones], p, Position, true);
+                        b->TransformPosition(o->BoneTransform[Random::Rand() % b->NumBones], p, Position, true);
                         CreateParticle(BITMAP_FIRE, Position, o->Angle, Light);
                     }
                 }
@@ -5995,7 +6033,7 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
                 vec3_t Angle;
                 for (int i = 0; i < 4; i++)
                 {
-                    Vector((float)(rand() % 60 + 60 + 90), 0.f, (float)(rand() % 30), Angle);
+                    Vector((float)(Random::Rand() % 60 + 60 + 90), 0.f, (float)(Random::Rand() % 30), Angle);
                     CreateJoint(BITMAP_JOINT_SPARK, Position, Position, Angle);
                     CreateParticle(BITMAP_SPARK, Position, Angle, Light);
                 }
@@ -6014,9 +6052,9 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
                 {
                     if (rand_fps_check(1))
                     {
-                        Vector((float)(rand() % 60 + 60 + 30), 0.f, (float)(rand() % 30), Angle);
+                        Vector((float)(Random::Rand() % 60 + 60 + 30), 0.f, (float)(Random::Rand() % 30), Angle);
                         CreateJoint(BITMAP_JOINT_SPARK, Position, Position, Angle);
-                        if (rand() % 2)
+                        if (Random::Rand() % 2)
                             CreateParticle(BITMAP_SPARK, Position, Angle, Light);
                     }
                 }
@@ -6033,7 +6071,7 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
             {
                 vec3_t Light;
                 Vector(1.f, 1.f, 1.f, Light);
-                Vector(0.f, (float)(rand() % 32 + 32), 0.f, p);
+                Vector(0.f, (float)(Random::Rand() % 32 + 32), 0.f, p);
                 b->TransformPosition(o->BoneTransform[7], p, Position, true);
                 CreateParticle(BITMAP_FIRE, Position, o->Angle, Light, 1);
             }
@@ -6049,9 +6087,9 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
             }
             if (c->Dead == 0 && rand_fps_check(4))
             {
-                Vector(o->Position[0] + (float)(rand() % 64 - 32),
-                    o->Position[1] + (float)(rand() % 64 - 32),
-                    o->Position[2] + (float)(rand() % 32 - 16), Position);
+                Vector(o->Position[0] + (float)(Random::Rand() % 64 - 32),
+                       o->Position[1] + (float)(Random::Rand() % 64 - 32),
+                       o->Position[2] + (float)(Random::Rand() % 32 - 16), Position);
                 if (gMapManager.WorldActive == WD_2DEVIAS)
                     CreateParticle(BITMAP_SMOKE, Position, o->Angle, Light);
                 else
@@ -6061,9 +6099,9 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
         case MODEL_BAHAMUT:
             if (c->Dead == 0 && c->Level == 1 && rand_fps_check(4))
             {
-                Vector(o->Position[0] + (float)(rand() % 64 - 32),
-                    o->Position[1] + (float)(rand() % 64 - 32),
-                    o->Position[2] + (float)(rand() % 32 - 16), Position);
+                Vector(o->Position[0] + (float)(Random::Rand() % 64 - 32),
+                       o->Position[1] + (float)(Random::Rand() % 64 - 32),
+                       o->Position[2] + (float)(Random::Rand() % 32 - 16), Position);
                 CreateParticle(BITMAP_SMOKE + 1, Position, o->Angle, Light);
             }
             break;
@@ -6164,8 +6202,8 @@ void MoveCharacterVisual(CHARACTER* c, OBJECT* o)
             VectorRotate(p, Matrix, Position);
             VectorAddScaled(o->Position, Position, Position, FPS_ANIMATION_FACTOR);
 
-            Position[0] += rand() % 64 - 32.f;
-            Position[1] += rand() % 64 - 32.f;
+            Position[0] += Random::Rand() % 64 - 32.f;
+            Position[1] += Random::Rand() % 64 - 32.f;
             Position[2] += 50.f;
             VectorScale(Position, FPS_ANIMATION_FACTOR, Position);
 
@@ -6511,7 +6549,7 @@ void WaitCharactersAnimation()
 
 extern thread_local float  ParentMatrix[3][4];
 
-void RenderGuild(OBJECT* o, int Type, vec3_t vPos)
+void RenderGuild(const OBJECT* o, int Type, vec3_t vPos)
 {
     EnableAlphaTest();
     EnableCullFace();
@@ -6543,7 +6581,7 @@ void RenderGuild(OBJECT* o, int Type, vec3_t vPos)
         Matrix[2][3] = vPos[2];
     }
 
-    R_ConcatTransforms(o->BoneTransform[26], Matrix, ParentMatrix);
+    R_ConcatTransforms(DrawnPose(o)[26], Matrix, ParentMatrix);
     mu::GetRenderer().Translate(o->Position[0], o->Position[1], o->Position[2]);
     RenderPlane3D(5.f, 7.f, ParentMatrix);
 
@@ -6575,9 +6613,11 @@ struct LinkPlacement
 };
 
 LinkPlacement PlaceLinkedPart(float x, float y, float z, const CHARACTER* c, BYTE linkBone, float ownerScale, int Type,
-                              bool Link, bool bRightHandItem)
+                              bool Link, bool bRightHandItem, vec34_t* bones = nullptr)
 {
     const OBJECT* o = &c->Object;
+    if (bones == nullptr)
+        bones = o->BoneTransform;
     LinkPlacement placement;
     placement.scale = ownerScale;
     vec3_t p;
@@ -6845,17 +6885,17 @@ LinkPlacement PlaceLinkedPart(float x, float y, float z, const CHARACTER* c, BYT
             R_ConcatTransforms(Matrix, mNewRot, Matrix);
         }
 
-        R_ConcatTransforms(o->BoneTransform[linkBone], Matrix, placement.parent);
+        R_ConcatTransforms(bones[linkBone], Matrix, placement.parent);
         VectorCopy(c->Object.Position, placement.origin);
     }
     else
     {
         Vector(x, y, z, p);
         // As BMD::RotationPosition, with the character model's scale.
-        VectorRotate(p, o->BoneTransform[linkBone], placement.position);
+        VectorRotate(p, bones[linkBone], placement.position);
         VectorScale(placement.position, Models[o->Type].BodyScale, placement.position);
         VectorAdd(c->Object.Position, placement.position, placement.origin);
-        std::memcpy(placement.parent, o->BoneTransform[linkBone], sizeof(placement.parent));
+        std::memcpy(placement.parent, bones[linkBone], sizeof(placement.parent));
     }
     if (Type == MODEL_BOSS_HEAD)
     {
@@ -6864,19 +6904,25 @@ LinkPlacement PlaceLinkedPart(float x, float y, float z, const CHARACTER* c, BYT
     }
     return placement;
 }
-bool DrawsHeldWeapon(CHARACTER* c, int hand);
+bool DrawsHeldWeapon(const CHARACTER* c, int hand);
 
-// The shared item object of a part type, set up from the character the part is drawn on.
-OBJECT* ItemObjectFor(CHARACTER* c, int Type)
+// Sets up an item object of a part type from the character the part is on.
+void SetUpItemObject(OBJECT* Object, const CHARACTER* c, int Type)
 {
-    OBJECT* o = &c->Object;
-    OBJECT* Object = &g_ItemObject[Type];
+    const OBJECT* o = &c->Object;
     Object->Type = Type;
     ItemObjectAttribute(Object);
-    Object->EnableShadow = o->EnableShadow;
+    Object->EnableShadow = DrawsShadow(o);
     Object->m_bRenderShadow = o->m_bRenderShadow;
     Object->m_bySkillCount = o->m_bySkillCount;
     g_CharacterCopyBuff(Object, o);
+}
+
+// The shared item object of a part type, set up from the character the part is on; effects keep it as their owner.
+OBJECT* ItemObjectFor(CHARACTER* c, int Type)
+{
+    OBJECT* Object = &g_ItemObject[Type];
+    SetUpItemObject(Object, c, Type);
     return Object;
 }
 
@@ -6892,9 +6938,9 @@ unsigned short LinkedPartAction(const CHARACTER* c, const PART_t* f)
 }
 
 // Parts no draw shows: Cursed Temple players' wings and capes, summoner books, and anything on a cloaked character.
-bool HidesLinkedPart(CHARACTER* c, int Type)
+bool HidesLinkedPart(const CHARACTER* c, int Type)
 {
-    OBJECT* o = &c->Object;
+    const OBJECT* o = &c->Object;
     if (o->SubType == MODEL_CURSEDTEMPLE_ALLIED_PLAYER || o->SubType == MODEL_CURSEDTEMPLE_ILLUSION_PLAYER)
     {
         if (Type >= MODEL_WING && Type <= MODEL_WINGS_OF_DARKNESS)
@@ -6984,12 +7030,15 @@ void PoseLinkedPart(const CHARACTER* c, int Type, bool Link, const Engine::Objec
 }
 } // namespace
 
-vec34_t* RenderLinkObject(float x, float y, float z, CHARACTER* c, PART_t* f, int Type, int Level, int Option1,
-                          bool Link, bool Translate, int RenderType, bool bRightHandItem, int linkBone)
+vec34_t* RenderLinkObject(float x, float y, float z, const CHARACTER* c, const PART_t* f, int Type, int Level,
+                          int Option1, bool Link, bool Translate, int RenderType, bool bRightHandItem, int linkBone,
+                          const LinkedPartLook* look)
 {
+    const float ownerScale = look != nullptr ? look->ownerScale : c->Object.Scale;
+    const float* light = look != nullptr ? look->light : c->Light;
     // A bone the call hangs the part from, where it differs from the part's own.
     const auto bone = static_cast<unsigned char>(linkBone >= 0 ? linkBone : f->LinkBone);
-    OBJECT* o = &c->Object;
+    const OBJECT* o = &c->Object;
     BMD* b = &Models[Type];
 
     if (HidesLinkedPart(c, Type))
@@ -7002,11 +7051,14 @@ vec34_t* RenderLinkObject(float x, float y, float z, CHARACTER* c, PART_t* f, in
 
     // CopyShadowAngle(f,b);
     b->ContrastEnable = o->ContrastEnable;
-    b->BodyScale = o->Scale;
+    b->BodyScale = ownerScale;
     b->CurrentAction = LinkedPartAction(c, f);
     b->BodyHeight = 0.f;
 
-    OBJECT* Object = ItemObjectFor(c, Type);
+    // The draw's own copy: the shared one keeps what the update's effects set on it.
+    OBJECT item = g_ItemObject[Type];
+    SetUpItemObject(&item, c, Type);
+    OBJECT* Object = &item;
     b->LightEnable = Object->LightEnable;
     b->LightEnable = false;
 
@@ -7020,7 +7072,8 @@ vec34_t* RenderLinkObject(float x, float y, float z, CHARACTER* c, PART_t* f, in
 
     OBB_t OBB;
 
-    const LinkPlacement placement = PlaceLinkedPart(x, y, z, c, bone, o->Scale, Type, Link, bRightHandItem);
+    const LinkPlacement placement =
+        PlaceLinkedPart(x, y, z, c, bone, ownerScale, Type, Link, bRightHandItem, DrawnPose(o));
     std::memcpy(ParentMatrix, placement.parent, sizeof(placement.parent));
     VectorCopy(placement.origin, b->BodyOrigin);
     VectorCopy(placement.angle, Object->Angle);
@@ -7081,7 +7134,11 @@ vec34_t* RenderLinkObject(float x, float y, float z, CHARACTER* c, PART_t* f, in
         && Type != MODEL_WING + 135 // Small Cape of Fighter
         )
     {
-        RenderPartObjectEffect(Object, Type, c->Light, o->Alpha, Level, Option1, false, 0, RenderType | ((c->MonsterIndex == MONSTER_METAL_BALROG || c->MonsterIndex == MONSTER_ORC_ARCHER_OF_DOOM) ? (RENDER_EXTRA | RENDER_TEXTURE) : RENDER_TEXTURE));
+        RenderPartObjectEffect(
+            Object, Type, light, o->Alpha, Level, Option1, false, 0,
+            RenderType | ((c->MonsterIndex == MONSTER_METAL_BALROG || c->MonsterIndex == MONSTER_ORC_ARCHER_OF_DOOM)
+                              ? (RENDER_EXTRA | RENDER_TEXTURE)
+                              : RENDER_TEXTURE));
     }
 
     // Restore the caller's active bone transform — the linked item render above overwrote
@@ -7174,7 +7231,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
 
     float Luminosity;
     vec3_t Light;
-    Luminosity = (float)(rand() % 30 + 70) * 0.005f;
+    Luminosity = (float)(Random::Rand() % 30 + 70) * 0.005f;
     switch (Type)
     {
     case MODEL_15GRADE_ARMOR_OBJ_ARMLEFT:
@@ -7240,9 +7297,9 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
             Vector(i * 30.f - 180.f, -40.f, 0.f, p);
             b->TransformPosition(bones[0], p, Position, true);
 
-            if (rand() % 3 == 0)
+            if (Random::Rand() % 3 == 0)
             {
-                CreateSprite(BITMAP_SHINY + 1, Position, 0.6f, Light2, o, (float)(rand() % 360));
+                CreateSprite(BITMAP_SHINY + 1, Position, 0.6f, Light2, o, (float)(Random::Rand() % 360));
             }
             CreateSprite(BITMAP_LIGHT, Position, 2.f, Light, o);
         }
@@ -7278,21 +7335,21 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
     {
         Vector(1.0f, 0.3f, 0.0f, Light);
 
-        float fRendomPos = (float)(rand() % 60) / 20.0f - 1.5f;
-        float fRendomScale = (float)(rand() % 10) / 20.0f + 1.4f;
+        float fRendomPos = (float)(Random::Rand() % 60) / 20.0f - 1.5f;
+        float fRendomScale = (float)(Random::Rand() % 10) / 20.0f + 1.4f;
         Vector(0.f, -100.f + fRendomPos, fRendomPos, p);
         b->TransformPosition(bones[0], p, Position, true);
         CreateSprite(BITMAP_SHINY + 1, Position, fRendomScale, Light, o);
         CreateSprite(BITMAP_SHINY + 1, Position, fRendomScale - 0.3f, Light, o, 20.0f);
 
-        fRendomPos = (float)(rand() % 60) / 20.0f - 1.5f;
-        fRendomScale = (float)(rand() % 10) / 20.0f + 1.0f;
+        fRendomPos = (float)(Random::Rand() % 60) / 20.0f - 1.5f;
+        fRendomScale = (float)(Random::Rand() % 10) / 20.0f + 1.0f;
         Vector(0.f, -100.f + fRendomPos, fRendomPos, p);
         b->TransformPosition(bones[0], p, Position, true);
         CreateSprite(BITMAP_LIGHT, Position, fRendomScale + 0.3f, Light, o);
 
-        fRendomPos = (float)(rand() % 40) / 20.0f - 1.0f;
-        fRendomScale = (float)(rand() % 8) / 20.0f + 0.4f;
+        fRendomPos = (float)(Random::Rand() % 40) / 20.0f - 1.0f;
+        fRendomScale = (float)(Random::Rand() % 8) / 20.0f + 0.4f;
         Vector(0.f, 100.f + fRendomPos, fRendomPos, p);
         b->TransformPosition(bones[0], p, Position, true);
         CreateSprite(BITMAP_SHINY + 1, Position, fRendomScale, Light, o);
@@ -7315,8 +7372,8 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
     break;
     case MODEL_EXPLOSION_BLADE:
     {
-        float fRendomPos = (float)(rand() % 60) / 20.0f - 1.5f;
-        float fRendomScale = (float)(rand() % 30) / 20.0f + 1.5f;
+        float fRendomPos = (float)(Random::Rand() % 60) / 20.0f - 1.5f;
+        float fRendomScale = (float)(Random::Rand() % 30) / 20.0f + 1.5f;
         float fLight = (float)sinf((WorldTime) * 0.7f) * 0.2f + 0.5f;
 
         float fRotation = (WorldTime * 0.0006f) * 360.0f;
@@ -7349,8 +7406,8 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
     case MODEL_GRAND_VIPER_STAFF:
     {
         Vector(0.4f, 0.4f, 0.4f, Light);
-        float fRendomPos = (float)(rand() % 60) / 20.0f - 1.5f;
-        float fRendomScale = (float)(rand() % 15) / 20.0f + 1.8f;
+        float fRendomPos = (float)(Random::Rand() % 60) / 20.0f - 1.5f;
+        float fRendomScale = (float)(Random::Rand() % 15) / 20.0f + 1.8f;
         Vector(0.f, -170.f + fRendomPos, 0.f + fRendomPos, p);
         b->TransformPosition(bones[0], p, Position, true);
         CreateSprite(BITMAP_SPARK + 1, Position, fRendomScale, Light, o);
@@ -7362,8 +7419,8 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
             CreateJoint(BITMAP_JOINT_ENERGY, Position, Position, o->Angle, 17, o, 30.f);
         }
 
-        fRendomPos = (float)(rand() % 60) / 20.0f - 1.5f;
-        fRendomScale = (float)(rand() % 15) / 20.0f + 1.0f;
+        fRendomPos = (float)(Random::Rand() % 60) / 20.0f - 1.5f;
+        fRendomScale = (float)(Random::Rand() % 15) / 20.0f + 1.0f;
         Vector(0.f, -170.f + fRendomPos, 0.f + fRendomPos, p);
         Vector(1.0f, 0.4f, 1.0f, Light);
         CreateSprite(BITMAP_LIGHT, Position, fRendomScale, Light, o);
@@ -7411,7 +7468,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         b->TransformPosition(bones[2], p, Position, true);
         CreateSprite(BITMAP_SHINY + 1, Position, 0.7f, Light, o);
 
-        float fScale = 0.5f + (float)(rand() % 100) / 180;
+        float fScale = 0.5f + (float)(Random::Rand() % 100) / 180;
         float fRotation = (WorldTime * 0.0006f) * 360.0f;
         Vector(0.f, 0.f, 0.f, p);
         b->TransformPosition(bones[2], p, Position, true);
@@ -7436,7 +7493,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         b->TransformPosition(bones[1], p, Position, true);
         CreateSprite(BITMAP_LIGHT, Position, 1.0f, Light, o);	// flare01.jpg
 
-        fScale = (float)(rand() % 30) / 60.0f + 0.2f;
+        fScale = (float)(Random::Rand() % 30) / 60.0f + 0.2f;
         fLight = (float)sinf((WorldTime) * 0.7f) * 0.2f + 0.3f;
         fRotation = (WorldTime * 0.0006f) * 360.0f;
         Vector(0.1f + fLight, 0.2f, 0.0f, Light);
@@ -7445,7 +7502,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         Vector(1.0f - fLight, 0.0f, 0.0f, Light);
         if (fPosition >= 20.0f)
         {
-            iRandom = rand() % 5 + 2;	// 2 ~ 6
+            iRandom = Random::Rand() % 5 + 2; // 2 ~ 6
             fPosition = 0.0f;
             //Vector(1.0f, 0.0f, 0.0f, Light);
         }
@@ -7474,14 +7531,15 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
                 Vector(1.f, 1.f, 1.f, Light);
                 Vector(0.f, 0.f, 0.f, p);
                 b->TransformPosition(bones[6], p, Position, true);
-                Position[0] += rand() % 30 - 15.f;
-                Position[1] += rand() % 30 - 15.f;
+                Position[0] += Random::Rand() % 30 - 15.f;
+                Position[1] += Random::Rand() % 30 - 15.f;
                 Position[2] += 20.f;
 
                 vec3_t	Angle;
                 for (int i = 0; i < 4; i++)
                 {
-                    Vector((float)(rand() % 60 + 60 + 90), 0.f, o->Angle[2], Angle);//(float)(rand()%30),Angle);
+                    Vector((float)(Random::Rand() % 60 + 60 + 90), 0.f, o->Angle[2],
+                           Angle); //(float)(Random::Rand()%30),Angle);
                     CreateJoint(BITMAP_JOINT_SPARK, Position, Position, Angle);
                     CreateParticle(BITMAP_SPARK, Position, Angle, Light);
                 }
@@ -7493,7 +7551,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
     {
         float fScale;
         Luminosity = (float)sinf((WorldTime) * 0.002f) * 0.3f + 0.1f;
-        fScale = (float)(rand() % 10) / 30.0f + 1.7f;
+        fScale = (float)(Random::Rand() % 10) / 30.0f + 1.7f;
 
         Vector(0.f, 0.f, 0.f, p);
 
@@ -7555,27 +7613,27 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
 
         // flare01
         Vector(0.7f, 0.7f, 0.7f, Light);
-        fScale = (float)(rand() % 10) / 500.0f;
+        fScale = (float)(Random::Rand() % 10) / 500.0f;
         b->TransformPosition(bones[9], p, Position, true);
         CreateSprite(BITMAP_LIGHT, Position, 0.3f + fScale, Light, o);
         //			Vector(0.1f, 0.5f, 0.1f, Light);
         //			CreateSprite(BITMAP_LIGHT, Position, 1.5f, Light, o);
 
         Vector(0.2f, 0.6f + fLight, 0.2f, Light);
-        fScale = (float)(rand() % 10) / 500.0f;
+        fScale = (float)(Random::Rand() % 10) / 500.0f;
         b->TransformPosition(bones[9], p, Position, true);
         CreateSprite(BITMAP_LIGHT, Position, 4.0f + fScale, Light, o);
 
         // shiny02
         Vector(0.4f, 0.5f + fLight, 0.4f, Light);
-        fScale = (float)(rand() % 30) / 60.0f;
+        fScale = (float)(Random::Rand() % 30) / 60.0f;
         fRotation = (WorldTime * 0.0004f) * 360.0f;
         b->TransformPosition(bones[9], p, Position, true);
         CreateSprite(BITMAP_SHINY + 1, Position, 1.2f + fScale, Light, o, -fRotation);
 
         // magic_ground1
         Vector(0.6f, 1.f, 0.6f, Light);
-        fScale = (float)(rand() % 10) / 500.0f;
+        fScale = (float)(Random::Rand() % 10) / 500.0f;
         fRotation = (WorldTime * 0.0006f) * 360.0f;
         b->TransformPosition(bones[9], p, Position, true);
         CreateSprite(BITMAP_MAGIC, Position, 0.25f + fScale, Light, o, fRotation);
@@ -7598,7 +7656,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         CreateSprite(BITMAP_SHINY + 1, Position, 0.6f + fScale, Light, o, fRotation);
 
         Vector(0.6f, 1.f, 0.6f, Light);
-        fScale = (float)(rand() % 10) / 500.0f;
+        fScale = (float)(Random::Rand() % 10) / 500.0f;
         fRotation = (WorldTime * 0.0006f) * 360.0f;
         b->TransformPosition(bones[2], p, Position, true);
         CreateSprite(BITMAP_MAGIC, Position, 0.15f + fScale, Light, o, fRotation);
@@ -7621,7 +7679,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         Vector(0.f, 0.f, 0.f, p);
         Vector(Luminosity * 0.f, Luminosity * 0.5f, Luminosity * 1.f, Light);
 
-        auto Rotation = (float)(rand() % 360);
+        auto Rotation = (float)(Random::Rand() % 360);
         b->TransformPosition(bones[5], p, Position, true);
         Vector(Luminosity * 0.f, Luminosity * 0.5f, Luminosity * 1.f, Light);
         CreateSprite(BITMAP_LIGHT, Position, 1.f, Light, o);
@@ -7646,7 +7704,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
     break;
     case MODEL_GREAT_LORD_SCEPTER:
     {
-        auto Rotation = (float)(rand() % 360);
+        auto Rotation = (float)(Random::Rand() % 360);
         Luminosity = (float)sinf((WorldTime) * 0.002f) * 0.3f + 0.7f;
 
         Vector(0.f, 0.f, 0.f, p);
@@ -7670,9 +7728,9 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
             Vector(0.4f, 0.4f, 0.4f, Light2);
             b->TransformPosition(bones[i + 2], p, Position, true);
 
-            if (rand() % 3 == 0)
+            if (Random::Rand() % 3 == 0)
             {
-                CreateSprite(BITMAP_SHINY + 1, Position, 0.6f, Light2, o, (float)(rand() % 360));
+                CreateSprite(BITMAP_SHINY + 1, Position, 0.6f, Light2, o, (float)(Random::Rand() % 360));
             }
             CreateSprite(BITMAP_LIGHT, Position, 2.f, Light, o);
         }
@@ -7684,7 +7742,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
             vec3_t pos, delta, angle;
 
             Vector(0.f, 0.f, 0.f, p);
-            Vector(-90.f, (float)(rand() % 360), o->Angle[2] - 45, angle);
+            Vector(-90.f, (float)(Random::Rand() % 360), o->Angle[2] - 45, angle);
             b->TransformPosition(bones[3], p, pos, true);
             b->TransformPosition(bones[2], p, Position, true);
 
@@ -7701,9 +7759,9 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
                     Vector(0.f,i*30.f-10.f,0.f,p);
                     b->TransformPosition(bones[0],p,Position,true);
 
-                    if ( rand() % 3 == 0 )
+                    if ( Random::Rand() % 3 == 0 )
                     {
-                        CreateSprite(BITMAP_SHINY+1,Position,0.6f,Light2, o, ( float)( rand()%360));
+                        CreateSprite(BITMAP_SHINY+1,Position,0.6f,Light2, o, ( float)( Random::Rand()%360));
                     }
                     CreateSprite(BITMAP_LIGHT,Position,1.f,Light,o);
                 }
@@ -7777,7 +7835,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
             if (i == 3)
             {
                 Vector(0.5f, 0.5f, 0.5f, Light);
-                CreateSprite(BITMAP_SHINY + 1, Position, 0.6f, Light, o, rand() % 360);
+                CreateSprite(BITMAP_SHINY + 1, Position, 0.6f, Light, o, Random::Rand() % 360);
             }
         }
     }
@@ -7794,7 +7852,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
 
         Vector(Luminosity * -10.f, 0.f, 0.f, p);
         Vector(0.6f, 0.8f, 1.f, Light);
-        Luminosity = rand() % 360;
+        Luminosity = Random::Rand() % 360;
         b->TransformPosition(bones[1], p, Position, true);
         CreateSprite(BITMAP_LIGHT, Position, 0.7f, Light, o);
         CreateSprite(BITMAP_SHINY + 1, Position, 0.5f, Light, o, Luminosity);
@@ -7813,7 +7871,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
             Vector(i * 15.f - 10.f, 0.f, 0.f, p);
             b->TransformPosition(bones[2], p, Position, true);
             CreateSprite(BITMAP_LIGHT, Position, 1.3f, Light, o);
-            CreateSprite(BITMAP_SHINY + 1, Position, 0.4f, Light, o, rand() % 360);
+            CreateSprite(BITMAP_SHINY + 1, Position, 0.4f, Light, o, Random::Rand() % 360);
         }
     }
     break;
@@ -7824,9 +7882,9 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         vec3_t Light2;
         Vector(0.4f, 0.4f, 0.4f, Light2);
         b->TransformPosition(bones[0], p, Position, true);
-        if (rand() % 3 == 0)
+        if (Random::Rand() % 3 == 0)
         {
-            CreateSprite(BITMAP_SHINY + 1, Position, 0.6f, Light2, o, (float)(rand() % 360));
+            CreateSprite(BITMAP_SHINY + 1, Position, 0.6f, Light2, o, (float)(Random::Rand() % 360));
         }
         CreateSprite(BITMAP_LIGHT, Position, 2.f, Light, o);
     }
@@ -7877,14 +7935,15 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
                 Vector(1.f, 1.f, 1.f, Light);
                 Vector(0.f, 0.f, 0.f, p);
                 b->TransformPosition(bones[1], p, Position, true);
-                Position[0] += rand() % 30 - 15.f;
-                Position[1] += rand() % 30 - 15.f;
+                Position[0] += Random::Rand() % 30 - 15.f;
+                Position[1] += Random::Rand() % 30 - 15.f;
                 Position[2] += 20.f;
 
                 vec3_t	Angle;
                 for (int i = 0; i < 4; i++)
                 {
-                    Vector((float)(rand() % 60 + 60 + 90), 0.f, o->Angle[2], Angle);//(float)(rand()%30),Angle);
+                    Vector((float)(Random::Rand() % 60 + 60 + 90), 0.f, o->Angle[2],
+                           Angle); //(float)(Random::Rand()%30),Angle);
                     CreateJoint(BITMAP_JOINT_SPARK, Position, Position, Angle);
                     CreateParticle(BITMAP_SPARK, Position, Angle, Light);
                 }
@@ -7968,7 +8027,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
     }break;
     case MODEL_IMPERIAL_SWORD:
     {
-        float fRendomScale = (float)((rand() % 15) / 30.0f) + 0.5f;
+        float fRendomScale = (float)((Random::Rand() % 15) / 30.0f) + 0.5f;
         Vector(0.f, 0.f, 0.f, Position);
         Vector(0.1f, 0.4f, 0.9f, Light);
         b->TransformPosition(bones[8], Position, p, true); // Zx01
@@ -8052,9 +8111,9 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         }
 
         Vector(0.5f, 0.8f, 0.6f, Light);
-        vDPos[0] = Position[0] + ((float)(rand() % 20 - 10) * 3.f);
-        vDPos[1] = Position[1] + ((float)(rand() % 20 - 10) * 3.f);
-        vDPos[2] = Position[2] + ((float)(rand() % 20 - 10) * 3.f);
+        vDPos[0] = Position[0] + ((float)(Random::Rand() % 20 - 10) * 3.f);
+        vDPos[1] = Position[1] + ((float)(Random::Rand() % 20 - 10) * 3.f);
+        vDPos[2] = Position[2] + ((float)(Random::Rand() % 20 - 10) * 3.f);
 
         if (rand_fps_check(10))
         {
@@ -8113,13 +8172,13 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
 
         if (((int)WorldTime / 100) % 10 == 0)
         {
-            Object->m_iAnimation = rand() % 100;
-            Object->EyeRight[0] = (rand() % 10 - 5);
-            Object->EyeRight[1] = (rand() % 10 - 5);
-            Object->EyeRight[2] = (rand() % 10 - 5);
-            Object->EyeRight2[0] = (rand() % 10 - 5) * 1.2f;
-            Object->EyeRight2[1] = (rand() % 10 - 5) * 1.2f;
-            Object->EyeRight2[2] = (rand() % 10 - 5) * 1.2f;
+            Object->m_iAnimation = Random::Rand() % 100;
+            Object->EyeRight[0] = (Random::Rand() % 10 - 5);
+            Object->EyeRight[1] = (Random::Rand() % 10 - 5);
+            Object->EyeRight[2] = (Random::Rand() % 10 - 5);
+            Object->EyeRight2[0] = (Random::Rand() % 10 - 5) * 1.2f;
+            Object->EyeRight2[1] = (Random::Rand() % 10 - 5) * 1.2f;
+            Object->EyeRight2[2] = (Random::Rand() % 10 - 5) * 1.2f;
         }
         // Object->m_iAnimation Random Texture
         int iRandomTexure1, iRandomTexure2;
@@ -8127,23 +8186,25 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         iRandomTexure2 = (Object->m_iAnimation) % 3;		// 3개
 
         // Zx01
-        fRandomScale = (float)(rand() % 10) / 10.0f + 1.0f;		//(1.0~2.0)
+        fRandomScale = (float)(Random::Rand() % 10) / 10.0f + 1.0f; //(1.0~2.0)
         CreateSprite(BITMAP_LIGHT, vPosZx01, fRandomScale, vLight1, o);
         CreateSprite(BITMAP_SHINY + 1, vPosZx01, 0.5f, vDLight, o);
         VectorAdd(vPosZx01, Object->EyeRight, vPosZx01);
-        CreateSprite(BITMAP_LIGHTNING_MEGA1 + iRandomTexure1, vPosZx01, (((rand() % 11) - 20) / 100.f) + 0.5f, vLight2, o, rand() % 380);
+        CreateSprite(BITMAP_LIGHTNING_MEGA1 + iRandomTexure1, vPosZx01, (((Random::Rand() % 11) - 20) / 100.f) + 0.5f,
+                     vLight2, o, Random::Rand() % 380);
 
         // Zx02
-        fRandomScale = (float)((rand() % 10) / 5.0f) + 1.5f;		//(2.0~3.25)
+        fRandomScale = (float)((Random::Rand() % 10) / 5.0f) + 1.5f; //(2.0~3.25)
         CreateSprite(BITMAP_LIGHT, vPosZx02, fRandomScale, vLight1, o);
         CreateSprite(BITMAP_SHINY + 1, vPosZx02, 1.0f, vDLight, o);
         VectorAdd(vPosZx02, Object->EyeRight2, vPosZx02);
-        CreateSprite(BITMAP_LIGHTNING_MEGA1 + iRandomTexure1, vPosZx02, (((rand() % 11) - 20) / 50.f) + 0.8f, vLight2, o, rand() % 380);
+        CreateSprite(BITMAP_LIGHTNING_MEGA1 + iRandomTexure1, vPosZx02, (((Random::Rand() % 11) - 20) / 50.f) + 0.8f,
+                     vLight2, o, Random::Rand() % 380);
     }break;
     case MODEL_STINGER_BOW:
     {
         vec3_t vZX03, vZx04;
-        int iNumCreateFeather = rand() % 3;
+        int iNumCreateFeather = Random::Rand() % 3;
 
         Vector(0.2f, 0.25f, 0.3f, Light);
 
@@ -8188,7 +8249,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         float fLumi = absf((sinf(WorldTime * 0.001f))) * 0.8f + 0.2f;
         vec3_t vDLight;
         Vector(fLumi * 0.8f, fLumi * 0.1f, fLumi * 0.3f, vDLight);
-        float fRendomScale = (float)(rand() % 10) / 20.0f + 0.8f;		// (0.5~1.25)
+        float fRendomScale = (float)(Random::Rand() % 10) / 20.0f + 0.8f; // (0.5~1.25)
         Vector(0.8f, 0.2f, 0.4f, Light);
         b->TransformPosition(bones[2], Position, p, true); // Red01
         CreateSprite(BITMAP_LIGHT, p, 2.0f, vDLight, o);
@@ -8223,7 +8284,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         Vector(0.9f, 0.3f, 0.5f, Light);
         CreateSprite(BITMAP_SHINY + 6, p, 0.8f, Light, o);
 
-        float fRendomScale = (float)(rand() % 15) / 20.0f + 1.0f;
+        float fRendomScale = (float)(Random::Rand() % 15) / 20.0f + 1.0f;
         CreateSprite(BITMAP_SHINY + 1, p, fRendomScale, Light, o);
         CreateSprite(BITMAP_SHINY + 1, p, fRendomScale - 0.3f, Light, o, 90.0f);
         if (rand_fps_check(1))
@@ -8275,7 +8336,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         CreateSprite(BITMAP_SHOCK_WAVE, Position, Object->Timer, Object->EyeRight, o);
 
         Vector(0.9f, 0.5f, 0.2f, Light);
-        fRandomScale = (float)(rand() % 5) / 25.0f + 0.3f;		// (0.3~0.4)
+        fRandomScale = (float)(Random::Rand() % 5) / 25.0f + 0.3f; // (0.3~0.4)
         CreateSprite(BITMAP_LIGHTMARKS, Position, fRandomScale, Light, o);
 
         b->TransformByObjectBone(Position, Object, 2);		// Zx02
@@ -8323,7 +8384,7 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
         if (rand_fps_check(1))
         {
             Vector(1.f, 1.f, 1.f, Light);
-            switch (rand() % 3)
+            switch (Random::Rand() % 3)
             {
             case 0:
                 CreateParticle(BITMAP_FIRE_HIK1, Position, Object->Angle, Light, 0, 0.7f);
@@ -8558,18 +8619,18 @@ void SpawnLinkedPartEffects(CHARACTER* c, int Type, OBJECT* Object, vec34_t* bon
     break;
     case MODEL_SWORD_35_WING:
         vec3_t vLight;
-        float fSize = (double)(rand() % 30) / 300.0;
+        float fSize = (double)(Random::Rand() % 30) / 300.0;
         Vector(0.18f, 0.45f, 0.22f, vLight);
         Vector(0.f, 0.f, 0.f, p);
         for (int i = 0; i < 8; ++i)
         {
             b->TransformPosition(bones[3 + i], p, Position, true);
-            CreateSprite(BITMAP_LIGHT_MARKS, Position, fSize + 0.3f, vLight, Object, rand() % 360);
+            CreateSprite(BITMAP_LIGHT_MARKS, Position, fSize + 0.3f, vLight, Object, Random::Rand() % 360);
         }
         for (int i = 0; i < 8; ++i)
         {
             b->TransformPosition(bones[13 + i], p, Position, true);
-            CreateSprite(BITMAP_LIGHT_MARKS, Position, fSize + 0.3f, vLight, Object, rand() % 360);
+            CreateSprite(BITMAP_LIGHT_MARKS, Position, fSize + 0.3f, vLight, Object, Random::Rand() % 360);
         }
         break;
     }
@@ -8676,9 +8737,9 @@ bool UpdateCharacterTypeEffects(CHARACTER* c, OBJECT* o, BMD* b)
 
         if (rand_fps_check(30))
         {
-            p[0] = Position[0] + rand() % 100 - 50;
-            p[1] = Position[1] + rand() % 100 - 50;
-            p[2] = Position[2] + rand() % 100 - 50;
+            p[0] = Position[0] + Random::Rand() % 100 - 50;
+            p[1] = Position[1] + Random::Rand() % 100 - 50;
+            p[2] = Position[2] + Random::Rand() % 100 - 50;
 
             CreateJoint(BITMAP_JOINT_ENERGY, p, Position, o->Angle, 6, NULL, 20.f);
         }
@@ -8799,7 +8860,7 @@ struct Cloak
 };
 
 // Whether a character wears a simulated cape, and its tint; its simulation and its draw both read it.
-Cloak CloakOf(CHARACTER* c, OBJECT* o)
+Cloak CloakOf(const CHARACTER* c, const OBJECT* o)
 {
     Cloak cloak;
 
@@ -8889,7 +8950,7 @@ Cloak CloakOf(CHARACTER* c, OBJECT* o)
 }
 
 // The cape cloths a character's draw leaves out; its simulation skips them too.
-bool IsCloakClothHidden(CHARACTER* c, int i, const vec3_t light)
+bool IsCloakClothHidden(const CHARACTER* c, int i, const vec3_t light)
 {
     if (gCharacterManager.GetBaseClass(c->Class) == CLASS_DARK_LORD)
     {
@@ -9280,7 +9341,7 @@ bool UpdateTransformCharacterState(CHARACTER* c)
 }
 
 // Whether RenderCharacter draws a player's body parts into the shadow pass.
-bool DrawsPlayerBodyShadow(CHARACTER* c, OBJECT* o)
+bool DrawsPlayerBodyShadow(const CHARACTER* c, const OBJECT* o)
 {
     return gMapManager.WorldActive != WD_10HEAVEN && o->Type == MODEL_PLAYER &&
            (!(MODEL_HORN_OF_UNIRIA <= c->Helper.Type && c->Helper.Type <= MODEL_HORN_OF_DINORANT) || c->SafeZone) &&
@@ -9288,7 +9349,7 @@ bool DrawsPlayerBodyShadow(CHARACTER* c, OBJECT* o)
 }
 
 // Whether RenderCharacter shows a character's +15 weapon sparks and armor pieces.
-bool DrawsNextGradeObjects(CHARACTER* c)
+bool DrawsNextGradeObjects(const CHARACTER* c)
 {
     return !gMapManager.InChaosCastle() && !(gMapManager.IsCursedTemple() && !c->SafeZone);
 }
@@ -9493,45 +9554,39 @@ int WingCarriedModels(const CHARACTER* c, WingCarriedModel (&models)[2])
 
 // The Red Dragon's head and the princess it carries, or a Saint statue's archangel weapon: models that play on the
 // wing part, whose animation the update sets (PrepareCarriedParts).
-void RenderWingCarriedModels(CHARACTER* c, bool Translate)
+void RenderWingCarriedModels(const CHARACTER* c, bool Translate)
 {
-    OBJECT* o = &c->Object;
-    const float scale = o->Scale;
-    vec3_t light;
-    VectorCopy(c->Light, light);
+    static const vec3_t white = {1.f, 1.f, 1.f};
     WingCarriedModel models[2];
     const int count = WingCarriedModels(c, models);
     for (int i = 0; i < count; ++i)
     {
         const WingCarriedModel& m = models[i];
         // The princess is lit white.
-        if (m.type == MODEL_PRINCESS)
-            Vector(1.f, 1.f, 1.f, c->Light);
-        o->Scale = m.scale;
-        RenderLinkObject(m.x, m.y, m.z, c, &c->Wing, m.type, 0, 0, m.link, Translate, 0, true, m.bone);
+        const LinkedPartLook look{m.scale, m.type == MODEL_PRINCESS ? white : c->Light};
+        RenderLinkObject(m.x, m.y, m.z, c, &c->Wing, m.type, 0, 0, m.link, Translate, 0, true, m.bone, &look);
     }
-    VectorCopy(light, c->Light);
-    o->Scale = scale;
 }
 
-void RenderChristmasCompanions(CHARACTER* c, bool Translate, int Select)
+void RenderChristmasCompanions(const CHARACTER* c, vec3_t light, bool Translate, int Select)
 {
-    OBJECT* o = &c->Object;
-    // Three copies around the character, each on the ground where it stands; the character stays where it is.
+    const OBJECT* o = &c->Object;
+    // Three copies around the character, each on the ground where it stands, drawn from a copy of the character.
     constexpr float offsets[3][2] = {{50.f, 50.f}, {-50.f, -50.f}, {50.f, -50.f}};
-    vec3_t standing;
-    VectorCopy(o->Position, standing);
+    OBJECT companion = *o;
+    const Random::DrawnAs drawnAs(&companion, o);
+    // The copy's address has no drawn pose of its own, so it carries the character's.
+    companion.BoneTransform = DrawnPose(o);
     for (const auto& offset : offsets)
     {
-        o->Position[0] = standing[0] + offset[0];
-        o->Position[1] = standing[1] + offset[1];
-        o->Position[2] = RequestTerrainHeight(o->Position[0], o->Position[1]);
-        RenderPartObject(o, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        companion.Position[0] = o->Position[0] + offset[0];
+        companion.Position[1] = o->Position[1] + offset[1];
+        companion.Position[2] = RequestTerrainHeight(companion.Position[0], companion.Position[1]);
+        RenderPartObject(&companion, o->SubType, NULL, light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
     }
-    VectorCopy(standing, o->Position);
 }
 
-void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
+void RenderCharacter(const CHARACTER* c, const OBJECT* o, int Select)
 {
     if (g_isCharacterBuff(o, eBuff_CrywolfNPCHide))
     {
@@ -9548,9 +9603,8 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
 
     Vector(0.f, 0.f, 0.f, p);
     Vector(1.f, 1.f, 1.f, Light);
-    // The body draws in a light of its own; the update's light is back for the rest of the draw and after it.
-    vec3_t preparedLight;
-    VectorCopy(c->Light, preparedLight);
+    // The body draws in a light of its own; the rest of the draw uses the update's.
+    vec3_t bodyLight;
 
     BYTE byRender = CHARACTER_NONE;
 
@@ -9594,10 +9648,10 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
     {
         if (DrawsPlayerBodyShadow(c, o))
         {
-            o->EnableShadow = true;
+            const ShadowPass shadow;
             for (int i = MAX_BODYPART - 1; i >= 0; i--)
             {
-                PART_t* p = &c->BodyPart[i];
+                const PART_t* p = &c->BodyPart[i];
                 if (p->Type != -1)
                 {
                     int Type = p->Type;
@@ -9618,7 +9672,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
                     continue;
                 }
 
-                PART_t* p = &c->Weapon[i];
+                const PART_t* p = &c->Weapon[i];
 
                 if (p->Type != -1 && c->SafeZone == false)
                 {
@@ -9628,7 +9682,6 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
                     RenderLinkObject(0.f, 0.f, 0.f, c, &ShadowPart, Type, 0, 0, false, Translate);
                 }
             }
-            o->EnableShadow = false;
         }
     }
 
@@ -9666,19 +9719,15 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
     {
         if (o->Alpha >= 0.3f)
         {
-            // An archangel's shadow leaves out its wings' mesh.
-            const int hiddenMesh = o->HiddenMesh;
-            if (c->MonsterIndex == MONSTER_ARCHANGEL || c->MonsterIndex == MONSTER_MESSENGER_OF_ARCH)
-                o->HiddenMesh = 2;
-
             if (o->Type != MODEL_STATUE_OF_SAINT && o->Type != MODEL_CASTLE_GATE &&
                 !(o->Type >= MODEL_FACE && o->Type <= MODEL_FACE + 6))
             {
-                o->EnableShadow = true;
+                // An archangel's shadow leaves out its wings' mesh.
+                const bool archangel =
+                    c->MonsterIndex == MONSTER_ARCHANGEL || c->MonsterIndex == MONSTER_MESSENGER_OF_ARCH;
+                const ShadowPass shadow(archangel ? 2 : ShadowPass::ObjectHiddenMesh);
                 RenderPartObject(&c->Object, o->Type, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate);
-                o->EnableShadow = false;
             }
-            o->HiddenMesh = hiddenMesh;
             if (c->MonsterIndex == MONSTER_ARCHANGEL || c->MonsterIndex == MONSTER_MESSENGER_OF_ARCH)
             {
                 EnableAlphaBlend();
@@ -9742,7 +9791,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
     }
     else if (c->MonsterIndex == MONSTER_ALQUAMOS)
     {
-        // Tints c->Light below.
+        // Tints the body light below.
         const float Luminosity = (float)(Random::DrawRand(o, 1) % 30 + 70) * 0.01f;
         Vector(Luminosity * 0.6f, Luminosity * 0.7f, Luminosity * 0.8f, Light);
     }
@@ -9756,7 +9805,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
     }
     else if (c->MonsterIndex == MONSTER_DRAKAN || c->MonsterIndex == MONSTER_GREAT_DRAKAN)
     {
-        // Tints c->Light below.
+        // Tints the body light below.
         if (c->MonsterIndex == MONSTER_DRAKAN)
             Vector(0.1f, 0.1f, 1.f, Light);
 
@@ -9775,23 +9824,22 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
         float fSin = 0.5f * (1.0f + sinf((float)((int)WorldTime % 10000) * 0.001f));
         RenderPartObjectBodyColor(&Models[o->Type], o, o->Type, o->Alpha, RENDER_CHROME | RENDER_BRIGHT,
                                   0.3f + fSin * 0.7f);
-        // Its blend mesh light is set by the update.
-        const int blendMesh = o->BlendMesh;
-        o->BlendMesh = 0;
-        RenderObject(o, Translate, 2, 0);
-        RenderObject(o, Translate, 3, 0);
-        o->BlendMesh = blendMesh;
-        memcpy(g_fBoneSave[2], o->BoneTransform[24], 3 * 4 * sizeof(float));
-        o->Type++;
-        RenderObject(o, Translate, Select, 0);
-        memcpy(g_fBoneSave[0], o->BoneTransform[23], 3 * 4 * sizeof(float));
-        memcpy(g_fBoneSave[1], o->BoneTransform[14], 3 * 4 * sizeof(float));
+        // Its blend mesh light is set by the update. Its outlines draw without the blend mesh, and its second model
+        // (its type + 1) over the body: both from copies of the object.
+        OBJECT outline = *o;
+        const Random::DrawnAs outlineDrawnAs(&outline, o);
+        outline.BlendMesh = 0;
+        RenderObject(&outline, Translate, 2, 0);
+        RenderObject(&outline, Translate, 3, 0);
+        OBJECT second = *o;
+        const Random::DrawnAs secondDrawnAs(&second, o);
+        ++second.Type;
+        RenderObject(&second, Translate, Select, 0);
 
         if (auto* pCloth = (CPhysicsCloth*)c->Object.m_pCloth)
         {
             pCloth[0].Render();
         }
-        o->Type--;
     }
 
     if (c->MonsterIndex == MONSTER_GOLDEN_TITAN || c->MonsterIndex == MONSTER_GOLDEN_SOLDIER)
@@ -9809,7 +9857,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
 
     if (o->Type == MODEL_NPC_CHERRYBLOSSOM)
     {
-        // Tints c->Light below.
+        // Tints the body light below.
         const float Luminosity = absf(sinf(WorldTime * 0.002f)) * 0.4f;
         Vector(0.5f + Luminosity, 0.0f + Luminosity, 0.0f + Luminosity, Light);
     }
@@ -9819,7 +9867,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
     {
         if (c->HideShadow == false)
         {
-            fullset = CheckFullSet(c);
+            fullset = IsFullSet(c);
         }
     }
 
@@ -9835,10 +9883,10 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
         Render::Lighting::LightMood::CorrectFigureTerrainLight(o->Position[0], o->Position[1], Light);
     }
 
-    VectorAdd(Light, o->Light, c->Light);
+    VectorAdd(Light, o->Light, bodyLight);
     if (o->Type == MODEL_DARK_PHEONIX_SHIELD)
     {
-        Vector(.6f, .6f, .6f, c->Light);
+        Vector(.6f, .6f, .6f, bodyLight);
     }
 
     else if (c->MonsterIndex >= MONSTER_TERRIBLE_BUTCHER && c->MonsterIndex <= MONSTER_DOPPELGANGER_SUM)
@@ -9846,11 +9894,11 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
         // Its shadow, alpha, blend mesh and rise are set by the update.
         if (gMapManager.WorldActive == WD_65DOPPLEGANGER1)
         {
-            Vector(0.5f, 0.7f, 1.0f, c->Light);
+            Vector(0.5f, 0.7f, 1.0f, bodyLight);
         }
         else if (o->CurrentAction != PLAYER_DIE1)
         {
-            Vector(1.0f, 0.3f, 0.1f, c->Light);
+            Vector(1.0f, 0.3f, 0.1f, bodyLight);
         }
         else
         {
@@ -9858,7 +9906,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
             if (fAlpha < 0)
                 fAlpha = 0;
 
-            Vector(1.0f * fAlpha, 0.3f * fAlpha, 0.1f * fAlpha, c->Light);
+            Vector(1.0f * fAlpha, 0.3f * fAlpha, 0.1f * fAlpha, bodyLight);
         }
     }
 
@@ -9892,16 +9940,16 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
         if (SceneFlag == CHARACTER_SCENE)
         {
             Vector(0.5f, 0.5f, 0.5f, Light);
-            VectorAdd(Light, o->Light, c->Light);
+            VectorAdd(Light, o->Light, bodyLight);
         }
         else
-            Render::Lighting::LightMood::ScaleOwnHeroLight(o->Position[0], o->Position[1], AbilityLight, c->Light);
+            Render::Lighting::LightMood::ScaleOwnHeroLight(o->Position[0], o->Position[1], AbilityLight, bodyLight);
     }
 
     if (o->Kind == KIND_NPC && gMapManager.WorldActive == WD_0LORENCIA && o->Type == MODEL_PLAYER &&
         (o->SubType >= MODEL_SKELETON1 && o->SubType <= MODEL_SKELETON3))
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, c->Level, 0, 0, false, false, Translate,
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, c->Level, 0, 0, false, false, Translate,
                          Select);
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER &&
@@ -9916,24 +9964,24 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
         PART_t* p = &skin;
         if (o->CurrentAction == PLAYER_SKILL_DRAGONKICK)
         {
-            RenderCharacter_AfterImage(c, p, Translate, Select, 2.5f, 1.0f);
+            RenderCharacter_AfterImage(c, p, bodyLight, Translate, Select, 2.5f, 1.0f);
         }
         else if (o->CurrentAction == PLAYER_SKILL_DARKSIDE_READY || o->CurrentAction == PLAYER_SKILL_DARKSIDE_ATTACK)
         {
-            OBJECT* pObj = &c->Object;
+            const OBJECT* pObj = &c->Object;
             if (pObj->m_sTargetIndex < 0 || c->JumpTime > 0)
             {
-                RenderPartObject(&c->Object, o->SubType, p, c->Light, o->Alpha, 0, 0, 0, false, false, Translate,
+                RenderPartObject(&c->Object, o->SubType, p, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate,
                                  Select);
             }
             else
             {
-                g_CMonkSystem.DarksideRendering(c, p, Translate, Select, &c->BodyPart[BODYPART_HEAD]);
+                g_CMonkSystem.DarksideRendering(c, p, bodyLight, Translate, Select, &c->BodyPart[BODYPART_HEAD]);
             }
         }
         else
         {
-            RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate,
+            RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate,
                              Select);
         }
 
@@ -9944,37 +9992,37 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER && o->SubType == MODEL_SKELETON_PCBANG)
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER && o->SubType == MODEL_HALLOWEEN)
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER && o->SubType == MODEL_CURSEDTEMPLE_ALLIED_PLAYER)
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER && o->SubType == MODEL_CURSEDTEMPLE_ILLUSION_PLAYER)
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER && o->SubType == MODEL_PANDA)
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER && o->SubType == MODEL_SKELETON_CHANGED)
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER && o->SubType == MODEL_XMAS_EVENT_CHANGE_GIRL)
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
 
         RenderParts(c);
     }
     else if (o->Kind == KIND_PLAYER && o->Type == MODEL_PLAYER && o->SubType == MODEL_GM_CHARACTER)
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
 
         if (!g_isCharacterBuff(o, eBuff_Cloaking))
         {
@@ -9999,11 +10047,11 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
              (o->SubType == MODEL_XMAS_EVENT_CHA_SSANTA || o->SubType == MODEL_XMAS_EVENT_CHA_SNOWMAN ||
               o->SubType == MODEL_XMAS_EVENT_CHA_DEER))
     {
-        RenderChristmasCompanions(c, Translate, Select);
+        RenderChristmasCompanions(c, bodyLight, Translate, Select);
     }
     else if (o->Type == MODEL_PLAYER && (o->SubType >= MODEL_SKELETON1 && o->SubType <= MODEL_SKELETON3))
     {
-        RenderPartObject(&c->Object, o->SubType, NULL, c->Light, o->Alpha, 0, 0, 0, false, false, Translate, Select);
+        RenderPartObject(&c->Object, o->SubType, NULL, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate, Select);
     }
     else if (!c->Change)
     {
@@ -10023,24 +10071,24 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
             if ((o->CurrentAction == PLAYER_SKILL_DRAGONKICK) &&
                 (gCharacterManager.GetBaseClass(c->Class) == CLASS_RAGEFIGHTER))
             {
-                RenderCharacter_AfterImage(c, p, Translate, Select, 2.5f, 1.0f);
+                RenderCharacter_AfterImage(c, p, bodyLight, Translate, Select, 2.5f, 1.0f);
             }
             else if ((gCharacterManager.GetBaseClass(c->Class) == CLASS_RAGEFIGHTER))
             {
-                OBJECT* pObj = &c->Object;
+                const OBJECT* pObj = &c->Object;
                 if (pObj->m_sTargetIndex < 0 || c->JumpTime > 0)
                 {
-                    RenderPartObject(&c->Object, MODEL_ANGEL, p, c->Light, o->Alpha, 0, 0, 0, false, false, Translate,
+                    RenderPartObject(&c->Object, MODEL_ANGEL, p, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate,
                                      Select, RenderType);
                 }
                 else
                 {
-                    g_CMonkSystem.DarksideRendering(c, p, Translate, Select, &c->BodyPart[BODYPART_HEAD]);
+                    g_CMonkSystem.DarksideRendering(c, p, bodyLight, Translate, Select, &c->BodyPart[BODYPART_HEAD]);
                 }
             }
             else
             {
-                RenderPartObject(&c->Object, MODEL_ANGEL, p, c->Light, o->Alpha, 0, 0, 0, false, false, Translate,
+                RenderPartObject(&c->Object, MODEL_ANGEL, p, bodyLight, o->Alpha, 0, 0, 0, false, false, Translate,
                                  Select, RenderType);
             }
         }
@@ -10049,7 +10097,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
         {
             for (int i = MAX_BODYPART - 1; i >= 0; i--)
             {
-                PART_t* p = &c->BodyPart[i];
+                const PART_t* p = &c->BodyPart[i];
                 if (p->Type != -1)
                 {
                     int Type = p->Type;
@@ -10098,14 +10146,14 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
                     if (c->MonsterIndex >= MONSTER_TERRIBLE_BUTCHER && c->MonsterIndex <= MONSTER_DOPPELGANGER_SUM)
                     {
                         if (gMapManager.WorldActive == WD_65DOPPLEGANGER1)
-                            RenderPartObject(&c->Object, Type, p, c->Light, o->Alpha, p->Level, p->ExcellentFlags,
+                            RenderPartObject(&c->Object, Type, p, bodyLight, o->Alpha, p->Level, p->ExcellentFlags,
                                              p->AncientDiscriminator, false, false, Translate, Select,
                                              RENDER_DOPPELGANGER | RENDER_TEXTURE);
                         else
-                            RenderPartObject(&c->Object, Type, p, c->Light, o->Alpha, p->Level, p->ExcellentFlags,
+                            RenderPartObject(&c->Object, Type, p, bodyLight, o->Alpha, p->Level, p->ExcellentFlags,
                                              p->AncientDiscriminator, false, false, Translate, Select,
                                              RENDER_DOPPELGANGER | RENDER_BRIGHT | RENDER_TEXTURE);
-                        // 						RenderPartObject(&c->Object,Type,p,c->Light,o->Alpha,p->Level<<3,p->Option1,p->ExtOption,false,false,Translate,
+                        // 						RenderPartObject(&c->Object,Type,p,bodyLight,o->Alpha,p->Level<<3,p->Option1,p->ExtOption,false,false,Translate,
                         // 							Select,RENDER_DOPPELGANGER|RENDER_BRIGHT|RENDER_CHROME);
                     }
                     else
@@ -10113,24 +10161,24 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
                         if ((o->CurrentAction == PLAYER_SKILL_DRAGONKICK) &&
                             (gCharacterManager.GetBaseClass(c->Class) == CLASS_RAGEFIGHTER))
                         {
-                            RenderCharacter_AfterImage(c, p, Translate, Select, 2.5f, 1.0f);
+                            RenderCharacter_AfterImage(c, p, bodyLight, Translate, Select, 2.5f, 1.0f);
                         }
                         else if ((o->CurrentAction == PLAYER_SKILL_DARKSIDE_READY) &&
                                  (gCharacterManager.GetBaseClass(c->Class) == CLASS_RAGEFIGHTER))
                         {
                             if (o->m_sTargetIndex < 0 || c->JumpTime > 0)
                             {
-                                RenderPartObject(&c->Object, Type, p, c->Light, o->Alpha, p->Level, p->ExcellentFlags,
+                                RenderPartObject(&c->Object, Type, p, bodyLight, o->Alpha, p->Level, p->ExcellentFlags,
                                                  p->AncientDiscriminator, false, false, Translate, Select);
                             }
                             else
                             {
-                                g_CMonkSystem.DarksideRendering(c, p, Translate, Select);
+                                g_CMonkSystem.DarksideRendering(c, p, bodyLight, Translate, Select);
                             }
                         }
                         else
                         {
-                            RenderPartObject(&c->Object, Type, p, c->Light, o->Alpha, p->Level, p->ExcellentFlags,
+                            RenderPartObject(&c->Object, Type, p, bodyLight, o->Alpha, p->Level, p->ExcellentFlags,
                                              p->AncientDiscriminator, false, false, Translate, Select);
                         }
                     }
@@ -10181,7 +10229,6 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
         }
     }
 
-    VectorCopy(preparedLight, c->Light);
 
     if (DrawsNextGradeObjects(c))
         NextGradeObjectRender(c);
@@ -10203,7 +10250,7 @@ void RenderCharacter(CHARACTER* c, OBJECT* o, int Select)
         {
             if (!DrawsHeldWeapon(c, i))
                 continue;
-            PART_t* w = &c->Weapon[i];
+            const PART_t* w = &c->Weapon[i];
             if (g_CMonkSystem.IsSwordformGloves(w->Type))
                 g_CMonkSystem.RenderSwordformGloves(c, w->Type, i, o->Alpha, Translate, Select);
             else
@@ -10251,7 +10298,7 @@ void UpdateCharacterBodyEffects(CHARACTER* c, OBJECT* o)
         int iNumBones = Models[o->Type].NumBones;
         if (rand_fps_check(1))
         {
-            Models[o->Type].TransformByObjectBone(vPos, o, rand() % iNumBones);
+            Models[o->Type].TransformByObjectBone(vPos, o, Random::Rand() % iNumBones);
             CreateParticle(BITMAP_TWINTAIL_WATER, vPos, o->Angle, vLight, 2, 0.5f);
         }
     }
@@ -10289,7 +10336,7 @@ void UpdateHeldWeaponEffects(CHARACTER* c, OBJECT* o, BMD* b)
             (c->LastCritDamageEffect < WorldTime - CritDamageEffectInterval))
         {
             c->LastCritDamageEffect = WorldTime;
-            bool renderSkillWave = (rand() % 20) ? true : false;
+            bool renderSkillWave = (Random::Rand() % 20) ? true : false;
             short weaponType = -1;
             Vector(0.f, 0.f, 0.f, p);
             Vector(1.f, 0.6f, 0.3f, Light);
@@ -10384,7 +10431,7 @@ void UpdateMonsterBodyEffects(CHARACTER* c, OBJECT* o, BMD* b)
     }
     else if (c->MonsterIndex == MONSTER_ALQUAMOS)
     {
-        float Luminosity = (float)(rand() % 30 + 70) * 0.01f;
+        float Luminosity = (float)(Random::Rand() % 30 + 70) * 0.01f;
         Vector(Luminosity * 0.8f, Luminosity * 0.9f, Luminosity * 1.f, Light);
 
         for (int i = 0; i < 9; ++i)
@@ -10399,8 +10446,9 @@ void UpdateMonsterBodyEffects(CHARACTER* c, OBJECT* o, BMD* b)
         {
             for (int i = 0; i < 3; i++)
             {
-                Vector((float)(rand() % 20 - 10), (float)(rand() % 20 - 10), (float)(rand() % 20 - 10), p);
-                b->TransformPosition(o->BoneTransform[rand() % b->NumBones], p, Position, true);
+                Vector((float)(Random::Rand() % 20 - 10), (float)(Random::Rand() % 20 - 10),
+                       (float)(Random::Rand() % 20 - 10), p);
+                b->TransformPosition(o->BoneTransform[Random::Rand() % b->NumBones], p, Position, true);
                 CreateParticle(BITMAP_SPARK + 1, Position, o->Angle, Light, 3);
             }
         }
@@ -10588,7 +10636,7 @@ void UpdateEventCharacterEffects(OBJECT* o)
             vtaWorldPos[2] += 20.f;
 
             CreateParticle(BITMAP_CHERRYBLOSSOM_EVENT_PETAL, vtaWorldPos, o->Angle,
-                           (rand() % 3 == 0) ? vLight : vLight1, 1, 0.3f);
+                           (Random::Rand() % 3 == 0) ? vLight : vLight1, 1, 0.3f);
         }
 
         VectorCopy(o->Position, b->BodyOrigin);
@@ -10598,9 +10646,9 @@ void UpdateEventCharacterEffects(OBJECT* o)
 
         if (rand_fps_check(1))
         {
-            CreateParticle(BITMAP_SPARK + 1, vtaWorldPos, o->Angle, (rand() % 3 == 0) ? vLight2 : vLight1, 25,
+            CreateParticle(BITMAP_SPARK + 1, vtaWorldPos, o->Angle, (Random::Rand() % 3 == 0) ? vLight2 : vLight1, 25,
                            Scale + 0.2f);
-            CreateParticle(BITMAP_SPARK + 1, vtaWorldPos, o->Angle, (rand() % 2 == 0) ? vLight2 : vLight1, 25,
+            CreateParticle(BITMAP_SPARK + 1, vtaWorldPos, o->Angle, (Random::Rand() % 2 == 0) ? vLight2 : vLight1, 25,
                            Scale + 0.3f);
         }
 
@@ -10626,9 +10674,9 @@ void UpdateEventCharacterEffects(OBJECT* o)
 
             if (rand_fps_check(3))
             {
-                auto randpos = (float)(rand() % 30 + 5);
+                auto randpos = (float)(Random::Rand() % 30 + 5);
 
-                if (rand() % 2 == 0)
+                if (Random::Rand() % 2 == 0)
                 {
                     vtaWorldPos[0] += randpos;
                 }
@@ -10835,13 +10883,13 @@ void UpdatePlayerEffects(CHARACTER* c, OBJECT* o, BMD* b)
             iSkillType == AT_SKILL_ALICE_BERSERKER_STR || iSkillType == AT_SKILL_ALICE_WEAKNESS ||
             iSkillType == AT_SKILL_ALICE_ENERVATION)
         {
-            CreateSprite(BITMAP_PIN_LIGHT, vWorldPos, 1.7f, vLight, o, (float)(rand() % 360));
-            CreateSprite(BITMAP_PIN_LIGHT, vWorldPos, 1.5f, vLight, o, (float)(rand() % 360));
+            CreateSprite(BITMAP_PIN_LIGHT, vWorldPos, 1.7f, vLight, o, (float)(Random::Rand() % 360));
+            CreateSprite(BITMAP_PIN_LIGHT, vWorldPos, 1.5f, vLight, o, (float)(Random::Rand() % 360));
         }
         else if (iSkillType == AT_SKILL_ALICE_BLIND)
         {
-            CreateSprite(BITMAP_PIN_LIGHT, vWorldPos, 1.7f, vLight, o, (float)(rand() % 360), 1);
-            CreateSprite(BITMAP_PIN_LIGHT, vWorldPos, 1.5f, vLight, o, (float)(rand() % 360), 1);
+            CreateSprite(BITMAP_PIN_LIGHT, vWorldPos, 1.7f, vLight, o, (float)(Random::Rand() % 360), 1);
+            CreateSprite(BITMAP_PIN_LIGHT, vWorldPos, 1.5f, vLight, o, (float)(Random::Rand() % 360), 1);
         }
 
         // cra04, clud64
@@ -10919,7 +10967,7 @@ void UpdatePlayerEffects(CHARACTER* c, OBJECT* o, BMD* b)
         {
             for (int i = 0; i < 2; i++)
             {
-                Luminosity = (float)(rand() % 30 + 70) * 0.01f;
+                Luminosity = (float)(Random::Rand() % 30 + 70) * 0.01f;
                 Vector(Luminosity * 1.f, Luminosity * 0.3f, Luminosity * 0.2f, Light);
                 b->TransformPosition(o->BoneTransform[c->Weapon[i].LinkBone], p, Position, true);
                 CreateSprite(BITMAP_SHINY + 1, Position, 1.5f, Light, o);
@@ -11250,7 +11298,7 @@ void UpdatePlayerEffects(CHARACTER* c, OBJECT* o, BMD* b)
                     }
                     else if (EquipmentLevelSet == 11)
                     {
-                        if (rand() % 8 == 0)
+                        if (Random::Rand() % 8 == 0)
                         {
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 0, o);
                         }
@@ -11261,25 +11309,25 @@ void UpdatePlayerEffects(CHARACTER* c, OBJECT* o, BMD* b)
                     }
                     else if (EquipmentLevelSet == 12)
                     {
-                        if (rand() % 6 == 0)
+                        if (Random::Rand() % 6 == 0)
                         {
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 18, o, 20, -1, 0);
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 18, o, 20, -1, 1);
                         }
-                        else if (rand() % 3 == 0)
+                        else if (Random::Rand() % 3 == 0)
                         {
                             CreateParticle(BITMAP_FLARE, o->Position, o->Angle, o->Light, 0, 0.19f, o);
                         }
                     }
                     else if (EquipmentLevelSet == 13)
                     {
-                        if (rand() % 6 == 0)
+                        if (Random::Rand() % 6 == 0)
                         {
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 18, o, 20, -1, 0);
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 18, o, 20, -1, 1);
                         }
 
-                        if (rand() % 4 == 0)
+                        if (Random::Rand() % 4 == 0)
                         {
                             CreateParticle(BITMAP_FLARE, o->Position, o->Angle, o->Light, 0, 0.19f, o);
                             CreateJoint(BITMAP_FLARE + 1, o->Position, o->Position, o->Angle, 7, o, 20, 40, 1);
@@ -11287,13 +11335,13 @@ void UpdatePlayerEffects(CHARACTER* c, OBJECT* o, BMD* b)
                     }
                     else if (EquipmentLevelSet == 14)
                     {
-                        if (rand() % 6 == 0)
+                        if (Random::Rand() % 6 == 0)
                         {
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 18, o, 20, -1, 0);
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 18, o, 20, -1, 1);
                         }
 
-                        if (rand() % 4 == 0)
+                        if (Random::Rand() % 4 == 0)
                         {
                             CreateParticle(BITMAP_FLARE, o->Position, o->Angle, o->Light, 0, 0.19f, o);
                             CreateJoint(BITMAP_FLARE + 1, o->Position, o->Position, o->Angle, 7, o, 20, 40, 1);
@@ -11301,13 +11349,13 @@ void UpdatePlayerEffects(CHARACTER* c, OBJECT* o, BMD* b)
                     }
                     else if (EquipmentLevelSet == 15)
                     {
-                        if (rand() % 6 == 0)
+                        if (Random::Rand() % 6 == 0)
                         {
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 18, o, 20, -1, 0);
                             CreateJoint(BITMAP_FLARE, o->Position, o->Position, o->Angle, 18, o, 20, -1, 1);
                         }
 
-                        if (rand() % 4 == 0)
+                        if (Random::Rand() % 4 == 0)
                         {
                             CreateParticle(BITMAP_FLARE, o->Position, o->Angle, o->Light, 0, 0.19f, o);
                             CreateJoint(BITMAP_FLARE + 1, o->Position, o->Position, o->Angle, 7, o, 20, 40, 1);
@@ -11362,9 +11410,9 @@ void UpdatePlayerEffects(CHARACTER* c, OBJECT* o, BMD* b)
 namespace
 {
 // A cloaked character of another siege side than the hero's, which the hero doesn't see during the castle siege.
-bool IsHiddenBySiegeCloak(CHARACTER* c)
+bool IsHiddenBySiegeCloak(const CHARACTER* c)
 {
-    OBJECT* o = &c->Object;
+    const OBJECT* o = &c->Object;
     if (c == Hero || !battleCastle::IsBattleCastleStart() || !g_isCharacterBuff(o, eBuff_Cloaking))
         return false;
 
@@ -11418,9 +11466,9 @@ void RefreshCharacterPoses()
 
 // Whether RenderCharacter draws the weapon of this hand: a real weapon, and not the first one during the start of
 // a fury strike or while a post-move process runs.
-bool DrawsHeldWeapon(CHARACTER* c, int hand)
+bool DrawsHeldWeapon(const CHARACTER* c, int hand)
 {
-    OBJECT* o = &c->Object;
+    const OBJECT* o = &c->Object;
     if (hand == 0 && ((o->CurrentAction == PLAYER_ATTACK_SKILL_FURY_STRIKE && o->AnimationFrame <= 4.f) ||
                       c->PostMoveProcess_IsProcessing()))
         return false;
@@ -11692,8 +11740,8 @@ void SpawnHeldWeaponGlow(CHARACTER* c, PART_t* w, vec34_t* weaponBones, float Lu
 
             for (int j = 0; j < 4; j++)
             {
-                Vector((float)(rand() % 20 - 10), (float)(rand() % 20 - 10 - 90.f), (float)(rand() % 20 - 10),
-                       Position);
+                Vector((float)(Random::Rand() % 20 - 10), (float)(Random::Rand() % 20 - 10 - 90.f),
+                       (float)(Random::Rand() % 20 - 10), Position);
                 Models[o->Type].TransformPosition(o->BoneTransform[w->LinkBone], Position, p, true);
                 if (rand_fps_check(1))
                 {
@@ -11704,7 +11752,7 @@ void SpawnHeldWeaponGlow(CHARACTER* c, PART_t* w, vec34_t* weaponBones, float Lu
 
             for (int j = 0; j < 10; j++)
             {
-                if (rand() % 4 < 3)
+                if (Random::Rand() % 4 < 3)
                 {
                     Vector(0.f, -j * 20 + 60.f, 0.f, Position);
                     Models[o->Type].TransformPosition(o->BoneTransform[w->LinkBone], Position, p, true);
@@ -11804,7 +11852,7 @@ void SpawnHeldWeaponGlow(CHARACTER* c, PART_t* w, vec34_t* weaponBones, float Lu
 
             for (int j = 0; j < 8; j++)
             {
-                if (rand() % 4 < 3)
+                if (Random::Rand() % 4 < 3)
                 {
                     Vector(0.f, -j * 20 - 30.f, 0.f, Position);
                     Models[o->Type].TransformPosition(o->BoneTransform[w->LinkBone], Position, p, true);
@@ -11864,7 +11912,7 @@ void SpawnHeldWeaponGlows(CHARACTER* c)
 {
     if (!DrawsAttachments(c) || AreWeaponsOnBack(c, &c->Object))
         return;
-    const float Luminosity = (float)(rand() % 30 + 70) * 0.01f;
+    const float Luminosity = (float)(Random::Rand() % 30 + 70) * 0.01f;
     for (int i = 0; i < 2; i++)
     {
         if (!DrawsHeldWeapon(c, i))
@@ -11914,7 +11962,7 @@ void SpawnImpLight(CHARACTER* c, OBJECT* o)
     }
     constexpr int ImpLinkBone = 34;
     Models[o->Type].TransformPosition(o->BoneTransform[ImpLinkBone], vRelativePos, vPos, true);
-    float fLuminosity = (float)(rand() % 30 + 70) * 0.01f;
+    float fLuminosity = (float)(Random::Rand() % 30 + 70) * 0.01f;
     Vector(fLuminosity * 0.5f, 0.f, 0.f, vLight);
     CreateSprite(BITMAP_LIGHT, vPos, 1.5f, vLight, o);
 }
@@ -13801,7 +13849,7 @@ CHARACTER* CreateMonster(EMonsterType Type, int PositionX, int PositionY, int Ke
         c = CreateCharacter(Key, MODEL_NPC_CLERK, PositionX, PositionY);
         c->NotRotateOnMagicHit = true;
         c->Object.Scale = 1.f;
-        c->Object.SubType = rand() % 2 + 10;
+        c->Object.SubType = Random::Rand() % 2 + 10;
         c->Weapon[0].Type = -1;
         c->Weapon[1].Type = -1;
         wcscpy(c->ID, L"Clerk");
@@ -13864,7 +13912,7 @@ CHARACTER* CreateMonster(EMonsterType Type, int PositionX, int PositionY, int Ke
     {
         int randType = 0;
 
-        randType = rand() % 2;
+        randType = Random::Rand() % 2;
 
         OpenMonsterModel(randType == 0 ? MONSTER_MODEL_CHAOSCASTLE_ELF : MONSTER_MODEL_CHAOSCASTLE_WIZARD);
         c = CreateCharacter(Key, MODEL_CHAOS_CASTLE_ELF + randType, PositionX, PositionY);
@@ -15189,7 +15237,7 @@ CHARACTER* CreateMonster(EMonsterType Type, int PositionX, int PositionY, int Ke
         c->Object.Scale = 0.8f;
         c->Weapon[0].Type = -1;
         c->Weapon[1].Type = -1;
-        c->Object.SubType = rand() % 3;
+        c->Object.SubType = Random::Rand() % 3;
         c->Object.m_iAnimation = 0;
 
         BoneManager::RegisterBone(c, L"Rabbit_1", 3);		// Bip01 Spine
@@ -15381,7 +15429,7 @@ CHARACTER* CreateMonster(EMonsterType Type, int PositionX, int PositionY, int Ke
         c->Object.Scale = 1.3f;
         c->Object.Angle[0] = 0.0f;
         c->Object.Gravity = 0.0f;
-        c->Object.Distance = (float)(rand() % 20) / 10.0f;
+        c->Object.Distance = (float)(Random::Rand() % 20) / 10.0f;
         c->Weapon[0].Type = -1;
         c->Weapon[1].Type = -1;
         BoneManager::RegisterBone(c, L"Twintail_Hair24", 16);
@@ -15572,15 +15620,19 @@ CHARACTER* CreateHellGate(char* ID, int Key, EMonsterType Index, int x, int y, i
 
     if (CreateFlag)
     {
-        CreateJoint(BITMAP_JOINT_THUNDER + 1, portal->Object.Position, portal->Object.Position, portal->Object.Angle, 1, NULL, 60.f + rand() % 10);
-        CreateJoint(BITMAP_JOINT_THUNDER + 1, portal->Object.Position, portal->Object.Position, portal->Object.Angle, 1, NULL, 50.f + rand() % 10);
-        CreateJoint(BITMAP_JOINT_THUNDER + 1, portal->Object.Position, portal->Object.Position, portal->Object.Angle, 1, NULL, 50.f + rand() % 10);
-        CreateJoint(BITMAP_JOINT_THUNDER + 1, portal->Object.Position, portal->Object.Position, portal->Object.Angle, 1, NULL, 60.f + rand() % 10);
+        CreateJoint(BITMAP_JOINT_THUNDER + 1, portal->Object.Position, portal->Object.Position, portal->Object.Angle, 1,
+                    NULL, 60.f + Random::Rand() % 10);
+        CreateJoint(BITMAP_JOINT_THUNDER + 1, portal->Object.Position, portal->Object.Position, portal->Object.Angle, 1,
+                    NULL, 50.f + Random::Rand() % 10);
+        CreateJoint(BITMAP_JOINT_THUNDER + 1, portal->Object.Position, portal->Object.Position, portal->Object.Angle, 1,
+                    NULL, 50.f + Random::Rand() % 10);
+        CreateJoint(BITMAP_JOINT_THUNDER + 1, portal->Object.Position, portal->Object.Position, portal->Object.Angle, 1,
+                    NULL, 60.f + Random::Rand() % 10);
     }
     return portal;
 }
 
-bool IsBackItem(CHARACTER* c, int iType)
+bool IsBackItem(const CHARACTER* c, int iType)
 {
     int iBowType = gCharacterManager.GetEquipedBowType(c);
     if (iBowType != BOWTYPE_NONE)
@@ -15628,7 +15680,7 @@ bool AreWeaponsOnBack(const CHARACTER* c, const OBJECT* o)
 
 // Whether RenderCharacterBackItem draws weapon `index` on the back: an earlier weapon on the back keeps the later
 // ones there, ammunition always goes there, and the rest only where the weapons are bound to the back.
-bool DrawsWeaponOnBack(CHARACTER* c, const OBJECT* o, int index)
+bool DrawsWeaponOnBack(const CHARACTER* c, const OBJECT* o, int index)
 {
     if (o->Type != MODEL_PLAYER || c->Weapon[index].Type < 0)
         return false;
@@ -15855,7 +15907,7 @@ void PlanAttachments(CHARACTER* c)
 }
 } // namespace
 
-bool RenderCharacterBackItem(CHARACTER* c, OBJECT* o, bool bTranslate)
+bool RenderCharacterBackItem(const CHARACTER* c, const OBJECT* o, bool bTranslate)
 {
     const bool bBindBack = AreWeaponsOnBack(c, o);
 
@@ -15885,10 +15937,6 @@ bool RenderCharacterBackItem(CHARACTER* c, OBJECT* o, bool bTranslate)
 
             if (bBack && iType != -1)
             {
-                PART_t* w = &c->Wing;
-
-                float fAnimationFrameBackUp = w->AnimationFrame;
-
                 // Carried on the back bone, whatever the wing hangs from.
                 constexpr int backBone = 47;
                 PART_t t_Part = BackWeaponPart(c);
@@ -15909,8 +15957,6 @@ bool RenderCharacterBackItem(CHARACTER* c, OBJECT* o, bool bTranslate)
                     RenderLinkObject(0.f, 0.f, 15.f, c, &t_Part, iType, iLevel, iOption1, true, bTranslate, 0,
                                      bRightHandItem, backBone);
                 }
-
-                w->AnimationFrame = fAnimationFrameBackUp;
             }
 
             iBackupType = iType;
@@ -15924,7 +15970,7 @@ bool RenderCharacterBackItem(CHARACTER* c, OBJECT* o, bool bTranslate)
 
         if (gMapManager.InChaosCastle() == false)
         {
-            PART_t* w = &c->Wing;
+            const PART_t* w = &c->Wing;
             if (w->Type != -1)
             {
                 // Its bone is the one PrepareCarriedParts set.
@@ -15938,7 +15984,7 @@ bool RenderCharacterBackItem(CHARACTER* c, OBJECT* o, bool bTranslate)
             int iOption1 = 0;
             if (iType == MODEL_IMP)
             {
-                PART_t* w = &c->Helper;
+                const PART_t* w = &c->Helper;
                 iOption1 = w->ExcellentFlags;
                 vec3_t at;
                 ImpOffset(c, at);

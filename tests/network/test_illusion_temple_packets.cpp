@@ -11,15 +11,15 @@
 namespace
 {
 using Reader = Network::Packets::IllusionTemplePacketReader;
-constexpr std::array<std::uint8_t, 24> StatePacket{
-    0xC1, 24, 0xBF, 1, 0x34, 0x12, 0xCD, 0xAB, 40, 41, 2, 3, 1, 2,
-    0x23, 1, 45, 50, 51, 0x56, 4, 46, 60, 61};
+constexpr std::array<std::uint8_t, 26> StatePacket{
+    0xC1, 26, 0xBF, 1, 0x34, 0x12, 0xCD, 0xAB, 40, 41, 2, 3, 1, 2,
+    0x23, 1, 45, 50, 51, 0xA5, 0x56, 4, 46, 60, 61, 0xB6};
 constexpr std::array<std::uint8_t, 47> ResultPacket{
     0xC1, 47, 0xBF, 4, 2, 3, 2,
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 45, 0, 0x18, 0xA1, 0xB2, 0xC3, 0x87, 0xD6, 0x12, 0,
     'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 46, 1, 0x30, 0xE4, 0xF5, 0x96, 0xFE, 0xFF, 0xFF, 0xFF};
-constexpr std::array<std::uint8_t, 11> SkillPacket{
-    0xC1, 11, 0xBF, 2, 1, 0, 210, 0x34, 0x12, 0xCD, 0xAB};
+constexpr std::array<std::uint8_t, 12> SkillPacket{
+    0xC1, 12, 0xBF, 2, 1, 0, 210, 0xA5, 0x34, 0x12, 0xCD, 0xAB};
 
 template<std::size_t Size, typename Read>
 void CheckTruncated(const std::array<std::uint8_t, Size>& packet, Read read)
@@ -32,7 +32,7 @@ void CheckTruncated(const std::array<std::uint8_t, Size>& packet, Read read)
 }
 }
 
-TEST_CASE("Illusion Temple state reads five-byte party records and high object IDs [network][illusion_temple]")
+TEST_CASE("Illusion Temple state reads six-byte party records and high object IDs [network][illusion_temple]")
 {
     const auto state = Reader::ReadState(StatePacket);
     REQUIRE(state);
@@ -43,7 +43,7 @@ TEST_CASE("Illusion Temple state reads five-byte party records and high object I
     CHECK(state->alliedScore == 2);
     CHECK(state->illusionScore == 3);
     CHECK(state->team == 1);
-    REQUIRE(state->members.size() == 10);
+    REQUIRE(state->members.size() == 12);
     const auto first = Reader::ReadPartyMember(state->members, 0);
     const auto second = Reader::ReadPartyMember(state->members, 1);
     REQUIRE(first);
@@ -108,7 +108,7 @@ TEST_CASE("Illusion Temple result rejects incomplete rows and accepts empty resu
     CHECK_FALSE(Reader::ReadPlayerResult(empty->players, 0));
 }
 
-TEST_CASE("Illusion Temple skill response keeps mixed endian fields without native padding [network][illusion_temple]")
+TEST_CASE("Illusion Temple skill response keeps mixed endian fields at aligned wire offsets [network][illusion_temple]")
 {
     const auto result = Reader::ReadSkillResult(SkillPacket);
     REQUIRE(result);
@@ -123,6 +123,8 @@ TEST_CASE("Illusion Temple skill response keeps mixed endian fields without nati
     CHECK(ended->skill == 210);
     CHECK(ended->target == 0xABCD);
     CheckTruncated(end, Reader::ReadSkillEnd);
+    const std::array<std::uint8_t, 6> shortEnd{0xC1, 6, 0xBF, 7, 0, 210};
+    CHECK_FALSE(Reader::ReadSkillEnd(shortEnd));
 }
 
 TEST_CASE("Illusion Temple decoders ignore dirty receive-buffer tail [network][illusion_temple]")
@@ -132,7 +134,7 @@ TEST_CASE("Illusion Temple decoders ignore dirty receive-buffer tail [network][i
     std::copy(StatePacket.begin(), StatePacket.end(), buffer.begin());
     const auto state = Reader::ReadState(buffer);
     REQUIRE(state);
-    REQUIRE(state->members.size() == 10);
+    REQUIRE(state->members.size() == 12);
     CHECK(Reader::ReadPartyMember(state->members, 1)->id == 0x456);
     std::copy(ResultPacket.begin(), ResultPacket.end(), buffer.begin());
     const auto result = Reader::ReadResult(buffer);

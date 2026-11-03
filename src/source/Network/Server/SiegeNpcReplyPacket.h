@@ -21,8 +21,8 @@ inline std::optional<SiegeNpcReply> ReadSiegeNpcReply(std::span<const std::uint8
     constexpr std::uint8_t buySubcode = 0x05;
     constexpr std::uint8_t repairSubcode = 0x06;
     constexpr std::uint8_t upgradeSubcode = 0x07;
-    constexpr std::size_t buySize = 13;
-    constexpr std::size_t updateSize = 21;
+    constexpr std::size_t buySize = 16;
+    constexpr std::size_t updateSize = 24;
     if (subcode != buySubcode && subcode != repairSubcode && subcode != upgradeSubcode)
         return std::nullopt;
     const auto wireSize = subcode == buySubcode ? buySize : updateSize;
@@ -37,7 +37,7 @@ inline std::optional<SiegeNpcReply> ReadSiegeNpcReply(std::span<const std::uint8
         return std::uint32_t(packet[offset]) | (std::uint32_t(packet[offset + 1]) << 8)
             | (std::uint32_t(packet[offset + 2]) << 16) | (std::uint32_t(packet[offset + 3]) << 24);
     };
-    return SiegeNpcReply{packet[4], little32(5), little32(9),
-                         subcode == buySubcode ? 0 : little32(13), subcode == buySubcode ? 0 : little32(17)};
+    return SiegeNpcReply{packet[4], little32(8), little32(12),
+                         subcode == buySubcode ? 0 : little32(16), subcode == buySubcode ? 0 : little32(20)};
 }
 } // namespace Network::Packets

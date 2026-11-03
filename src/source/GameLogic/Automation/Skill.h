@@ -18,7 +18,7 @@ enum class SkillResult : std::uint8_t
     Cast,
     // Out of range: a step towards the target was taken instead.
     Approaching,
-    // A swing is still playing; try again on a later frame.
+    // A walk or swing is still playing; try again on a later frame.
     Busy,
     // A target is required but none was given.
     NoTarget,
@@ -81,5 +81,7 @@ enum class SkillResult : std::uint8_t
 // a target is told rather than casting into an empty tile. `targetKey` is
 // ignored entirely when `targetRequired` is false. Path endpoints use the
 // skill's range; callers select which targets to pursue independently.
-SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey, bool allowPlayers);
+// Control callers retain the skill-range search; the helper supplies its hunting distance.
+SkillResult CastSkill(ActionSkillType skill, bool targetRequired, int targetKey, bool allowPlayers,
+                      int huntingDistance = 0);
 } // namespace GameLogic::Automation

@@ -268,15 +268,16 @@ TEST_CASE("Queued packet identity survives a server close until the client close
     CHECK(connection->GetId() == 0);
 }
 
-TEST_CASE("Illusion Temple Extended sender writes nine bytes without truncating target 514 [network][illusion_temple][connection-lifetime]")
+TEST_CASE("Illusion Temple Extended sender writes nine bytes without truncating its little-endian target [network][illusion_temple][connection-lifetime]")
 {
     CallbackGate gate;
     LoopbackPeer peer;
     auto connection = Connect(peer);
     constexpr WORD ProtectionSkill = 210;
-    constexpr WORD TargetKey = 514;
+    constexpr WORD TargetKey = 0x1234;
+    static_assert(TargetKey > 0xFF);
     constexpr BYTE Distance = 7;
-    const std::array<BYTE, 9> expected{0xC1, 9, 0xBF, 2, 0, 210, 2, 2, Distance};
+    const std::array<BYTE, 9> expected{0xC1, 9, 0xBF, 2, 0, 210, 0x34, 0x12, Distance};
     connection->ToGameServer()->SendIllusionTempleSkillRequestExtended(ProtectionSkill, TargetKey, Distance);
     CHECK(peer.ReceiveExtendedSkillRequest() == expected);
 }

@@ -132,6 +132,7 @@ target_compile_definitions(map_name_tests PRIVATE
     MU_BIN_DIR="${CMAKE_SOURCE_DIR}/src/bin"
 )
 
+
 mu_add_test(
     NAME rml_image_crop_tests
     SOURCES test_rml_image_crop.cpp
@@ -179,6 +180,14 @@ mu_add_test(
     SOURCES
         test_storage_item_selection.cpp
         ${CMAKE_SOURCE_DIR}/src/source/GameShop/StorageItemSelection.cpp
+)
+
+mu_add_test(
+    NAME shop_script_list_tests
+    SOURCES
+        test_shop_script_list.cpp
+        ${CMAKE_SOURCE_DIR}/src/source/App/Platform/Windows/Winmain.cpp
+    LINK_LIBS MuClient
 )
 
 mu_add_test(

@@ -1,5 +1,6 @@
 #ifndef __ZZZ_EFFECT_H__
 #define __ZZZ_EFFECT_H__
+#include "Core/Utilities/Random.h"
 
 namespace Render::EffectDrawing
 {
@@ -39,7 +40,6 @@ void ClearSprites();
 void RenderSprites(BYTE byRenderOneMore = 0);
 // The draw a live sprite asks for: its quad, its blend and whether bloom leaves it alone.
 Render::EffectDrawing::SpriteDraw DescribeSprite(const OBJECT& sprite, bool bloomExcluded);
-void CheckSprites();
 
 void AnimationFlag();
 void RenderFlag(OBJECT* o, vec3_t Light, int Tex1, int Tex2);
@@ -141,9 +141,9 @@ double ReferenceFrameClock();
 inline void GetNearRandomPos(vec3_t Pos, int iRange, vec3_t NewPos)
 {
     VectorCopy(Pos, NewPos);
-    NewPos[0] += (float)(rand() % (iRange * 2 + 1) - iRange);
-    NewPos[1] += (float)(rand() % (iRange * 2 + 1) - iRange);
-    NewPos[2] += (float)(rand() % (iRange * 2 + 1) - iRange);
+    NewPos[0] += (float)(Random::Rand() % (iRange * 2 + 1) - iRange);
+    NewPos[1] += (float)(Random::Rand() % (iRange * 2 + 1) - iRange);
+    NewPos[2] += (float)(Random::Rand() % (iRange * 2 + 1) - iRange);
 }
 
 void CreateForce(OBJECT* o, vec3_t Pos);

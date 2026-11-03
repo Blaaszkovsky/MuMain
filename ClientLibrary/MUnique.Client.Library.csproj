@@ -15,7 +15,7 @@
     <WarningsAsErrors>nullable;CS4014;VSTHRD110;VSTHRD100</WarningsAsErrors>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <!-- The version of the packet definitions this client is built against. -->
-    <OpenMuPacketsVersion>0.10.1-integration.20261102.1</OpenMuPacketsVersion>
+    <OpenMuPacketsVersion>0.11.0-integration.20261103.1</OpenMuPacketsVersion>
   </PropertyGroup>
 
   <ItemGroup>
