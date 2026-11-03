@@ -34,18 +34,16 @@ bool HasReadableLayout(std::span<const std::uint8_t> file)
     constexpr std::size_t DescriptorOffset = TgaHeaderOffset + 17;
     constexpr std::uint8_t UncompressedTrueColor = 2;
     constexpr std::uint8_t EightAlphaBits = 8;
-    return file[ImageIdOffset] == 0 && file[ColorMapOffset] == 0 &&
-           file[ImageTypeOffset] == UncompressedTrueColor &&
+    return file[ImageIdOffset] == 0 && file[ColorMapOffset] == 0 && file[ImageTypeOffset] == UncompressedTrueColor &&
            (file[DescriptorOffset] == 0 || file[DescriptorOffset] == EightAlphaBits);
 }
 
-bool CanCopyPixels(std::span<const std::uint8_t> file, const Header& header,
-                   std::span<std::uint8_t> texture, int textureWidth)
+bool CanCopyPixels(std::span<const std::uint8_t> file, const Header& header, std::span<std::uint8_t> texture,
+                   int textureWidth)
 {
     const Header checked = ReadHeader(file, MaxUpscaledTextureDimension, MaxUpscaledTextureDimension);
-    if (header.status != Status::Valid || checked.status != Status::Valid ||
-        header.width != checked.width || header.height != checked.height ||
-        header.bitsPerPixel != checked.bitsPerPixel || textureWidth < header.width ||
+    if (header.status != Status::Valid || checked.status != Status::Valid || header.width != checked.width ||
+        header.height != checked.height || header.bitsPerPixel != checked.bitsPerPixel || textureWidth < header.width ||
         textureWidth > MaxUpscaledTextureDimension)
     {
         return false;
@@ -67,8 +65,7 @@ Header ReadHeader(std::span<const std::uint8_t> file, int maxWidth, int maxHeigh
     header.width = ReadUInt16(file, WidthOffset);
     header.height = ReadUInt16(file, HeightOffset);
     header.bitsPerPixel = file[DepthOffset];
-    if (file.size() > MaxTextureFileBytes || !IsReadableFormat(header, maxWidth, maxHeight) ||
-        !HasReadableLayout(file))
+    if (file.size() > MaxTextureFileBytes || !IsReadableFormat(header, maxWidth, maxHeight) || !HasReadableLayout(file))
     {
         header.status = Status::InvalidFormat;
         return header;

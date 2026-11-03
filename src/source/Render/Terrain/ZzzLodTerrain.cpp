@@ -706,7 +706,8 @@ unsigned char OZBPrefix[4] = { 0x42, 0x4D, 0x38, 0x04 };
 
 bool IsTerrainHeightExtMap(int iWorld)
 {
-    const bool existingPackedMap = iWorld == WD_42CHANGEUP3RD_2ND || gMapManager.IsPKField() || iWorld == WD_66DOPPLEGANGER2;
+    const bool existingPackedMap =
+        iWorld == WD_42CHANGEUP3RD_2ND || gMapManager.IsPKField() || iWorld == WD_66DOPPLEGANGER2;
     return Render::Terrain::Height::UsesPackedHeight(iWorld, existingPackedMap);
 }
 
@@ -2670,7 +2671,7 @@ bool TestFrustrum2D(float x, float y, float Range)
     return true;
 }
 
-bool TestFrustrum(vec3_t Position, float Range)
+bool TestFrustrum(const vec3_t Position, float Range)
 {
     extern EGameScene SceneFlag;
     if (SceneFlag == LOG_IN_SCENE)

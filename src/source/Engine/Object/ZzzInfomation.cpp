@@ -305,9 +305,14 @@ void ApplyThirdTierWingAdditionalOption(ITEM* item, WORD damageOption)
         option = AT_LIFE_REGENERATION;
         value = item->OptionLevel;
         break;
-    case DefenseType: option = AT_IMPROVE_DEFENSE; break;
-    case DamageType: option = damageOption; break;
-    default: return;
+    case DefenseType:
+        option = AT_IMPROVE_DEFENSE;
+        break;
+    case DamageType:
+        option = damageOption;
+        break;
+    default:
+        return;
     }
 
     item->Special[item->SpecialNum] = option;
@@ -857,7 +862,7 @@ void SetItemAttributes(ITEM* ip)
     CalcExcellentOptions(ip);
 }
 
-int64_t ItemValue(ITEM* ip, int goldType)
+int64_t ItemValue(const ITEM* ip, int goldType)
 {
     if (ip->Type == -1) return 0;
 

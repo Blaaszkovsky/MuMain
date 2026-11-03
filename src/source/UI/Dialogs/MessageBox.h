@@ -294,8 +294,7 @@ namespace mu::ui::window
             return pMsgBox;
         }
 
-        template <class T>
-        T* FindMessageBox() const
+        template <class T> T* FindMessageBox() const
         {
             for (auto* box : m_vecMsgBoxes)
             {

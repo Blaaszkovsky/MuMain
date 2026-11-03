@@ -81,7 +81,8 @@ bool LoadBaskiPrototypeModel()
         return false;
     }
     MU_LOG_INFO(mu::log::Get("data"), "Baski prototype Open2 version={} monster={} model={} actions={}",
-                static_cast<int>(model.Version), Profile::MonsterNumber, static_cast<int>(MODEL_BASKI_PROTOTYPE), model.NumActions);
+                static_cast<int>(model.Version), Profile::MonsterNumber, static_cast<int>(MODEL_BASKI_PROTOTYPE),
+                model.NumActions);
     return true;
 }
 

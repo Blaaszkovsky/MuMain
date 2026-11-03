@@ -9,4 +9,4 @@ constexpr bool CanApplyNetworkUpdate(EGameScene scene)
 {
     return scene == MAIN_SCENE;
 }
-}
+} // namespace UI::CursedTemple

@@ -6,8 +6,7 @@ namespace UI::HUD::Detail
 {
 // Shared presentation policy; lanes own animation and expose the resulting display.
 // Keeping this independent of the window system permits a headless lifecycle regression.
-template <class Lane>
-SlideDisplay AdvanceSlideDisplay(Lane& help, Lane& notice)
+template <class Lane> SlideDisplay AdvanceSlideDisplay(Lane& help, Lane& notice)
 {
     if (notice.HaveText() == FALSE)
     {

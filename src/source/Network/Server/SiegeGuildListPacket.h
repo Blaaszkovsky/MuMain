@@ -24,11 +24,12 @@ inline std::optional<SiegeGuildListView> ReadSiegeGuildList(std::span<const std:
     constexpr std::uint8_t registeredGuildCode = 0xB4;
     constexpr std::uint8_t guildCode = 0xB5;
     const std::size_t entrySize = packet[3] == registeredGuildCode ? RegisteredSiegeGuildEntrySize
-        : packet[3] == guildCode ? SiegeGuildEntrySize : 0;
+                                  : packet[3] == guildCode         ? SiegeGuildEntrySize
+                                                                   : 0;
     if (entrySize == 0)
         return std::nullopt;
-    const std::uint32_t count = std::uint32_t(packet[8]) | (std::uint32_t(packet[9]) << 8)
-        | (std::uint32_t(packet[10]) << 16) | (std::uint32_t(packet[11]) << 24);
+    const std::uint32_t count = std::uint32_t(packet[8]) | (std::uint32_t(packet[9]) << 8) |
+                                (std::uint32_t(packet[10]) << 16) | (std::uint32_t(packet[11]) << 24);
     const auto available = packet.size() - headerSize;
     if (count > available / entrySize)
         return std::nullopt;

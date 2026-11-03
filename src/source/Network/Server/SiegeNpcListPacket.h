@@ -27,8 +27,8 @@ inline std::optional<SiegeNpcListView> ReadSiegeNpcList(std::span<const std::uin
     if (frameSize < headerSize || frameSize > packet.size())
         return std::nullopt;
 
-    const auto count = std::uint32_t(packet[8]) | (std::uint32_t(packet[9]) << 8)
-        | (std::uint32_t(packet[10]) << 16) | (std::uint32_t(packet[11]) << 24);
+    const auto count = std::uint32_t(packet[8]) | (std::uint32_t(packet[9]) << 8) | (std::uint32_t(packet[10]) << 16) |
+                       (std::uint32_t(packet[11]) << 24);
     const auto entriesSize = frameSize - headerSize;
     if (entriesSize % SiegeNpcEntrySize != 0 || count != entriesSize / SiegeNpcEntrySize)
         return std::nullopt;

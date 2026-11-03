@@ -251,8 +251,8 @@ bool LoadDataBitmap(const wchar_t* szFullPath, GLuint uiTextureIndex, GLuint uiF
     {
         if (false == Bitmaps.LoadImage(uiTextureIndex, szFullPath, uiFilter, uiWrapMode, true, false, keepPixels))
         {
-            mu::log::Get("render")->error("LoadBitmap failed: '{}' index={}",
-                                          mu_wchar_to_utf8(szFullPath), uiTextureIndex);
+            mu::log::Get("render")->error("LoadBitmap failed: '{}' index={}", mu_wchar_to_utf8(szFullPath),
+                                          uiTextureIndex);
             wchar_t szErrorMsg[256] = {
                 0,
             };

@@ -27,9 +27,11 @@ inline constexpr std::array FereaProfiles{
     FereaMonsterProfile{MONSTER_FEREA_KNIGHT, MONSTER_MODEL_FEREA_KNIGHT, L"Monster286", L"Ferea Knight", 7, 1.0f},
     FereaMonsterProfile{MONSTER_FEREA_ARCHER, MONSTER_MODEL_FEREA_ARCHER, L"Monster287", L"Ferea Archer", 7, 1.0f},
     FereaMonsterProfile{MONSTER_FEREA_FIGHTER, MONSTER_MODEL_FEREA_FIGHTER, L"Monster288", L"Ferea Fighter", 7, 1.0f},
-    FereaMonsterProfile{MONSTER_FEREA_GENERAL, MONSTER_MODEL_FEREA_GENERAL, L"Monster289", L"Ferea General", 7, FereaGeneralScale},
+    FereaMonsterProfile{MONSTER_FEREA_GENERAL, MONSTER_MODEL_FEREA_GENERAL, L"Monster289", L"Ferea General", 7,
+                        FereaGeneralScale},
     FereaMonsterProfile{MONSTER_LORD_OF_FEREA, MONSTER_MODEL_LORD_OF_FEREA, L"Monster290", L"Lord of Ferea", 12, 1.0f},
-    FereaMonsterProfile{MONSTER_FEREA_CRYSTAL_ORB, MONSTER_MODEL_FEREA_CRYSTAL_ORB, L"Monster291", L"Ferea Crystal Orb", 7, FereaOrbScale},
+    FereaMonsterProfile{MONSTER_FEREA_CRYSTAL_ORB, MONSTER_MODEL_FEREA_CRYSTAL_ORB, L"Monster291", L"Ferea Crystal Orb",
+                        7, FereaOrbScale},
 };
 
 // Neutral S6 playback, shared by all six native layouts. Lord's extra clips
@@ -42,8 +44,8 @@ inline constexpr float FereaExtraActionSpeed = 0.3f;
 template <typename Action, std::size_t Extent>
 bool ConfigureFereaActions(std::span<Action, Extent> actions, const FereaMonsterProfile& profile)
 {
-    if (actions.size() != static_cast<std::size_t>(profile.actionCount)
-        || std::any_of(actions.begin(), actions.end(), [](const auto& action) { return action.NumAnimationKeys <= 1; }))
+    if (actions.size() != static_cast<std::size_t>(profile.actionCount) ||
+        std::any_of(actions.begin(), actions.end(), [](const auto& action) { return action.NumAnimationKeys <= 1; }))
         return false;
     for (std::size_t action = 0; action < actions.size(); ++action)
     {

@@ -28,16 +28,16 @@ inline std::optional<SiegeNpcReply> ReadSiegeNpcReply(std::span<const std::uint8
     const auto wireSize = subcode == buySubcode ? buySize : updateSize;
     constexpr std::uint8_t headerCode = 0xC1;
     constexpr std::uint8_t packetCode = 0xB2;
-    if (packet.size() < wireSize || packet[0] != headerCode || packet[1] != wireSize
-        || packet[2] != packetCode || packet[3] != subcode)
+    if (packet.size() < wireSize || packet[0] != headerCode || packet[1] != wireSize || packet[2] != packetCode ||
+        packet[3] != subcode)
         return std::nullopt;
 
     const auto little32 = [packet](std::size_t offset)
     {
-        return std::uint32_t(packet[offset]) | (std::uint32_t(packet[offset + 1]) << 8)
-            | (std::uint32_t(packet[offset + 2]) << 16) | (std::uint32_t(packet[offset + 3]) << 24);
+        return std::uint32_t(packet[offset]) | (std::uint32_t(packet[offset + 1]) << 8) |
+               (std::uint32_t(packet[offset + 2]) << 16) | (std::uint32_t(packet[offset + 3]) << 24);
     };
-    return SiegeNpcReply{packet[4], little32(8), little32(12),
-                         subcode == buySubcode ? 0 : little32(16), subcode == buySubcode ? 0 : little32(20)};
+    return SiegeNpcReply{packet[4], little32(8), little32(12), subcode == buySubcode ? 0 : little32(16),
+                         subcode == buySubcode ? 0 : little32(20)};
 }
 } // namespace Network::Packets

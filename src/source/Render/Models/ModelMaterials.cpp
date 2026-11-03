@@ -36,10 +36,14 @@ std::vector<int> ReadAdditiveMaterials(std::string_view content, std::span<const
     }
     try
     {
-        const auto json = nlohmann::json::parse(content, [](int depth, auto, auto&) {
-            if (depth > MaxJsonDepth) throw std::invalid_argument("Material metadata is nested too deeply");
-            return true;
-        });
+        const auto json =
+            nlohmann::json::parse(content,
+                                  [](int depth, auto, auto&)
+                                  {
+                                      if (depth > MaxJsonDepth)
+                                          throw std::invalid_argument("Material metadata is nested too deeply");
+                                      return true;
+                                  });
         if (!json.is_object() || json.size() != 2 || !json.contains("formatVersion") ||
             !json["formatVersion"].is_number_integer() || json["formatVersion"] != FormatVersion ||
             !json.contains("additiveMeshes") || !json["additiveMeshes"].is_array() ||

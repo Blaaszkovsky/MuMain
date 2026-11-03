@@ -504,12 +504,11 @@ bool CheckWall(int sx1, int sy1, int sx2, int sy2)
     if (CharactersClient != nullptr && SelectedCharacter >= 0 && SelectedCharacter < MAX_CHARACTERS_CLIENT)
     {
         const auto& target = CharactersClient[SelectedCharacter].Object;
-        const bool isGate = target.Type == MODEL_EVIL_GATE || target.Type == MODEL_LION_GATE
-            || target.Type == MODEL_STAR_GATE || target.Type == MODEL_RUSH_GATE
-            || target.Type == MODEL_CASTLE_GATE1;
-        gateAtDestination = isGate
-            && static_cast<int>(target.Position[0] / TERRAIN_SCALE) == sx2
-            && static_cast<int>(target.Position[1] / TERRAIN_SCALE) == sy2;
+        const bool isGate = target.Type == MODEL_EVIL_GATE || target.Type == MODEL_LION_GATE ||
+                            target.Type == MODEL_STAR_GATE || target.Type == MODEL_RUSH_GATE ||
+                            target.Type == MODEL_CASTLE_GATE1;
+        gateAtDestination = isGate && static_cast<int>(target.Position[0] / TERRAIN_SCALE) == sx2 &&
+                            static_cast<int>(target.Position[1] / TERRAIN_SCALE) == sy2;
     }
 
     int nx1, ny1, d1, d2, len1, len2;
@@ -524,8 +523,9 @@ bool CheckWall(int sx1, int sy1, int sx2, int sy2)
 
     int error = 0, count = 0;
     do {
-        if (!(gateAtDestination && count == len1)
-            && (TerrainWall[Index] >= TW_NOMOVE && (TerrainWall[Index] & TW_ACTION) != TW_ACTION && (TerrainWall[Index] & TW_HEIGHT) != TW_HEIGHT && (TerrainWall[Index] & TW_CAMERA_UP) != TW_CAMERA_UP))
+        if (!(gateAtDestination && count == len1) &&
+            (TerrainWall[Index] >= TW_NOMOVE && (TerrainWall[Index] & TW_ACTION) != TW_ACTION &&
+             (TerrainWall[Index] & TW_HEIGHT) != TW_HEIGHT && (TerrainWall[Index] & TW_CAMERA_UP) != TW_CAMERA_UP))
         {
             return false;
         }
@@ -3876,8 +3876,8 @@ void RenderPartyHP()
 
         if (p->index <= -1) continue;
 
-        CHARACTER* c = &CharactersClient[p->index];
-        OBJECT* o = &c->Object;
+        const CHARACTER* c = &CharactersClient[p->index];
+        const OBJECT* o = &c->Object;
         vec3_t      Position;
         int         ScreenX, ScreenY;
 
@@ -4064,7 +4064,7 @@ void GetEditorModelName(wchar_t* text)
     const BMD& model = Models[Render::WorldModels::PlacementSlot(gMapManager.WorldActive, SelectModel)];
     CMultiLanguage::ConvertFromUtf8(text, model.Name, sizeof model.Name);
 }
-}
+} // namespace
 
 void ForwardSelectModel()
 {

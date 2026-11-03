@@ -4558,7 +4558,7 @@ enum EMonsterModelType : int
     MONSTER_MODEL_FEREA_GENERAL = 221,
     MONSTER_MODEL_LORD_OF_FEREA = 222,
     MONSTER_MODEL_FEREA_CRYSTAL_ORB = 223,
-    MONSTER_MODEL_COUNT,            // keep last: number of monster models
+    MONSTER_MODEL_COUNT, // keep last: number of monster models
 };
 
 enum EMonsterType : int

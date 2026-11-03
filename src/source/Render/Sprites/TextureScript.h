@@ -36,8 +36,14 @@ public:
     inline  bool getBright(void) { return m_bBright; }
     inline  bool getStreamMesh(void) { return m_bStreamMesh; }
     inline  bool getNoneBlendMesh(void) { return m_bNoneBlendMesh; }
-    inline std::uint8_t getShadowMesh(void) { return m_byShadowMesh; }
-    void setBright(bool bright) { m_bBright = bright; }
+    inline std::uint8_t getShadowMesh(void)
+    {
+        return m_byShadowMesh;
+    }
+    void setBright(bool bright)
+    {
+        m_bBright = bright;
+    }
 
     void    setScript(const TextureScript& rhs);
 };

@@ -19,8 +19,8 @@ inline std::optional<CrownAccessState> ReadCrownAccessState(std::span<const std:
     constexpr std::size_t timeOffset = 8;
     if (packet.size() < packetSize)
         return std::nullopt;
-    const auto time = std::uint32_t(packet[timeOffset]) | (std::uint32_t(packet[timeOffset + 1]) << 8)
-        | (std::uint32_t(packet[timeOffset + 2]) << 16) | (std::uint32_t(packet[timeOffset + 3]) << 24);
+    const auto time = std::uint32_t(packet[timeOffset]) | (std::uint32_t(packet[timeOffset + 1]) << 8) |
+                      (std::uint32_t(packet[timeOffset + 2]) << 16) | (std::uint32_t(packet[timeOffset + 3]) << 24);
     return CrownAccessState{packet[4], time};
 }
 } // namespace Network::Packets

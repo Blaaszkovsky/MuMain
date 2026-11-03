@@ -420,8 +420,7 @@ public:
             return Status::Running;
         }
 
-        const Automation::SkillResult result =
-            Automation::CastSkill(m_skill, m_targetRequired, m_targetKey, true);
+        const Automation::SkillResult result = Automation::CastSkill(m_skill, m_targetRequired, m_targetKey, true);
 
         ReleaseEngineRepeat(result);
 
@@ -853,7 +852,8 @@ std::string Teleport(const Request& request, std::unique_ptr<Act>& act)
 
     if (map < 0 || map > std::numeric_limits<std::int16_t>::max())
     {
-        return EncodeError(request.EncodedId(), ErrorCode::BadRequest, "the map index must fit the server's signed 16-bit map number");
+        return EncodeError(request.EncodedId(), ErrorCode::BadRequest,
+                           "the map index must fit the server's signed 16-bit map number");
     }
 
     // Refuse before the server relocates the character into an unloadable world.

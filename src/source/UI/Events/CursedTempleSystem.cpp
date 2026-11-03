@@ -51,22 +51,21 @@ using namespace mu::ui::window;
 
 namespace
 {
-    bool IsTargetedTempleSkill(int skill)
-    {
-        return skill == AT_SKILL_CURSED_TEMPLE_RESTRAINT
-            || skill == AT_SKILL_CURSED_TEMPLE_SUBLIMATION;
-    }
+bool IsTargetedTempleSkill(int skill)
+{
+    return skill == AT_SKILL_CURSED_TEMPLE_RESTRAINT || skill == AT_SKILL_CURSED_TEMPLE_SUBLIMATION;
+}
 
-    void InterruptTempleProgress()
-    {
-        auto* progress = g_MessageBox->FindMessageBox<mu::ui::window::CCursedTempleProgressMsgBox>();
-        if (progress == nullptr)
-            return;
+void InterruptTempleProgress()
+{
+    auto* progress = g_MessageBox->FindMessageBox<mu::ui::window::CCursedTempleProgressMsgBox>();
+    if (progress == nullptr)
+        return;
 
-        // A completion already queued for this box must not start another server channel.
-        progress->RemoveCallbackFunc(mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_COMPLETEPROCESS);
-        g_MessageBox->SendEvent(progress, mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_CLOSINGPROCESS);
-    }
+    // A completion already queued for this box must not start another server channel.
+    progress->RemoveCallbackFunc(mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_COMPLETEPROCESS);
+    g_MessageBox->SendEvent(progress, mu::ui::window::MSGBOX_EVENT_USER_CUSTOM_PROGRESS_CLOSINGPROCESS);
+}
 
     const int HolyItemNpc = 380;
     const int AlliedNpc = 381;
@@ -1158,8 +1157,7 @@ void mu::ui::window::CCursedTempleSystem::SetCursedTempleSkill(CHARACTER* c, OBJ
         if (targetedSkill)
         {
             // Protect the character-table access in the teammate loop below.
-            if (selectcharacterindex >= MAX_CHARACTERS_CLIENT
-                || getTargetCharacterKey(c, selectcharacterindex) == -1)
+            if (selectcharacterindex >= MAX_CHARACTERS_CLIENT || getTargetCharacterKey(c, selectcharacterindex) == -1)
             {
                 MouseRButtonPush = false;
                 return;
@@ -1176,7 +1174,8 @@ void mu::ui::window::CCursedTempleSystem::SetCursedTempleSkill(CHARACTER* c, OBJ
 
             tc = &CharactersClient[selectcharacterindex];
         }
-        SocketClient->ToGameServer()->SendIllusionTempleSkillRequestExtended(CursedTempleCurSkillType, static_cast<WORD>(tc->Key), Distance);
+        SocketClient->ToGameServer()->SendIllusionTempleSkillRequestExtended(CursedTempleCurSkillType,
+                                                                             static_cast<WORD>(tc->Key), Distance);
         Hero->m_CursedTempleCurSkillPacket = true;
         MouseRButtonPush = false;
 

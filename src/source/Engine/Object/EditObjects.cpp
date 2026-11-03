@@ -135,7 +135,8 @@ void EditObjects()
             else
             {
                 VectorCopy(PickObject->Angle, PickObjectAngle);
-                CreateObject(PickObject->Type, PickObject->Position, PickObject->Angle, PickObject->Scale, PickObject->ModelDomain);
+                CreateObject(PickObject->Type, PickObject->Position, PickObject->Angle, PickObject->Scale,
+                             PickObject->ModelDomain);
                 if (EnableRandomObject)
                 {
                     vec3_t Position, Angle;
@@ -147,7 +148,9 @@ void EditObjects()
                         Position[1] += (float)(Random::Rand() % 2000 - 1000);
                         Position[2] = RequestTerrainHeight(Position[0], Position[1]);
                         Angle[2] = (float)(Random::Rand() % 360);
-                        CreateObject(PickObject->Type, Position, Angle, PickObject->Scale + (float)(Random::Rand() % 16 - 8) * 0.01f, PickObject->ModelDomain);
+                        CreateObject(PickObject->Type, Position, Angle,
+                                     PickObject->Scale + (float)(Random::Rand() % 16 - 8) * 0.01f,
+                                     PickObject->ModelDomain);
                     }
                 }
                 DeleteObject(PickObject, &ObjectBlock[PickObject->Block]);

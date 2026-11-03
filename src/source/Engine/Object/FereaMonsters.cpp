@@ -82,7 +82,8 @@ CHARACTER* CreateFereaMonster(EMonsterType monsterType, int positionX, int posit
     const auto* profile = FindProfile(monsterType);
     if (profile == nullptr || !LoadFereaMonsterModel(profile->model))
         return nullptr;
-    CHARACTER* character = CreateCharacter(key, MODEL_MONSTER01 + static_cast<int>(profile->model), positionX, positionY);
+    CHARACTER* character =
+        CreateCharacter(key, MODEL_MONSTER01 + static_cast<int>(profile->model), positionX, positionY);
     if (character == nullptr)
         return nullptr;
     wcscpy_s(character->ID, profile->displayName);
@@ -126,7 +127,8 @@ void MoveFereaMonsterVisual(CHARACTER* character)
     for (float& channel : light)
         channel *= object->Alpha;
     const float scale = object->CurrentAction == MONSTER01_SHOCK
-        ? HitGlowScale : GlowScale + PulseScale * static_cast<float>(std::sin(WorldTime / PulseTimeScaleMs));
+                            ? HitGlowScale
+                            : GlowScale + PulseScale * static_cast<float>(std::sin(WorldTime / PulseTimeScaleMs));
     CreateSprite(BITMAP_LIGHT, object->Position, scale, light, object);
 }
 } // namespace Engine::Monsters

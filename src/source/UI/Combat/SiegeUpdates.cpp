@@ -154,7 +154,8 @@ void ShowCrownNotice(CrownNotice notice, std::wstring_view actor,
         message = CreateRegistrationNotice(false);
         if (!message)
             break;
-        message->AddMsg(CrownRegistrationMessageBox::FormatText(notice == CrownNotice::RegistrationStarted, accessTimeMs));
+        message->AddMsg(
+            CrownRegistrationMessageBox::FormatText(notice == CrownNotice::RegistrationStarted, accessTimeMs));
         if (notice == CrownNotice::RegistrationStarted)
             message->SetElapseTime(CrownRegistrationMessageBox::StartedNoticeTtlMs);
         break;

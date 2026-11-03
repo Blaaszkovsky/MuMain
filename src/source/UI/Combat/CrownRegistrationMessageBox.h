@@ -23,8 +23,7 @@ public:
     // A safety timeout since the latest authoritative update, not the server's capture target.
     static constexpr DWORD StartedNoticeTtlMs = 60'000;
 
-    template <typename Factory>
-    static CrownRegistrationMessageBox* CreateOnce(Factory& factory, bool succeeded = true)
+    template <typename Factory> static CrownRegistrationMessageBox* CreateOnce(Factory& factory, bool succeeded = true)
     {
         if (s_active)
         {

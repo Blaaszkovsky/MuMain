@@ -16,7 +16,7 @@ inline constexpr std::array PlaySpeeds{0.25f, 0.2f, 0.34f, 0.33f, 0.33f, 0.5f, 0
 
 constexpr bool HasRequiredActions(std::span<const short> animationKeys)
 {
-    return animationKeys.size() == PlaySpeeds.size()
-        && std::all_of(animationKeys.begin(), animationKeys.end(), [](short keys) { return keys > 0; });
+    return animationKeys.size() == PlaySpeeds.size() &&
+           std::all_of(animationKeys.begin(), animationKeys.end(), [](short keys) { return keys > 0; });
 }
 } // namespace GameLogic::Monsters::BaskiPrototypeProfile

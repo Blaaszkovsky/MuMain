@@ -84,14 +84,15 @@ void RecordAttackDamage(int attackerIndex, int targetKey, int damage, int shield
 }
 
 void RecordAttackDamageExtended(int attackerIndex, int targetKey, std::uint32_t damage, std::uint32_t shieldDamage,
-                               int damageType, std::uint8_t healthStatus, std::uint8_t shieldStatus)
+                                int damageType, std::uint8_t healthStatus, std::uint8_t shieldStatus)
 {
     if (!IsEnabled())
         return;
 
     RecordDamageObserved(targetKey, damage, shieldDamage, damageType, healthStatus, shieldStatus);
     // Retain the existing attributed-hit presentation semantics; the observation above is lossless.
-    RecordAttributedDamage(attackerIndex, targetKey, static_cast<int>(damage), static_cast<int>(shieldDamage), damageType);
+    RecordAttributedDamage(attackerIndex, targetKey, static_cast<int>(damage), static_cast<int>(shieldDamage),
+                           damageType);
 }
 
 void RecordDeathOf(int victimKey, int killerKey)

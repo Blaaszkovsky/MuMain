@@ -686,7 +686,7 @@ void OpenWindSpinModels()
     gLoadData.AccessModel(MODEL_WINDSPIN03, L"Data\\Effect\\", L"wind_spin03");
     gLoadData.OpenTexture(MODEL_WINDSPIN03, L"Effect\\");
 }
-}
+} // namespace
 
 void OpenSkills()
 {

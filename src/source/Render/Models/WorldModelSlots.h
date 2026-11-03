@@ -21,8 +21,8 @@ constexpr int WorldTypeCount(int world)
 
 constexpr ModelDomain PlacementDomain(int world, int type)
 {
-    return world == FereaMap && type >= MODEL_WORLD_OBJECT && type < WorldTypeCount(world)
-               ? ModelDomain::WorldPlacement : ModelDomain::Global;
+    return world == FereaMap && type >= MODEL_WORLD_OBJECT && type < WorldTypeCount(world) ? ModelDomain::WorldPlacement
+                                                                                           : ModelDomain::Global;
 }
 
 constexpr int WorldSlot(int type)
@@ -40,22 +40,19 @@ constexpr int PlacementSlot(int world, int type)
     return ModelSlot(type, PlacementDomain(world, type));
 }
 
-template<class Object>
-constexpr int ObjectSlot(const Object& object)
+template <class Object> constexpr int ObjectSlot(const Object& object)
 {
     return ModelSlot(object.Type, object.ModelDomain);
 }
 
-template<class Object>
-void AssignObjectModel(Object& object, int type, ModelDomain domain)
+template <class Object> void AssignObjectModel(Object& object, int type, ModelDomain domain)
 {
     object.Type = type;
     object.ModelDomain = domain;
 }
 
 // Load, texture setup and editor enumeration share this identity mapping.
-template<class Visitor>
-void ForEachWorldModel(int world, Visitor&& visit)
+template <class Visitor> void ForEachWorldModel(int world, Visitor&& visit)
 {
     for (int type = MODEL_WORLD_OBJECT; type < WorldTypeCount(world); ++type)
     {
@@ -63,8 +60,7 @@ void ForEachWorldModel(int world, Visitor&& visit)
     }
 }
 
-template<class Model>
-void ReleaseWorldModels(Model* models)
+template <class Model> void ReleaseWorldModels(Model* models)
 {
     if (models == nullptr)
     {
@@ -72,4 +68,4 @@ void ReleaseWorldModels(Model* models)
     }
     ForEachWorldModel(FereaMap, [&](int, int slot) { models[slot].Release(); });
 }
-}
+} // namespace Render::WorldModels

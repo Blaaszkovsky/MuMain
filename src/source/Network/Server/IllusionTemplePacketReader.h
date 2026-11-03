@@ -76,8 +76,8 @@ public:
         const auto members = ReadEntries(packet, StateHeaderSize, packet[13], PartyMemberSize);
         if (!members)
             return std::nullopt;
-        return State{Little16(packet, 4), Little16(packet, 6), packet[8], packet[9], packet[10], packet[11],
-                     packet[12], *members};
+        return State{Little16(packet, 4), Little16(packet, 6), packet[8],  packet[9],
+                     packet[10],          packet[11],          packet[12], *members};
     }
 
     static std::optional<PartyMember> ReadPartyMember(std::span<const std::uint8_t> members, std::size_t index)
@@ -165,20 +165,20 @@ private:
 
     static std::uint32_t Little32(std::span<const std::uint8_t> bytes, std::size_t offset)
     {
-        return std::uint32_t(bytes[offset]) | (std::uint32_t(bytes[offset + 1]) << 8)
-            | (std::uint32_t(bytes[offset + 2]) << 16) | (std::uint32_t(bytes[offset + 3]) << 24);
+        return std::uint32_t(bytes[offset]) | (std::uint32_t(bytes[offset + 1]) << 8) |
+               (std::uint32_t(bytes[offset + 2]) << 16) | (std::uint32_t(bytes[offset + 3]) << 24);
     }
 
-    static std::optional<std::span<const std::uint8_t>> ReadEntries(std::span<const std::uint8_t> packet,
-        std::size_t header, std::size_t count, std::size_t stride)
+    static std::optional<std::span<const std::uint8_t>>
+    ReadEntries(std::span<const std::uint8_t> packet, std::size_t header, std::size_t count, std::size_t stride)
     {
         if (count > (packet.size() - header) / stride)
             return std::nullopt;
         return packet.subspan(header, count * stride);
     }
 
-    static std::optional<std::uint8_t> ReadByte(std::span<const std::uint8_t> packet,
-        std::size_t wireSize, std::size_t offset)
+    static std::optional<std::uint8_t> ReadByte(std::span<const std::uint8_t> packet, std::size_t wireSize,
+                                                std::size_t offset)
     {
         if (packet.size() < wireSize)
             return std::nullopt;

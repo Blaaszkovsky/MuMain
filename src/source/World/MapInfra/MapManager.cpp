@@ -44,14 +44,9 @@ void LoadGenericWorldModels(int world, int assetWorld)
     wchar_t directory[32];
     mu_swprintf(directory, L"Data\\Object%d\\", assetWorld);
     Render::WorldModels::ForEachWorldModel(world, [&](int type, int slot)
-    {
-        gLoadData.AccessModel(slot, directory, L"Object", type + 1, true);
-    });
+                                           { gLoadData.AccessModel(slot, directory, L"Object", type + 1, true); });
     mu_swprintf(directory, L"Object%d\\", assetWorld);
-    Render::WorldModels::ForEachWorldModel(world, [&](int, int slot)
-    {
-        gLoadData.OpenTexture(slot, directory);
-    });
+    Render::WorldModels::ForEachWorldModel(world, [&](int, int slot) { gLoadData.OpenTexture(slot, directory); });
 }
 
 void LoadCastleSounds()
@@ -81,7 +76,7 @@ void LoadCastleSounds()
     LoadWaveFile(SOUND_BCS_SPACE_SPLIT, L"Data\\Sound\\BattleCastle\\sCDarkAttack.wav", MAX_CHANNEL, true);
     LoadWaveFile(SOUND_BCS_BRAND_OF_SKILL, L"Data\\Sound\\BattleCastle\\sCDarkAssist.wav", 1, true);
 }
-}
+} // namespace
 
 void CMapManager::Load() // OK
 {

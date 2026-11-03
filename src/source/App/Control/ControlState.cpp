@@ -47,9 +47,12 @@ using nlohmann::json;
 json DescribePrototypeAnimation(const CHARACTER& character)
 {
     const OBJECT& object = character.Object;
-    json animation = {{"monster_id", character.MonsterIndex}, {"model_type", object.Type},
-                      {"action", object.CurrentAction}, {"frame", object.AnimationFrame},
-                      {"prior_action", object.PriorAction}, {"moving", character.Movement != 0},
+    json animation = {{"monster_id", character.MonsterIndex},
+                      {"model_type", object.Type},
+                      {"action", object.CurrentAction},
+                      {"frame", object.AnimationFrame},
+                      {"prior_action", object.PriorAction},
+                      {"moving", character.Movement != 0},
                       {"scale", object.Scale}};
     if (Models == nullptr || object.Type < 0 || object.Type >= MAX_MODELS)
         return animation;

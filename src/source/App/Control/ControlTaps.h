@@ -27,7 +27,7 @@ namespace App::Control::Events
 void RecordAttackDamage(int attackerIndex, int targetKey, int damage, int shieldDamage, int damageType);
 // Extended damage values stay unsigned until recorded, preserving the full DWORD.
 void RecordAttackDamageExtended(int attackerIndex, int targetKey, std::uint32_t damage, std::uint32_t shieldDamage,
-                               int damageType, std::uint8_t healthStatus, std::uint8_t shieldStatus);
+                                int damageType, std::uint8_t healthStatus, std::uint8_t shieldStatus);
 
 // A death packet. `killerKey` may be -1 when the packet does not name one.
 void RecordDeathOf(int victimKey, int killerKey);
