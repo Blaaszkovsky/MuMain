@@ -10,6 +10,7 @@
 #include <thread>
 
 #include "Dotnet/Connection.h"
+#include "Dotnet/PacketFunctions_ClientToServer.h"
 
 namespace
 {
