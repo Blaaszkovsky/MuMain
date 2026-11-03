@@ -315,7 +315,7 @@ void CreateLogInScene()
     g_ErrorReport.Write(L"> Login Scene init success.\r\n");
 }
 
-// Moves the camera, builds the view the frame draws with, and culls the effects against it.
+// Moves the camera, builds the view the frame draws with, and culls the map objects and the effects against it.
 static void UpdateLogInSceneView()
 {
     MoveMainCamera();
@@ -335,7 +335,9 @@ static void UpdateLogInSceneView()
     // we reset iteration bounds to cover the full terrain so stale bounds from other scenes
     // don't restrict the render loop.
     ResetFrustrumBoundsFullTerrain();
-    CullEffects();
+    // Behind the credits the world is not drawn.
+    if (!g_CreditWin.IsVisible())
+        CullWorld();
 }
 
 void NewMoveLogInScene()
@@ -345,6 +347,9 @@ void NewMoveLogInScene()
         InitLogIn = true;
         CreateLogInScene();
     }
+
+    // Starts the theme again when it ends; a no-op while it plays.
+    ::PlayMp3(MUSIC_LOGIN_THEME);
 
     if (!g_CreditWin.IsVisible())
     {
@@ -428,9 +433,6 @@ bool NewRenderLogInScene(HDC hDC)
     if (!InitLogIn) return false;
 
     FogEnable = true;
-
-    // Play login music (called every frame — PlayMp3 no-ops if already playing)
-    ::PlayMp3(MUSIC_LOGIN_THEME);
 
     mu::GetRenderer().SetClearColor(0.f, 0.f, 0.f, 1.f);
 

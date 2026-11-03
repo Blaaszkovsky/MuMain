@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Core/Utilities/DrawSpawnCheck.h"
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
@@ -1075,6 +1076,7 @@ void AddFrameHistoryLights()
 // light mood's gain is applied first, so the terrain and the models get the same light.
 void AddTerrainLight(float xf, float yf, vec3_t SourceLight, int Range, vec3_t* Buffer)
 {
+    Diagnostics::DrawSpawnCheck::Note("terrain-light");
     if (Buffer == PrimaryTerrainLight && UseLightHistory())
     {
         Render::Lighting::LightCall call;
@@ -1099,6 +1101,7 @@ void AddTerrainLight(float xf, float yf, vec3_t SourceLight, int Range, vec3_t* 
 
 void AddTerrainLightClip(float xf, float yf, vec3_t SourceLight, int Range, vec3_t* Buffer)
 {
+    Diagnostics::DrawSpawnCheck::Note("terrain-light");
     vec3_t Light;
     ApplyDynamicGain(SourceLight, Buffer, Light);
     auto rf = (float)Range;
